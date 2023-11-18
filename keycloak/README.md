@@ -54,6 +54,21 @@ A realm in Keycloak is equivalent to a tenant. Each realm allows an administrato
 Use these steps to create the first realm.
 
 - Open the Keycloak Admin Console.
-- Click the word **master** in the top-left corner, then click Create Realm.
+- Click the word **master** in the top-left corner, then click **Create Realm**.
 - Enter multi_lang in the Realm name field.
 - Click Create.
+
+### Create a user
+
+Initially, the realm has no users. Use these steps to create a user:
+
+1. Click **Users** in the left-hand menu. Then click **Add User**.
+2. Fill in the form with the Username ***keeper***.
+3. Click **Create**.
+
+### Initial Password
+This user needs a password to log in. To set the initial password:
+
+1. Click Credentials at the top of the page.
+2. Fill in the Set password form with a password.
+3. Toggle Temporary to Off so that the user does not need to update this password at the first login.
