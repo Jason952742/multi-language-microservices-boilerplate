@@ -13,7 +13,7 @@ services:
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}
       KC_HOSTNAME: ${KEYCLOAK_URL}
-      KC_DB_URL: jdbc:postgresql://keycloak_postgres:5433/keycloak
+      KC_DB_URL: jdbc:postgresql://keycloak_postgres:5432/keycloak
       KC_DB: postgres
       KC_DB_USERNAME:  ${POSTGRES_USER}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
@@ -21,10 +21,8 @@ services:
       KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
     depends_on:
       - keycloak_postgres
-    networks:
-      - multi-lang-network
     command:
-      - 'start --hostname keycloak'
+      - 'start --hostname localhost'
     env_file:
       - ./.env
 
@@ -33,24 +31,22 @@ services:
     image: postgres:latest
     restart: always
     ports:
-      - "5433:5433"
+      - "5433:5432"
     environment:
       POSTGRES_DB: keycloak
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_PORT: 5433
+      POSTGRES_PORT: 5432
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - multi-lang-network
     env_file:
       - ./.env
 
 
 networks:
-  multi-lang-network:
-    external:
-      name: multi-lang-network
+  default:
+    name: multi-lang-network
+    external: true
 
 volumes:
   postgres_data:
