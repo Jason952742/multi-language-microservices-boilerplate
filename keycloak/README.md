@@ -69,6 +69,23 @@ Initially, the realm has no users. Use these steps to create a user:
 ### Initial Password
 This user needs a password to log in. To set the initial password:
 
-1. Click Credentials at the top of the page.
-2. Fill in the Set password form with a password.
-3. Toggle Temporary to Off so that the user does not need to update this password at the first login.
+1. Click **Credentials** at the top of the page.
+2. Fill in the **Set password** form with a password.
+3. Toggle **Temporary** to **Off** so that the user does not need to update this password at the first login.
+
+### Create Client
+
+1. Click **Clients**
+2. Click **Create client**
+3. Fill in the form with the following values:
+    - **Client type**: OpenID Connect
+    - **Client ID**: web-auth-client
+4. Click **Next**
+5. Confirm that **Standard flow** is enabled
+6. Set Client **authentication** is **On** and **Authorization** is **On**
+7. Click **Next**
+8. Click **Sava**
+
+After saving the client, you need to switch to the advanced settings page, scroll the page to the bottom and set:
+- **Browser Flow**: browser
+- **Direct Grant Flow**: direct grant
