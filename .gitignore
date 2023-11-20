@@ -18,3 +18,4 @@ Cargo.lock
 keycloak/tls.key
 keycloak/tls.crt
 keycloak/tls.csr
+krakend/krakend.json
