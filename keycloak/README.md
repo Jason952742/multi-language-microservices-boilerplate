@@ -89,3 +89,53 @@ This user needs a password to log in. To set the initial password:
 After saving the client, you need to switch to the advanced settings page, scroll the page to the bottom and set:
 - **Browser Flow**: browser
 - **Direct Grant Flow**: direct grant
+
+### Test Auth
+```bash
+curl -kv --location 'https://${your_host_ip}:8443/realms/multi_lang/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=web-auth-client' \
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'client_secret=your_client_secret' \
+--data-urlencode 'scope=openid' \
+--data-urlencode 'username=keeper' \
+--data-urlencode 'password=${your_keeper_user_password}'
+```
+
+You will then see the following response:
+
+```json
+{
+   "access_token":"xxxxx...xxxxx",
+   "expires_in":300,
+   "refresh_expires_in":1800,
+   "refresh_token":"xxx...xxx",
+   "token_type":"Bearer",
+   "id_token":"xxx...xxx",
+   "not-before-policy":0,
+   "session_state":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+   "scope":"openid email profile"
+}
+```
+
+Then authenticate using the request token in the response:
+
+```bash
+curl -kv --location 'https://${your_host_ip}:8443/realms/multi_lang/protocol/openid-connect/userinfo' \
+--header 'Authorization: Bearer ${your_access_token}'
+```
+
+You will then see the following response:
+
+```json
+{
+   "sub":"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+   "email_verified":false,
+   "name":"hello world",
+   "preferred_username":"keeper",
+   "given_name":"hello",
+   "family_name":"world",
+   "email":"keeper@world.io"
+}
+
+```
