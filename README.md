@@ -28,11 +28,15 @@ create a network：
 ```bash
 docker network create multi-lang-network --driver bridge
 ```
-and Refer to [Keycloak Production Development](keycloak/README.md)
+and Refer to [Keycloak Production Deployment](keycloak/README.md)
+
+### Step 2: KrakenD Deployment
+
+Refer to [KrakenD Deployment](krakend/README.md)
 
 ## License
 
 Licensed under of
 
-- MIT license ([LICENSE-MIT](./LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- MIT license ([LICENSE-MIT](./LICENSE) or http://opensource.org/licenses/MIT)
   at your option.
