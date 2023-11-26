@@ -23,13 +23,13 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
 
     implementation("io.quarkus:quarkus-resteasy-reactive:2.16.4.Final")
-//    implementation("io.quarkus:quarkus-resteasy-multipart:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-resteasy-multipart:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-mutiny:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-reactive-qute:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-reactive-jackson:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-reactive-kotlin-serialization:2.16.4.Final")
 
-    implementation("io.quarkus:quarkus-rest-client-mutiny:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-rest-client-mutiny:2.16.4.Final")
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson:2.16.4.Final")
     implementation("io.quarkus:quarkus-rest-client-reactive-kotlin-serialization:2.16.4.Final")
 
@@ -38,29 +38,29 @@ dependencies {
     implementation("io.quarkus:quarkus-reactive-pg-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-hibernate-validator:2.16.4.Final")
 
-    implementation("io.quarkus:quarkus-smallrye-graphql:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-smallrye-graphql:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-openapi:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-graphql-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-health:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-context-propagation:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging:2.16.4.Final")
-    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-amqp:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-smallrye-reactive-messaging-amqp:2.16.4.Final")
     implementation("io.smallrye.reactive:mutiny-kotlin:2.1.0")
     implementation("io.quarkus:quarkus-smallrye-fault-tolerance:2.16.4.Final")
 
     implementation("io.quarkus:quarkus-redis-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-redis-cache:2.16.4.Final")
     implementation("io.quarkus:quarkus-cache:2.16.4.Final")
-    implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.5.0")
+    //implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.5.0")
 
-    implementation("io.quarkus:quarkus-keycloak-authorization:2.16.4.Final")
-    implementation("io.quarkus:quarkus-keycloak-admin-client-reactive:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-keycloak-authorization:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-keycloak-admin-client-reactive:2.16.4.Final")
 
-    implementation("io.quarkus:quarkus-websockets:2.16.4.Final")
-    implementation("io.quarkus:quarkus-websockets-client:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-websockets:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-websockets-client:2.16.4.Final")
 
     implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.2.14")
-    implementation("io.quarkus:quarkus-mutiny:2.16.4.Final")
+    //implementation("io.quarkus:quarkus-mutiny:2.16.4.Final")
     implementation("io.quarkus:quarkus-grpc:2.16.4.Final")
     implementation("io.quarkus:quarkus-quartz:2.16.4.Final")
 
@@ -78,8 +78,8 @@ group = "org.acme"
 version = "1.0.0-SNAPSHOT"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_20
+    targetCompatibility = JavaVersion.VERSION_20
 }
 
 tasks.withType<Test> {
@@ -101,6 +101,6 @@ allOpen {
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_17.toString()
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_20.toString()
     kotlinOptions.javaParameters = true
 }
