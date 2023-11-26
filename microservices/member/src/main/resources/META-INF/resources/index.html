@@ -252,17 +252,12 @@
                     <p>This page is served by Quarkus.</p>
                     <a href="/q/dev-ui/" class="cta-button">Visit the Dev UI</a>
                     <p>This page: <code>src/main/resources/META-INF/resources/index.html</code></p>
-                    <p>App configuration: <code>src/main/resources/application.yml</code></p>
+                    <p>App configuration: <code>src/main/resources/application.properties</code></p>
                     <p>Static assets: <code>src/main/resources/META-INF/resources/</code></p>
                     <p>Code: <code>src/main/kotlin</code></p>
                     <p>Generated starter code:</p>
                     <ul class="provided-code">
                                 <li class="provided-code">
-            <b>RESTEasy JAX-RS</b>&nbsp;Easily start your RESTful Web Services
-            <br />&rsaquo; <code>@Path: <a href="/hello" class="path-link" target="_blank">/hello</a></code>
-            <br />&rsaquo; <a href="https://quarkus.io/guides/getting-started#the-jax-rs-resources" class="guide-link" target="_blank">Related guide</a>
-        </li>
-        <li class="provided-code">
             <b>RESTEasy Reactive</b>&nbsp;Easily start your Reactive RESTful Web Services
             <br />&rsaquo; <code>@Path: <a href="/hello" class="path-link" target="_blank">/hello</a></code>
             <br />&rsaquo; <a href="https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources" class="guide-link" target="_blank">Related guide</a>
@@ -289,38 +284,36 @@
                     <h3>Selected extensions</h3>
                     <ul>
                         <li title="Kotlin serialization support for REST Client Reactive">REST Client Reactive Kotlin Serialization</li>
+                        <li title="Build fault-tolerant network services">SmallRye Fault Tolerance (<a href="https://quarkus.io/guides/smallrye-fault-tolerance" target="_blank">guide</a>)</li>
                         <li title="Create GraphQL Endpoints using the code-first approach from MicroProfile GraphQL">SmallRye GraphQL (<a href="https://quarkus.io/guides/smallrye-graphql" target="_blank">guide</a>)</li>
-                        <li title="Enable Mutiny for the REST client">REST Client Classic Mutiny support</li>
                         <li title="Jackson serialization support for REST Client Reactive">REST Client Reactive Jackson</li>
-                        <li title="Connect to the PostgreSQL database via JDBC">JDBC Driver - PostgreSQL (<a href="https://quarkus.io/guides/datasource" target="_blank">guide</a>)</li>
+                        <li title="Generation of Rest Clients based on OpenAPI specification files">OpenAPI Generator - REST Client Generator</li>
                         <li title="Policy enforcer using Keycloak-managed permissions to control access to protected resources">Keycloak Authorization (<a href="https://quarkus.io/guides/security-keycloak-authorization" target="_blank">guide</a>)</li>
-                        <li title="Mutiny support for RESTEasy Classic server">RESTEasy Classic Mutiny (<a href="https://quarkus.io/guides/resteasy#reactive" target="_blank">guide</a>)</li>
                         <li title="Document your REST APIs with OpenAPI - comes with Swagger UI">SmallRye OpenAPI (<a href="https://quarkus.io/guides/openapi-swaggerui" target="_blank">guide</a>)</li>
                         <li title="Create GraphQL Clients">SmallRye GraphQL Client (<a href="https://quarkus.io/guides/smallrye-graphql-client" target="_blank">guide</a>)</li>
                         <li title="Write your services in Kotlin">Kotlin (<a href="https://quarkus.io/guides/kotlin" target="_blank">guide</a>)</li>
-                        <li title="Automatically index your Hibernate entities in Elasticsearch">Hibernate Search + Elasticsearch (<a href="https://quarkus.io/guides/hibernate-search-orm-elasticsearch" target="_blank">guide</a>)</li>
                         <li title="Enable Hibernate Envers capabilities in your Jakarta Persistence applications">Hibernate Envers (<a href="https://quarkus.io/guides/hibernate-orm#envers" target="_blank">guide</a>)</li>
+                        <li title="Connect to the PostgreSQL database using the reactive pattern">Reactive PostgreSQL client (<a href="https://quarkus.io/guides/reactive-sql-clients" target="_blank">guide</a>)</li>
                         <li title="Administer a Keycloak Instance using RESTEasy Reactive">Keycloak Admin Client Reactive</li>
                         <li title="Qute integration for RESTEasy Reactive. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.">RESTEasy Reactive Qute</li>
                         <li title="Write reactive applications with the modern Reactive Programming library Mutiny">Mutiny (<a href="https://quarkus.io/guides/mutiny-primer" target="_blank">guide</a>)</li>
                         <li title="Jackson serialization support for RESTEasy Reactive. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it">RESTEasy Reactive Jackson</li>
-                        <li title="Define your persistent model in Hibernate ORM with Panache">Hibernate ORM with Panache and Kotlin (<a href="https://quarkus.io/guides/hibernate-orm-panache-kotlin" target="_blank">guide</a>)</li>
+                        <li title="Call REST services reactively">REST Client Reactive (<a href="https://quarkus.io/guides/rest-client-reactive" target="_blank">guide</a>)</li>
+                        <li title="Simplify your persistence code for Hibernate Reactive via the active record or the repository pattern">Hibernate Reactive with Panache</li>
                         <li title="A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.">RESTEasy Reactive (<a href="https://quarkus.io/guides/resteasy-reactive" target="_blank">guide</a>)</li>
-                        <li title="Multipart support for RESTEasy Classic">RESTEasy Classic Multipart (<a href="https://quarkus.io/guides/rest-json#multipart-support" target="_blank">guide</a>)</li>
-                        <li title="Use YAML to configure your Quarkus application">YAML Configuration (<a href="https://quarkus.io/guides/config-yaml" target="_blank">guide</a>)</li>
                         <li title="Monitor service health">SmallRye Health (<a href="https://quarkus.io/guides/smallrye-health" target="_blank">guide</a>)</li>
                         <li title="Propagate contexts between managed threads in reactive applications">SmallRye Context Propagation (<a href="https://quarkus.io/guides/context-propagation" target="_blank">guide</a>)</li>
                         <li title="Kotlin Serialization support for RESTEasy Reactive. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.">RESTEasy Reactive Kotlin Serialization</li>
                         <li title="Serve and consume gRPC services">gRPC</li>
-                        <li title="Connect to AMQP with Reactive Messaging">SmallRye Reactive Messaging - AMQP Connector (<a href="https://quarkus.io/guides/amqp" target="_blank">guide</a>)</li>
-                        <li title="Write reactive applications with the Vert.x API">Eclipse Vert.x (<a href="https://quarkus.io/guides/vertx" target="_blank">guide</a>)</li>
                         <li title="Client for WebSocket communication channel">WebSockets Client (<a href="https://quarkus.io/guides/websockets" target="_blank">guide</a>)</li>
                         <li title="Validate object properties (field, getter) and method parameters for your beans (REST, CDI, Jakarta Persistence)">Hibernate Validator (<a href="https://quarkus.io/guides/validation" target="_blank">guide</a>)</li>
+                        <li title="Produce and consume messages and implement event driven and data streaming applications">SmallRye Reactive Messaging (<a href="https://quarkus.io/guides/reactive-messaging" target="_blank">guide</a>)</li>
                         <li title="Schedule clustered tasks with Quartz">Quartz (<a href="https://quarkus.io/guides/quartz" target="_blank">guide</a>)</li>
-                        <li title="Connect to Neo4j graph datastore">Neo4j client (<a href="https://quarkiverse.github.io/quarkiverse-docs/quarkus-neo4j/dev/index.html" target="_blank">guide</a>)</li>
                         <li title="WebSocket communication channel support">WebSockets (<a href="https://quarkus.io/guides/websockets" target="_blank">guide</a>)</li>
-                        <li title="Jackson Databind support">Jackson</li>
+                        <li title="Simplify your persistence code for Hibernate Reactive and Kotlin via the active record or the repository pattern">Hibernate Reactive Panache Kotlin</li>
+                        <li title="Use Redis as the caching backend">Redis Cache (<a href="https://quarkus.io/guides/cache-redis-reference" target="_blank">guide</a>)</li>
                         <li title="Connect to Redis in either imperative or reactive style">Redis Client (<a href="https://quarkus.io/guides/redis" target="_blank">guide</a>)</li>
+                        <li title="REST, GraphQL, gRPC API and SOAP mock endpoints and contract testing - directly from your specs">Microcks (<a href="https://github.com/microcks/microcks-quarkus" target="_blank">guide</a>)</li>
                         <li title="Enable application data caching in CDI beans">Cache (<a href="https://quarkus.io/guides/cache" target="_blank">guide</a>)</li>
                     </ul>
                     <h5><a href="https://quarkus.io/guides/">Documentation</a></h5>
