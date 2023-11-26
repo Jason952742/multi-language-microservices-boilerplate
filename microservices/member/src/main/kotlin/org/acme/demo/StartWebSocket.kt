@@ -1,4 +1,4 @@
-package org.acme
+package org.acme.demo
 
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.websocket.*

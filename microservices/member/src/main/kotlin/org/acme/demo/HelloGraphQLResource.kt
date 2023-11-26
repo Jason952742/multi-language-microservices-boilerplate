@@ -1,4 +1,4 @@
-package org.acme
+package org.acme.demo
 
 import org.eclipse.microprofile.graphql.DefaultValue
 import org.eclipse.microprofile.graphql.Description
