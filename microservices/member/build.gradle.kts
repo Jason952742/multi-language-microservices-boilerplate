@@ -47,7 +47,7 @@ dependencies {
     implementation("io.quarkus:quarkus-redis-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-redis-cache:2.16.4.Final")
     implementation("io.quarkus:quarkus-cache:2.16.4.Final")
-    //implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.5.0")
+    implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.5.0")
 
     implementation("io.quarkus:quarkus-keycloak-authorization:2.16.4.Final")
     implementation("io.quarkus:quarkus-keycloak-admin-client-reactive:2.16.4.Final")
