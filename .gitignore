@@ -14,11 +14,11 @@ Cargo.lock
 *.pdb
 
 /.idea
-**/.env
-keycloak/tls.key
-keycloak/tls.crt
-keycloak/tls.csr
-krakend/krakend.json
+.env
+tls.key
+tls.crt
+tls.csr
+krakend.json
 
 # Gradle
 .gradle/
