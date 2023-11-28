@@ -1,63 +1,91 @@
-version: "3.7"
+version: "3.8"
 
 services:
   krakend:
-    container_name: krakend
+    container_name: krakend-app
     image: devopsfaith/krakend:latest
+    restart: always
     ports:
       - "1234:1234"
       - "8080:8080"
       - "8090:8090"
     volumes:
-      - "${PWD}/krakend:/etc/krakend"
+      - ./krakend:/etc/krakend
     command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
     depends_on:
       - jaeger
 
   jaeger:
     image: jaegertracing/all-in-one:1
+    restart: always
     ports:
       - "16686:16686"
       - "14268:14268"
 
-  keycloak:
-    container_name: keycloak
+
+  keycloak_db:
+    container_name: keycloak_db
+    image: mysql:8
+    restart: always
+    command: ["mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    ports:
+      - "3307:3307"
+    env_file:
+      - ./env/keycloak.env
+
+  keycloak_app:
+    container_name: keycloak_app
     image: quay.io/keycloak/keycloak:22.0.5
     restart: always
     ports:
       - "8443:8443"
-    volumes:
-      - "${PWD}/keycloak:/etc/x509/https" # map certificates to container
+    env_file:
+      - ./env/keycloak.env
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}
-      KC_HOSTNAME: ${KEYCLOAK_URL}
-      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak
-      KC_DB: mysql
-      KC_DB_USERNAME: ${MYSQL_USER}
-      KC_DB_PASSWORD: ${MYSQL_PASSWORD}
       KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
       KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+    volumes:
+      - ./keycloak/app:/etc/x509/https # map certificates to container
     depends_on:
-      - mysql
-    command:
-      - 'start --hostname localhost'
-    env_file:
-      - ./.env
+      - keycloak_db
+    command: ['start --hostname localhost']
 
-  mysql:
-    container_name: mysql
+
+  nacos_db:
+    container_name: nacos_db
     image: mysql:8
     restart: always
-    env_file:
-      - ./.env
+    command: ["mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     ports:
-      - "3306:3306"
+      - "3308:3308"
+    env_file:
+      - ./env/nacos.env
     volumes:
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  nacos_app:
+    image: nacos/nacos-server:v2.2.3-slim
+    container_name: nacos_app
+    restart: always
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    env_file:
+      - ./env/nacos.env
+    volumes:
+      - ./nacos/standalone-logs/:/home/nacos/logs
+    depends_on:
+      nacos_db:
+        condition: service_healthy
+
+
 
 networks:
   default:
     name: hello-network
     external: true
-
