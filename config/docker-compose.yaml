@@ -1,8 +1,9 @@
 version: "3.8"
 
 services:
-  krakend:
-    container_name: krakend-app
+  # krakend
+  krakend-server:
+    container_name: krakend-server
     image: devopsfaith/krakend:latest
     restart: always
     ports:
@@ -15,26 +16,28 @@ services:
     depends_on:
       - jaeger
 
+  # jaeger
   jaeger:
+    container_name: jaeger
     image: jaegertracing/all-in-one:1
     restart: always
     ports:
       - "16686:16686"
       - "14268:14268"
 
-
-  keycloak_db:
-    container_name: keycloak_db
+  # keycloak
+  keycloak-db:
+    container_name: keycloak-db
     image: mysql:8
     restart: always
-    command: ["mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
     ports:
       - "3307:3307"
     env_file:
       - ./env/keycloak.env
 
-  keycloak_app:
-    container_name: keycloak_app
+  keycloak-server:
+    container_name: keycloak-server
     image: quay.io/keycloak/keycloak:22.0.5
     restart: always
     ports:
@@ -47,15 +50,15 @@ services:
     volumes:
       - ./keycloak/app:/etc/x509/https # map certificates to container
     depends_on:
-      - keycloak_db
-    command: ['start --hostname localhost']
+      - keycloak-db
+    command: [ 'start --hostname localhost' ]
 
-
-  nacos_db:
-    container_name: nacos_db
+  # nacos
+  nacos-db:
+    container_name: nacos-db
     image: mysql:8
     restart: always
-    command: ["mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
     ports:
       - "3308:3308"
     env_file:
@@ -68,9 +71,9 @@ services:
       timeout: 10s
       retries: 10
 
-  nacos_app:
+  nacos-server:
     image: nacos/nacos-server:v2.2.3-slim
-    container_name: nacos_app
+    container_name: nacos-server
     restart: always
     ports:
       - "8848:8848"
@@ -80,10 +83,19 @@ services:
     volumes:
       - ./nacos/standalone-logs/:/home/nacos/logs
     depends_on:
-      nacos_db:
+      nacos-db:
         condition: service_healthy
 
-
+  # seata
+  seata-server:
+    container_name: seata-server
+    image: seataio/seata-server:2.0.0-slim
+    hostname: seata-server
+    ports:
+      - "7091:7091"
+      - "8091:8091"
+    env_file:
+      - ./env/seata.env
 
 networks:
   default:
