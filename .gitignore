@@ -56,8 +56,8 @@ nb-configuration.xml
 
 # Local environment
 .env
-/config/keycloak/db
-/config/nacos/standalone-logs
+/multi-servers/keycloak/db
+/multi-servers/nacos/standalone-logs
 
 # Plugin directory
 /.quarkus/cli/plugins/
