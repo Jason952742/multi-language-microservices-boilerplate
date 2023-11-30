@@ -86,16 +86,16 @@ services:
     volumes:
       - ./mongo/data/:/data/db
 
-#  # nats
-#  seata-server:
-#    container_name: seata-server
-#    image: manticoresearch
-#    hostname: seata-server
-#    ports:
-#      - "7091:7091"
-#      - "8091:8091"
-#    env_file:
-#      - ./env/seata.env
+  # nats
+  nats:
+    container_name: nats
+    image: nats:latest
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+      - "6222:6222"
+    environment:
+      HTTP_PORT: 8222
 
 networks:
   default:
