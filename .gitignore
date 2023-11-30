@@ -55,6 +55,7 @@ nb-configuration.xml
 *.rej
 
 # Local environment
+.env
 /multi-servers/keycloak/db
 /multi-servers/nacos/standalone-logs
 /multi-stores/postgres/pg_data
@@ -63,7 +64,7 @@ nb-configuration.xml
 /multi-stores/dragonfly/data
 /multi-stores/scylla/data
 /multi-stores/mongo/data
-/multi-stores/elk/elasticsearch
+#/multi-stores/elk/elasticsearch
 !/multi-stores/elk/elasticsearch/config
 
 # Plugin directory
