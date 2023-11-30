@@ -54,27 +54,27 @@ services:
     # For better performance, consider `host` mode instead `port` to avoid docker NAT.
     # `host` mode is NOT currently supported in Swarm Mode.
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    network_mode: "host"
+    # network_mode: "host"
     volumes:
       - ./dragonfly/data:/data
-#
-#  # cassandra
-#  scylladb:
-#    container_name: scylladb
-#    image: scylladb
-#    restart: always
-#    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-#    ports:
-#      - "3308:3308"
-#    env_file:
-#      - ./env/nacos.env
-#    volumes:
-#      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
-#    healthcheck:
-#      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-#      interval: 5s
-#      timeout: 10s
-#      retries: 10
+
+  # cassandra
+  scylla:
+    container_name: scylla
+    image: scylladb/scylla
+    restart: always
+    ports:
+      - "7100:7000"
+      - "7101:7001"
+      - "9042:9042"
+      - "9160:9160"
+      - "10000:10000"
+    environment:
+      MEMORY: 4G
+      SCYLLA_USER: scylla
+      SCYLLA_PASSWORD: scyllapassword
+    volumes:
+      - ./scylla/data/:/var/lib/scylla
 #
 #  # elasticsearch
 #  manticoresearch:

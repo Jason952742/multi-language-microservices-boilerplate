@@ -62,6 +62,7 @@ nb-configuration.xml
 /multi-stores/neo4j/data
 /multi-stores/neo4j/logs
 /multi-stores/dragonfly/data
+/multi-stores/scylla/data
 
 
 # Plugin directory
