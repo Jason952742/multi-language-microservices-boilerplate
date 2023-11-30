@@ -8,16 +8,18 @@ services:
     restart: always
     ports:
       - "5432:5432"
+    env_file:
+      - ./.env
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgresql
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./postgres/pg_data:/var/lib/postgresql/data/
 
   adminer:
-    image: adminer
     container_name: postgres_adminer
+    image: adminer
     restart: always
     ports:
       - "4030:8080"
@@ -30,8 +32,10 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    env_file:
+      - ./.env
     environment:
-      NEO4J_AUTH: neo4j/Neo4jPasswd
+      NEO4J_AUTH: ${NEO4J_AUTH}
       # Raise memory limits
       NEO4J_dbms_memory_pagecache_size: 1G
       NEO4J_dbms.memory.heap.initial_size: 1G
@@ -51,6 +55,10 @@ services:
       memlock: -1
     ports:
       - "6379:6379"
+    env_file:
+      - ./.env
+    environment:
+      REQUIREPASS: ${DRAGONFLY_REQUIRE_PASS}
     # For better performance, consider `host` mode instead `port` to avoid docker NAT.
     # `host` mode is NOT currently supported in Swarm Mode.
     # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
@@ -69,10 +77,12 @@ services:
       - "9042:9042"
       - "9160:9160"
       - "10000:10000"
+    env_file:
+      - ./.env
     environment:
       MEMORY: 4G
-      SCYLLA_USER: scylla
-      SCYLLA_PASSWORD: scyllapassword
+      SCYLLA_USER: ${SCYLLA_USER}
+      SCYLLA_PASSWORD: ${SCYLLA_PASSWORD}
     volumes:
       - ./scylla/data/:/var/lib/scylla
 
@@ -81,7 +91,6 @@ services:
     container_name: mongodb
     image: mongodb/mongodb-community-server:6.0-ubuntu2204
     restart: always
-    hostname: seata-server
     ports:
       - "27017:27017"
     volumes:
@@ -126,7 +135,7 @@ services:
       - ./elk/setup/lib.sh:/lib.sh:ro,Z
       - ./elk/setup/roles:/roles:ro,Z
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
@@ -152,7 +161,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       node.name: elasticsearch
       ES_JAVA_OPTS: -Xms512m -Xmx512m
@@ -180,7 +189,7 @@ services:
       - "50000:50000/udp"
       - "9600:9600"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
@@ -199,7 +208,7 @@ services:
     ports:
       - "5601:5601"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     depends_on:
