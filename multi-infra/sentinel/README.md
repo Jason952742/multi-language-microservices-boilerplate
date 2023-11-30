@@ -1,2 +1,0 @@
-# Sentinel Deployment and Configuration
-
