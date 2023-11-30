@@ -34,7 +34,13 @@ services:
     ports:
       - "3307:3307"
     env_file:
-      - ./env/keycloak.env
+      - ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${KC_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${KC_MYSQL_DATABASE}
+      MYSQL_USER: ${KC_MYSQL_USER}
+      MYSQL_PASSWORD: ${KC_MYSQL_PASSWORD}
+      MYSQL_PORT: ${KC_MYSQL_PORT}
 
   keycloak-server:
     container_name: keycloak-server
@@ -43,8 +49,11 @@ services:
     ports:
       - "8443:8443"
     env_file:
-      - ./env/keycloak.env
+      - ./.env
     environment:
+      KC_DB_URL: jdbc:${KC_DB}://keycloak-db:${KC_MYSQL_PORT}/${KC_MYSQL_DATABASE}
+      KC_DB_USERNAME: ${KC_MYSQL_USER}
+      KC_DB_PASSWORD: ${KC_MYSQL_PASSWORD}
       KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
       KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
     volumes:
@@ -62,7 +71,14 @@ services:
     ports:
       - "3308:3308"
     env_file:
-      - ./env/nacos.env
+      - ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${NACOS_MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${NACOS_MYSQL_DATABASE}
+      MYSQL_USER: ${NACOS_MYSQL_USER}
+      MYSQL_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+      MYSQL_PORT: ${NACOS_MYSQL_PORT}
+      LANG: ${NACOS_LANG}
     volumes:
       - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
@@ -79,7 +95,12 @@ services:
       - "8848:8848"
       - "9848:9848"
     env_file:
-      - ./env/nacos.env
+      - ./.env
+    environment:
+      MYSQL_SERVICE_DB_NAME: ${NACOS_MYSQL_DATABASE}
+      MYSQL_SERVICE_USER: ${NACOS_MYSQL_USER}
+      MYSQL_SERVICE_PASSWORD: ${NACOS_MYSQL_PASSWORD}
+      MYSQL_SERVICE_PORT: ${NACOS_MYSQL_PORT}
     volumes:
       - ./nacos/standalone-logs/:/home/nacos/logs
     depends_on:
@@ -95,7 +116,10 @@ services:
       - "7091:7091"
       - "8091:8091"
     env_file:
-      - ./env/seata.env
+      - ./.env
+    environment:
+      STORE_MODE: file
+      SEATA_PORT: 8091
 
 networks:
   default:
