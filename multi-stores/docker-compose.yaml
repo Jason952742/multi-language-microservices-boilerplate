@@ -1,103 +1,115 @@
 version: "3.8"
 
 services:
-  # krakend
-  krakend-server:
-    container_name: krakend-server
-    image: devopsfaith/krakend:latest
+  # postgres
+  postgres:
+    container_name: postgres
+    image: postgres:latest
     restart: always
     ports:
-      - "1234:1234"
-      - "8080:8080"
-      - "8090:8090"
-    volumes:
-      - ./krakend:/etc/krakend
-    command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
-    depends_on:
-      - jaeger
-
-  # jaeger
-  jaeger:
-    container_name: jaeger
-    image: jaegertracing/all-in-one:1
-    restart: always
-    ports:
-      - "16686:16686"
-      - "14268:14268"
-
-  # keycloak
-  keycloak-db:
-    container_name: keycloak-db
-    image: mysql:8
-    restart: always
-    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-    ports:
-      - "3307:3307"
-    env_file:
-      - ./env/keycloak.env
-
-  keycloak-server:
-    container_name: keycloak-server
-    image: quay.io/keycloak/keycloak:22.0.5
-    restart: always
-    ports:
-      - "8443:8443"
-    env_file:
-      - ./env/keycloak.env
+      - "5432:5432"
     environment:
-      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
-      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgresql
     volumes:
-      - ./keycloak/app:/etc/x509/https # map certificates to container
-    depends_on:
-      - keycloak-db
-    command: [ 'start --hostname localhost' ]
+      - ./postgres/pg_data:/var/lib/postgresql/data/
 
-  # nacos
-  nacos-db:
-    container_name: nacos-db
-    image: mysql:8
-    restart: always
-    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-    ports:
-      - "3308:3308"
-    env_file:
-      - ./env/nacos.env
-    volumes:
-      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      interval: 5s
-      timeout: 10s
-      retries: 10
-
-  nacos-server:
-    image: nacos/nacos-server:v2.2.3-slim
-    container_name: nacos-server
+  adminer:
+    image: adminer
+    container_name: postgres_adminer
     restart: always
     ports:
-      - "8848:8848"
-      - "9848:9848"
-    env_file:
-      - ./env/nacos.env
-    volumes:
-      - ./nacos/standalone-logs/:/home/nacos/logs
-    depends_on:
-      nacos-db:
-        condition: service_healthy
+      - "4030:8080"
 
-  # seata
-  seata-server:
-    container_name: seata-server
-    image: seataio/seata-server:2.0.0-slim
-    hostname: seata-server
+  # neo4j
+  neo4j:
+    container_name: neo4j
+    image: neo4j:latest
+    restart: always
     ports:
-      - "7091:7091"
-      - "8091:8091"
-    env_file:
-      - ./env/seata.env
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: neo4j/Neo4jPasswd
+      # Raise memory limits
+      NEO4J_dbms_memory_pagecache_size: 1G
+      NEO4J_dbms.memory.heap.initial_size: 1G
+      NEO4J_dbms_memory_heap_max__size: 1G
+    volumes:
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
+      - ./neo4j/import:/import
+      - ./neo4j/script:/script
+
+  # redis
+  dragonfly:
+    container_name: dragonfly
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    restart: always
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"
+    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+    # `host` mode is NOT currently supported in Swarm Mode.
+    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+    network_mode: "host"
+    volumes:
+      - ./dragonfly/data:/data
+#
+#  # cassandra
+#  scylladb:
+#    container_name: scylladb
+#    image: scylladb
+#    restart: always
+#    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+#    ports:
+#      - "3308:3308"
+#    env_file:
+#      - ./env/nacos.env
+#    volumes:
+#      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
+#    healthcheck:
+#      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+#      interval: 5s
+#      timeout: 10s
+#      retries: 10
+#
+#  # elasticsearch
+#  manticoresearch:
+#    container_name: manticoresearch
+#    image: manticoresearch
+#    hostname: seata-server
+#    ports:
+#      - "7091:7091"
+#      - "8091:8091"
+#    env_file:
+#      - ./env/seata.env
+#
+#  # mongodb
+#  mongodb:
+#    container_name: mongodb
+#    image: mongodb
+#    hostname: seata-server
+#    ports:
+#      - "7091:7091"
+#      - "8091:8091"
+#    env_file:
+#      - ./env/seata.env
+#
+#  # nats
+#  seata-server:
+#    container_name: seata-server
+#    image: manticoresearch
+#    hostname: seata-server
+#    ports:
+#      - "7091:7091"
+#      - "8091:8091"
+#    env_file:
+#      - ./env/seata.env
 
 networks:
   default:
-    name:  multi-lang
+    name: multi-lang
     external: true

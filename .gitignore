@@ -58,6 +58,11 @@ nb-configuration.xml
 .env
 /multi-servers/keycloak/db
 /multi-servers/nacos/standalone-logs
+/multi-stores/postgres/pg_data
+/multi-stores/neo4j/data
+/multi-stores/neo4j/logs
+/multi-stores/dragonfly/data
+
 
 # Plugin directory
 /.quarkus/cli/plugins/

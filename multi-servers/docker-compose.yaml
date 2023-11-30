@@ -99,5 +99,5 @@ services:
 
 networks:
   default:
-    name: hello-network
+    name: multi-lang
     external: true
