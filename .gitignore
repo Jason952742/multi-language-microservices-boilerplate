@@ -64,7 +64,8 @@ nb-configuration.xml
 /multi-stores/dragonfly/data
 /multi-stores/scylla/data
 /multi-stores/mongo/data
-
+/multi-stores/elk/elasticsearch
+!/multi-stores/elk/elasticsearch/config
 
 # Plugin directory
 /.quarkus/cli/plugins/
