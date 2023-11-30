@@ -64,7 +64,11 @@ nb-configuration.xml
 /multi-stores/dragonfly/data
 /multi-stores/scylla/data
 /multi-stores/mongo/data
-#/multi-stores/elk/elasticsearch
+/multi-stores/elk/elasticsearch/indices
+/multi-stores/elk/elasticsearch/_state
+/multi-stores/elk/elasticsearch/snapshot_cache
+/multi-stores/elk/elasticsearch/node.lock
+/multi-stores/elk/elasticsearch/nodes
 !/multi-stores/elk/elasticsearch/config
 
 # Plugin directory
