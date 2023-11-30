@@ -55,17 +55,16 @@ nb-configuration.xml
 *.rej
 
 # Local environment
-.env
-/multi-servers/keycloak/db
-/multi-servers/nacos/standalone-logs
-/multi-stores/postgres/pg_data
-/multi-stores/neo4j/data
-/multi-stores/neo4j/logs
-/multi-stores/dragonfly/data
-/multi-stores/scylla/data
-/multi-stores/mongo/data
-/multi-stores/elk/elasticsearch
-!/multi-stores/elk/elasticsearch/config
+/multi-infra/keycloak/db
+/multi-infra/nacos/standalone-logs
+/multi-infra/postgres/pg_data
+/multi-infra/neo4j/data
+/multi-infra/neo4j/logs
+/multi-infra/dragonfly/data
+/multi-infra/scylla/data
+/multi-infra/mongo/data
+/multi-infra/elk/elasticsearch
+!/multi-infra/elk/elasticsearch/config
 
 # Plugin directory
 /.quarkus/cli/plugins/

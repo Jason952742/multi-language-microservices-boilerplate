@@ -1,11 +1,117 @@
 version: "3.8"
 
 services:
+
+  # krakend
+  krakend-server:
+    container_name: krakend-server
+    image: devopsfaith/krakend:latest
+#    restart: always
+    ports:
+      - "1234:1234"
+      - "8080:8080"
+      - "8090:8090"
+    volumes:
+      - ./krakend:/etc/krakend
+    command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
+    depends_on:
+      - jaeger
+
+  # jaeger
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:1
+#    restart: always
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+
+  # keycloak
+  keycloak-db:
+    container_name: keycloak-db
+    image: mysql:8
+#    restart: always
+    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+    ports:
+      - "3307:3307"
+    env_file:
+      - ./.env
+    environment:
+      MYSQL_DATABASE: keycloak
+      MYSQL_PORT: 3307
+
+  keycloak-server:
+    container_name: keycloak-server
+    image: quay.io/keycloak/keycloak:22.0.5
+#    restart: always
+    ports:
+      - "8443:8443"
+    env_file:
+      - ./.env
+    environment:
+      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
+    volumes:
+      - ./keycloak/app:/etc/x509/https # map certificates to container
+    depends_on:
+      - keycloak-db
+    command: [ 'start --hostname localhost' ]
+
+  # nacos
+  nacos-db:
+    container_name: nacos-db
+    image: mysql:8
+#    restart: always
+    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+    ports:
+      - "3308:3308"
+    env_file:
+      - ./.env
+    environment:
+      MYSQL_DATABASE: nacos
+      MYSQL_PORT: 3308
+    volumes:
+      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+
+  nacos-server:
+    image: nacos/nacos-server:v2.2.3-slim
+    container_name: nacos-server
+#    restart: always
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    env_file:
+      - ./.env
+    volumes:
+      - ./nacos/standalone-logs/:/home/nacos/logs
+    depends_on:
+      nacos-db:
+        condition: service_healthy
+
+  # seata
+  seata-server:
+    container_name: seata-server
+    image: seataio/seata-server:2.0.0-slim
+    hostname: seata-server
+    ports:
+      - "7091:7091"
+      - "8091:8091"
+    env_file:
+      - ./.env
+
+  # Database and search
+  # Storage for microservices business data
+
   # postgres
   postgres:
     container_name: postgres
     image: postgres:latest
-    restart: always
+#    restart: always
     ports:
       - "5432:5432"
     environment:
@@ -18,7 +124,7 @@ services:
   adminer:
     image: adminer
     container_name: postgres_adminer
-    restart: always
+#    restart: always
     ports:
       - "4030:8080"
 
@@ -26,7 +132,7 @@ services:
   neo4j:
     container_name: neo4j
     image: neo4j:latest
-    restart: always
+#    restart: always
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -46,7 +152,7 @@ services:
   dragonfly:
     container_name: dragonfly
     image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
-    restart: always
+#    restart: always
     ulimits:
       memlock: -1
     ports:
@@ -62,7 +168,7 @@ services:
   scylla:
     container_name: scylla
     image: scylladb/scylla
-    restart: always
+#    restart: always
     ports:
       - "7100:7000"
       - "7101:7001"
@@ -91,7 +197,7 @@ services:
   nats:
     container_name: nats
     image: nats:latest
-    restart: always
+#    restart: always
     ports:
       - "4222:4222"
       - "8222:8222"
@@ -126,7 +232,7 @@ services:
       - ./elk/setup/lib.sh:/lib.sh:ro,Z
       - ./elk/setup/roles:/roles:ro,Z
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
@@ -152,7 +258,7 @@ services:
       - "9200:9200"
       - "9300:9300"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       node.name: elasticsearch
       ES_JAVA_OPTS: -Xms512m -Xmx512m
@@ -180,7 +286,7 @@ services:
       - "50000:50000/udp"
       - "9600:9600"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       LS_JAVA_OPTS: -Xms256m -Xmx256m
       LOGSTASH_INTERNAL_PASSWORD: ${LOGSTASH_INTERNAL_PASSWORD:-}
@@ -199,7 +305,7 @@ services:
     ports:
       - "5601:5601"
     env_file:
-      - ./env/elk.env
+      - ./.env
     environment:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
     depends_on:
