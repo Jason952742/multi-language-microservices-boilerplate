@@ -75,29 +75,17 @@ services:
       SCYLLA_PASSWORD: scyllapassword
     volumes:
       - ./scylla/data/:/var/lib/scylla
-#
-#  # elasticsearch
-#  manticoresearch:
-#    container_name: manticoresearch
-#    image: manticoresearch
-#    hostname: seata-server
-#    ports:
-#      - "7091:7091"
-#      - "8091:8091"
-#    env_file:
-#      - ./env/seata.env
-#
-#  # mongodb
-#  mongodb:
-#    container_name: mongodb
-#    image: mongodb
-#    hostname: seata-server
-#    ports:
-#      - "7091:7091"
-#      - "8091:8091"
-#    env_file:
-#      - ./env/seata.env
-#
+
+  # mongodb
+  mongodb:
+    container_name: mongodb
+    image: mongodb/mongodb-community-server:6.0-ubuntu2204
+    hostname: seata-server
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo/data/:/data/db
+
 #  # nats
 #  seata-server:
 #    container_name: seata-server
