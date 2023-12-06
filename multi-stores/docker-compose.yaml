@@ -31,6 +31,7 @@ services:
     restart: always
     ports:
       - "7474:7474"
+      - "7473:7473"
       - "7687:7687"
     env_file:
       - ./.env
