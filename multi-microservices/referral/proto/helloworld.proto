@@ -4,7 +4,7 @@ option java_multiple_files = true;
 option java_package = "io.grpc.examples.hello_world";
 option java_outer_classname = "HelloWorldProto";
 
-package hello_world;
+package helloworld;
 
 // The greeting service definition.
 service Greeter {

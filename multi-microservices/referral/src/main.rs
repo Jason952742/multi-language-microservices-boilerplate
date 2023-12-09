@@ -1,5 +1,7 @@
 use std::env;
 use tonic::{transport::Server};
+use crate::service::echo_service::echo::echo_server::EchoServer;
+use crate::service::echo_service::MyEcho;
 use crate::service::health_service::HealthIndicator;
 use crate::service::hello_service::MyGreeter;
 use crate::service::hello_service::hello_world::greeter_server::GreeterServer;
@@ -30,6 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("MyGreeter disabled");
         None
     };
+    let echo = EchoServer::new(MyEcho::default());
 
     println!("HealthServer + GreeterServer listening on {}", addr);
 
@@ -37,6 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(health_indicator)
+        .add_service(echo)
         .add_optional_service(optional_service)
         .serve(addr)
         .await?;

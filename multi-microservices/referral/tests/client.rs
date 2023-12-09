@@ -5,7 +5,11 @@ use hello_world::HelloRequest;
 use tonic::transport::Channel;
 
 pub mod hello_world {
-    tonic::include_proto!("hello_world");
+    tonic::include_proto!("helloworld");
+}
+
+pub mod echo {
+    tonic::include_proto!("unaryecho");
 }
 
 #[tokio::main]

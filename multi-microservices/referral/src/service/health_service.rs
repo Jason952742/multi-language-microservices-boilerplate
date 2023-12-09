@@ -4,7 +4,7 @@ use crate::service::hello_service::hello_world::greeter_server::GreeterServer;
 use crate::service::hello_service::MyGreeter;
 
 pub mod hello_world {
-    tonic::include_proto!("hello_world");
+    tonic::include_proto!("helloworld");
 }
 
 #[derive(Default)]

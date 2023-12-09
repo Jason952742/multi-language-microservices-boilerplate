@@ -1,11 +1,12 @@
 fn main() {
 
-    let hello_world = "./proto/hello_world.proto";
+    let helloworld = "./proto/helloworld.proto";
+    let unaryecho = "./proto/unaryecho.proto";
 
     tonic_build::configure()
         .build_server(true)
-        .compile(&[hello_world], &[".", "proto"])
+        .compile(&[helloworld, unaryecho], &[".", "proto"])
         .unwrap_or_else(|e| panic!("protobuf compile error: {:?}", e));
 
-    println!("cargo:rerun-if-changed={:?}", [hello_world]);
+    println!("cargo:rerun-if-changed={:?}", [helloworld, unaryecho]);
 }
