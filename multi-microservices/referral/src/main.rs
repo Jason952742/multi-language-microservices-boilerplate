@@ -1,3 +1,6 @@
+#![forbid(unsafe_code)]
+#![deny(clippy::all)]
+
 use std::env;
 use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
@@ -9,7 +12,7 @@ use crate::service::hello_service::hello_world::greeter_server::GreeterServer;
 mod service;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn start() -> Result<(), Box<dyn std::error::Error>> {
     // env
     env::set_var("RUST_LOG", "debug");
     dotenvy::dotenv().ok();
@@ -17,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).with_test_writer().init();
 
     // port
-    let addrs = ["0.0.0.0:50051", "0.0.0.0:50052"];
+    let addrs = ["0.0.0.0:50051", "0.0.0.0:50052", "0.0.0.0:50053"];
 
     let (tx, mut rx) = mpsc::unbounded_channel();
 
@@ -66,6 +69,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+pub fn main() {
+    let result = start();
+    if let Some(err) = result.err() {
+        println!("Error: {}", err);
+    }
+}
+
 /// This function will get called on each inbound request, if a `Status`
 /// is returned, it will cancel the request and return that status to the
 /// client.
@@ -85,7 +95,7 @@ struct MyExtension {
 }
 
 fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {
-    let token: MetadataValue<_> = "Bearer eae3325asdfasfasd".parse().unwrap();
+    let token: MetadataValue<_> = "Bearer JaXmn2586KvTz".parse().unwrap();
 
     match req.metadata().get("authorization") {
         Some(t) if token == t => Ok(req),

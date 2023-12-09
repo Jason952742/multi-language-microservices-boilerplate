@@ -109,7 +109,7 @@ async fn using_function_pointer_interceptro() -> Result<(), Box<dyn std::error::
 
 #[tracing::instrument]
 async fn echo_hello(timeout_channel: Timeout<Channel>) -> Result<(), Box<dyn std::error::Error>> {
-    let token: MetadataValue<_> = "Bearer eae3325asdfasfasd".parse()?;
+    let token: MetadataValue<_> = "Bearer JaXmn2586KvTz".parse()?;
 
     let mut echo_client = EchoClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
         req.metadata_mut().insert("authorization", token.clone());
