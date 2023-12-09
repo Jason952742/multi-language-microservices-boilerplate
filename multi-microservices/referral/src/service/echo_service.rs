@@ -1,21 +1,24 @@
 use tonic::{Request, Response, Status};
+use std::net::SocketAddr;
 
-pub mod echo {
+pub mod pb {
     tonic::include_proto!("unaryecho");
 }
 
-use echo::{echo_server::{Echo}, EchoRequest, EchoResponse};
+use pb::{echo_server::{Echo}, EchoRequest, EchoResponse};
 
-#[derive(Default)]
-pub struct MyEcho;
+type EchoResult<T> = Result<Response<T>, Status>;
+
+#[derive(Debug)]
+pub struct EchoServer {
+    pub addr: SocketAddr,
+}
 
 #[tonic::async_trait]
-impl Echo for MyEcho {
-    async fn unary_echo(
-        &self,
-        request: Request<EchoRequest>,
-    ) -> Result<Response<EchoResponse>, Status> {
-        let message = request.into_inner().message;
+impl Echo for EchoServer {
+    async fn unary_echo(&self, request: Request<EchoRequest>) -> EchoResult<EchoResponse> {
+        let message = format!("{} (from {})", request.into_inner().message, self.addr);
+
         Ok(Response::new(EchoResponse { message }))
     }
 }

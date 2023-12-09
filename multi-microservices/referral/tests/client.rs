@@ -17,10 +17,15 @@ pub mod echo {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::FmtSubscriber::builder()
-        .with_max_level(tracing::Level::DEBUG)
+        .with_max_level(tracing::Level::INFO)
         .init();
 
-    let channel = Channel::from_static("http://127.0.0.1:50051").connect().await?;
+    let endpoints = ["http://127.0.0.1:50051", "http://127.0.0.1:50052"]
+        .iter()
+        .map(|a| Channel::from_static(a));
+
+    // let channel = Channel::from_static("http://127.0.0.1:50051").connect().await?;
+    let channel = Channel::balance_list(endpoints);
 
     // test timeout
     let timeout_channel = Timeout::new(channel, Duration::from_millis(1500));
