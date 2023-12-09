@@ -4,10 +4,7 @@ pub mod echo {
     tonic::include_proto!("unaryecho");
 }
 
-use echo::{
-    echo_server::{Echo, EchoServer},
-    EchoRequest, EchoResponse,
-};
+use echo::{echo_server::{Echo}, EchoRequest, EchoResponse};
 
 #[derive(Default)]
 pub struct MyEcho;

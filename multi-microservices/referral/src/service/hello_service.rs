@@ -1,5 +1,3 @@
-use std::time::Duration;
-use tokio::time::sleep;
 use tonic::{Request, Response, Status};
 
 use hello_world::greeter_server::{Greeter};
