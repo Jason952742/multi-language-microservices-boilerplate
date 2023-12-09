@@ -10,6 +10,7 @@ use tonic::{
     transport::{Channel, Endpoint},
     Request, Status,
 };
+use tonic::metadata::MetadataValue;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
@@ -29,7 +30,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .iter()
         .map(|a| Channel::from_static(a));
 
-    // let channel = Channel::from_static("http://127.0.0.1:50051").connect().await?;
     let channel = Channel::balance_list(endpoints);
 
     // test timeout
@@ -109,7 +109,12 @@ async fn using_function_pointer_interceptro() -> Result<(), Box<dyn std::error::
 
 #[tracing::instrument]
 async fn echo_hello(timeout_channel: Timeout<Channel>) -> Result<(), Box<dyn std::error::Error>> {
-    let mut echo_client = EchoClient::new(timeout_channel);
+    let token: MetadataValue<_> = "Bearer eae3325asdfasfasd".parse()?;
+
+    let mut echo_client = EchoClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
+        req.metadata_mut().insert("authorization", token.clone());
+        Ok(req)
+    });
 
     let request = tonic::Request::new(EchoRequest {
         message: "hello".into(),

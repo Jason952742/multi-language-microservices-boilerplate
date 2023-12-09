@@ -1,6 +1,6 @@
 use std::env;
 use tokio::sync::mpsc;
-use tonic::{transport::Server, Request, Status};
+use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use crate::service::echo_service::{EchoServer, pb};
 use crate::service::health_service::HealthIndicator;
 use crate::service::hello_service::MyGreeter;
@@ -39,13 +39,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
 
         let echo = EchoServer { addr };
+        let echo_service = pb::echo_server::EchoServer::with_interceptor(echo, check_auth);
+
         println!("HealthServer + GreeterServer listening on {}", addr);
 
         tracing::info!(message = "Starting server.", %addr);
 
         let serve = Server::builder()
             .add_service(health_indicator)
-            .add_service(pb::echo_server::EchoServer::new(echo))
+            .add_service(echo_service)
             .add_optional_service(optional_service)
             .serve(addr);
 
@@ -80,4 +82,13 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, Status> {
 
 struct MyExtension {
     some_piece_of_data: String,
+}
+
+fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {
+    let token: MetadataValue<_> = "Bearer eae3325asdfasfasd".parse().unwrap();
+
+    match req.metadata().get("authorization") {
+        Some(t) if token == t => Ok(req),
+        _ => Err(Status::unauthenticated("No valid auth token")),
+    }
 }
