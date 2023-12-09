@@ -1,3 +1,5 @@
+use std::time::Duration;
+use tokio::time::sleep;
 use tonic::{Request, Response, Status};
 
 use hello_world::greeter_server::{Greeter};
@@ -19,6 +21,9 @@ impl Greeter for MyGreeter {
     ) -> Result<Response<HelloReply>, Status> {
         tracing::info!("received request");
         println!("Got a request from {:?}", request.remote_addr());
+
+        // test timeout
+        // sleep(Duration::from_millis(5000)).await;
 
         let reply = HelloReply {
             message: format!("Hello {}!", request.into_inner().name),
