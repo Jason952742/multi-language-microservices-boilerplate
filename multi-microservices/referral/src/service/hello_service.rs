@@ -7,20 +7,25 @@ pub mod hello_world {
     tonic::include_proto!("hello_world");
 }
 
-#[derive(Default)]
+#[derive(Debug, Default)]
 pub struct MyGreeter {}
 
 #[tonic::async_trait]
 impl Greeter for MyGreeter {
+    #[tracing::instrument]
     async fn say_hello(
         &self,
         request: Request<HelloRequest>,
     ) -> Result<Response<HelloReply>, Status> {
+        tracing::info!("received request");
         println!("Got a request from {:?}", request.remote_addr());
 
         let reply = HelloReply {
             message: format!("Hello {}!", request.into_inner().name),
         };
+
+        tracing::debug!("sending response");
+
         Ok(Response::new(reply))
     }
 }

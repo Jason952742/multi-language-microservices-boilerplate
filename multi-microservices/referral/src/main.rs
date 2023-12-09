@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env::set_var("RUST_LOG", "debug");
     dotenvy::dotenv().ok();
 
-    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).with_test_writer().init();
+    tracing_subscriber::fmt().with_max_level(tracing::Level::DEBUG).with_test_writer().init();
 
     // port
     let port = env::var("PORT").expect("PORT must be set");
@@ -23,6 +23,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let greeter = MyGreeter::default();
 
     println!("HealthServer + GreeterServer listening on {}", addr);
+
+    tracing::info!(message = "Starting server.", %addr);
 
     Server::builder()
         .add_service(health_indicator)
