@@ -1,8 +1,8 @@
-use referral::greeter_client::GreeterClient;
-use referral::HelloRequest;
+use hello_world::greeter_client::GreeterClient;
+use hello_world::HelloRequest;
 
-pub mod referral {
-    tonic::include_proto!("referral");
+pub mod hello_world {
+    tonic::include_proto!("hello_world");
 }
 
 #[tokio::main]

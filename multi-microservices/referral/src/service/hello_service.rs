@@ -1,10 +1,10 @@
-use tonic::{transport::Server, Request, Response, Status};
+use tonic::{Request, Response, Status};
 
-use referral::greeter_server::{Greeter, GreeterServer};
-use referral::{HelloReply, HelloRequest};
+use hello_world::greeter_server::{Greeter};
+use hello_world::{HelloReply, HelloRequest};
 
-pub mod referral {
-    tonic::include_proto!("referral");
+pub mod hello_world {
+    tonic::include_proto!("hello_world");
 }
 
 #[derive(Default)]
@@ -18,7 +18,7 @@ impl Greeter for MyGreeter {
     ) -> Result<Response<HelloReply>, Status> {
         println!("Got a request from {:?}", request.remote_addr());
 
-        let reply = referral::HelloReply {
+        let reply = HelloReply {
             message: format!("Hello {}!", request.into_inner().name),
         };
         Ok(Response::new(reply))
