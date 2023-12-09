@@ -1,6 +1,6 @@
 use std::env;
 use tokio::sync::mpsc;
-use tonic::{transport::Server};
+use tonic::{transport::Server, Request, Status};
 use crate::service::echo_service::{EchoServer, pb};
 use crate::service::health_service::HealthIndicator;
 use crate::service::hello_service::MyGreeter;
@@ -30,7 +30,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let enabled = env::var("ENABLED_HELLO").expect("ENABLED_HELLO must be set");
         let optional_service = if enabled == "true" {
             println!("MyGreeter enabled");
-            Some(GreeterServer::new(greeter))
+            // See examples/src/interceptor/client.rs for an example of how to create a
+            // named interceptor that can be returned from functions or stored in structs.
+            Some(GreeterServer::with_interceptor(greeter, intercept))
         } else {
             println!("MyGreeter disabled");
             None
@@ -60,4 +62,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     rx.recv().await;
 
     Ok(())
+}
+
+/// This function will get called on each inbound request, if a `Status`
+/// is returned, it will cancel the request and return that status to the
+/// client.
+fn intercept(mut req: Request<()>) -> Result<Request<()>, Status> {
+    println!("Intercepting request: {:?}", req);
+
+    // Set an extension that can be retrieved by `say_hello`
+    req.extensions_mut().insert(MyExtension {
+        some_piece_of_data: "foo".to_string(),
+    });
+
+    Ok(req)
+}
+
+struct MyExtension {
+    some_piece_of_data: String,
 }
