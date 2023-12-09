@@ -22,13 +22,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let greeter = MyGreeter::default();
 
+    let enabled = env::var("ENABLED_HELLO").expect("ENABLED_HELLO must be set");
+    let optional_service = if enabled == "true" {
+        println!("MyGreeter enabled");
+        Some(GreeterServer::new(greeter))
+    } else {
+        println!("MyGreeter disabled");
+        None
+    };
+
     println!("HealthServer + GreeterServer listening on {}", addr);
 
     tracing::info!(message = "Starting server.", %addr);
 
     Server::builder()
         .add_service(health_indicator)
-        .add_service(GreeterServer::new(greeter))
+        .add_optional_service(optional_service)
         .serve(addr)
         .await?;
 
