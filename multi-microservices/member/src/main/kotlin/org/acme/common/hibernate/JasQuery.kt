@@ -6,15 +6,15 @@ import org.acme.common.resource.JasIdentity
 data class JasQuery(
     val filters: List<JasFilter>,
     val name: String?,
-    val order_by: String?,
-    val order_asc: Boolean?,
+    val orderBy: String?,
+    val orderAsc: Boolean?,
     val limit: Int,
     val offset: Int
 ) {
 
     fun sort(): Sort = Sort.by(
-        this.order_by ?: "updated",
-        order_asc?.let { if (it) Sort.Direction.Ascending else Sort.Direction.Descending } ?: Sort.Direction.Ascending
+        this.orderBy ?: "updated",
+        orderAsc?.let { if (it) Sort.Direction.Ascending else Sort.Direction.Descending } ?: Sort.Direction.Ascending
     )
 
     fun last() = this.offset + this.limit - 1

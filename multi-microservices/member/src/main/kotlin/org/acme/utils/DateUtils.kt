@@ -11,7 +11,7 @@ import java.time.temporal.ChronoUnit
 object DateUtils {
 
     ///////////////////////////////////
-    // 格式
+    // format
     private val isoFmt = DateTimeFormatter.ISO_LOCAL_DATE_TIME // "yyyy-MM-ddTHH:mm:ss"
     private val isoZonedFmt = DateTimeFormatter.ISO_ZONED_DATE_TIME // 'yyyy-MM-ddTHH:mm:ss+01:00[Europe/Paris]'
     private val dateFmt = DateTimeFormatter.ofPattern("yyyy-MM-dd") // ISO_LOCAL_DATE

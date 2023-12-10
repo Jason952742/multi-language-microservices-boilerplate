@@ -19,18 +19,18 @@ abstract class JasEntityBase {
 
     @Column(updatable = false)
     @JsonIgnore
-    var org_id: UUID = JasIdentity.current?.org_id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+    var orgId: UUID = JasIdentity.current?.orgId ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
 
     @Column(updatable = false)
     @JsonIgnore
-    var creator_id: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+    var creatorId: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
 
     @Column(updatable = false)
-    var creator_name: String = JasIdentity.current?.name ?: "system"
+    var creatorName: String = JasIdentity.current?.name ?: "system"
 
     @JsonIgnore
-    var last_modifier_id: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
-    var last_modifier_name: String = JasIdentity.current?.name ?: "system"
+    var lastModifierId: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+    var lastModifierName: String = JasIdentity.current?.name ?: "system"
 
     @CreationTimestamp
     @Column(updatable = false)

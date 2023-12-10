@@ -51,6 +51,7 @@ dependencies {
 
     implementation("io.quarkus:quarkus-keycloak-authorization:2.16.4.Final")
     implementation("io.quarkus:quarkus-keycloak-admin-client-reactive:2.16.4.Final")
+    implementation("io.quarkus:quarkus-oidc:2.16.4.Final")
 
     implementation("io.quarkus:quarkus-websockets:2.16.4.Final")
     implementation("io.quarkus:quarkus-websockets-client:2.16.4.Final")
@@ -68,6 +69,7 @@ dependencies {
     testImplementation("io.quarkus:quarkus-junit5:2.16.4.Final")
     testImplementation("io.rest-assured:rest-assured:5.3.0")
     testImplementation("io.rest-assured:kotlin-extensions:5.3.0")
+    testImplementation("io.quarkus:quarkus-test-keycloak-server:2.16.4.Final")
 }
 
 group = "org.acme"
