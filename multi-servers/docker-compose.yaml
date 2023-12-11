@@ -51,6 +51,12 @@ services:
     env_file:
       - ./.env
     environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HOSTNAME: ${KC_HOSTNAME}
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_DB: ${KC_DB}
       KC_DB_URL: jdbc:${KC_DB}://keycloak-db:${KC_MYSQL_PORT}/${KC_MYSQL_DATABASE}
       KC_DB_USERNAME: ${KC_MYSQL_USER}
       KC_DB_PASSWORD: ${KC_MYSQL_PASSWORD}
