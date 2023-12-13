@@ -18,7 +18,7 @@ impl Default for ConsulOption {
     }
 }
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize, Debug)]
 pub struct Registration {
     pub name: String,
     pub id: String,
@@ -28,7 +28,7 @@ pub struct Registration {
     pub check: Check
 }
 
-#[derive(Default, Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize, Debug)]
 pub struct Check {
     pub grpc: String,
     pub interval: String,
@@ -44,8 +44,7 @@ impl Registration {
             address: addr.to_string(),
             port,
             check: Check {
-                // grpc: format!("grpc://localhost:{}", port),
-                grpc: "127.0.0.1:50052".to_string(),
+                grpc: format!("192.168.0.147:{}", port),
                 interval: "10s".to_string(),
                 timeout: "5s".to_string(),
             },
