@@ -23,7 +23,14 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
     env::set_var("RUST_LOG", "debug");
     dotenvy::dotenv().ok();
 
-    tracing_subscriber::fmt().with_max_level(tracing::Level::INFO).with_test_writer().init();
+    // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
+    // will be written to stdout.
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_thread_names(true)
+        .with_thread_ids(true)
+        .with_test_writer()
+        .init();
 
     // port
     let addrs = ["0.0.0.0:50051", "0.0.0.0:50052", "0.0.0.0:50053"];
