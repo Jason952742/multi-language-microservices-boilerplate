@@ -6,14 +6,14 @@ use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use crate::config::postgres::PgPool;
 use crate::orm::migration::{Migrator, MigratorTrait};
-use crate::service::echo_service::{EchoServer, pb};
-use crate::service::health_service::HealthIndicator;
-use crate::service::hello_service::MyGreeter;
-use crate::service::hello_service::hello_world::greeter_server::GreeterServer;
-use crate::service::post_service::MyServer;
-use crate::service::post_service::post_mod::blogpost_server::BlogpostServer;
+use crate::services::echo_service::{EchoServer, pb};
+use crate::services::health_service::HealthIndicator;
+use crate::services::hello_service::MyGreeter;
+use crate::services::hello_service::hello_world::greeter_server::GreeterServer;
+use crate::services::post_service::MyServer;
+use crate::services::post_service::post_mod::blogpost_server::BlogpostServer;
 
-mod service;
+mod services;
 mod orm;
 pub mod config;
 

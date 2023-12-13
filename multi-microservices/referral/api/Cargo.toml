@@ -1,0 +1,116 @@
+[package]
+name = "api"
+publish = false
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "./src/lib.rs"
+
+[features]
+gcp = ["dep:prost-types", "tonic/tls"]
+routeguide = ["dep:async-stream", "tokio-stream", "dep:rand", "dep:serde", "dep:serde_json"]
+reflection = ["dep:tonic-reflection"]
+autoreload = ["tokio-stream/net", "dep:listenfd"]
+health = ["dep:tonic-health"]
+grpc-web = ["dep:tonic-web", "dep:bytes", "dep:http", "dep:hyper", "dep:tracing-subscriber", "dep:tower"]
+tracing = ["dep:tracing", "dep:tracing-subscriber"]
+hyper-warp = ["dep:either", "dep:tower", "dep:hyper", "dep:http", "dep:http-body", "dep:warp"]
+hyper-warp-multiplex = ["hyper-warp"]
+uds = ["tokio-stream/net", "dep:tower", "dep:hyper"]
+streaming = ["tokio-stream", "dep:h2"]
+mock = ["tokio-stream", "dep:tower"]
+tower = ["dep:hyper", "dep:tower", "dep:http"]
+json-codec = ["dep:serde", "dep:serde_json", "dep:bytes"]
+compression = ["tonic/gzip"]
+tls = ["tonic/tls"]
+tls-rustls = ["dep:hyper", "dep:hyper-rustls", "dep:tower", "tower-http/util", "tower-http/add-extension", "dep:rustls-pemfile", "dep:tokio-rustls"]
+dynamic-load-balance = ["dep:tower"]
+timeout = ["tokio/time", "dep:tower"]
+tls-client-auth = ["tonic/tls"]
+types = ["dep:tonic-types"]
+h2c = ["dep:hyper", "dep:tower", "dep:http"]
+cancellation = ["dep:tokio-util"]
+
+full = ["gcp", "routeguide", "reflection", "autoreload", "health", "grpc-web", "tracing", "hyper-warp", "hyper-warp-multiplex", "uds", "streaming", "mock", "tower", "json-codec", "compression", "tls", "tls-rustls", "dynamic-load-balance", "timeout", "tls-client-auth", "types", "cancellation", "h2c"]
+default = ["full"]
+
+[dependencies]
+tokio = { version = "1.35.0", features = ["full", "tracing", "macros", "rt-multi-thread", "sync", "time"] }
+tokio-util = { version = "0.7.10", features = ["full"], optional = true }
+tokio-stream = { version = "0.1.14", features = ["net"], optional = true }
+tokio-rustls = { version = "0.24.1", optional = true }
+
+tonic = { version = "0.10.2", features = ["gzip"] }
+tonic-web = { version = "0.10.2", optional = true }
+tonic-health = { version = "0.10.2", optional = true }
+tonic-reflection = { version = "0.10.2", optional = true }
+tonic-types = { version = "0.10.2", optional = true }
+
+tower = { version = "0.4.13", optional = true }
+rand = { version = "0.8.5", optional = true }
+
+either = { version = "1.9.0", optional = true }
+async-stream = { version = "0.3.5", optional = true }
+futures = { version = "0.3.29", default-features = false, features = ["thread-pool"] }
+async-trait = "0.1.74"
+once_cell = "1.19.0"
+async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
+
+bytes = { version = "1.5.0", optional = true }
+h2 = { version = "0.3.22", optional = true }
+chrono = "0.4.31"
+uuid = "1.6.1"
+dotenvy = "0.15.7"
+colored = "2.0.4"
+
+prost = "0.12.3"
+prost-derive = "0.12.3"
+prost-types = { version = "0.12.3", optional = true }
+serde = { version = "1.0.193", features = ["derive"], optional = true }
+serde_derive = { version = "1.0.193", optional = true }
+serde_json = { version = "1.0.108", optional = true }
+rust_decimal = "1.33.1"
+rust_decimal_macros = "1.33.1"
+strum = "0.25.0"
+strum_macros = "0.25.3"
+
+tracing = { version = "0.1.40", optional = true }
+tracing-subscriber = { version = "0.3.18", default-features = false, features = ["fmt", "ansi", "env-filter", "tracing-log"], optional = true }
+
+http = { version = "0.2.11", optional = true }
+http-body = { version = "0.4.6", optional = true }
+hyper = { version = "0.14.27", optional = true }
+hyper-rustls = { version = "0.24.2", features = ["http2"], optional = true }
+warp = { version = "0.3.6", default-features = false, optional = true }
+listenfd = { version = "1.0.1", optional = true }
+httparse = "1.8.0"
+httpdate = "1.0.3"
+rustls-pemfile = { version = "1.0.4", optional = true }
+tower-http = { version = "0.4.4", optional = true }
+
+redis = { version = "0.24.0", features = ["tokio-comp", "connection-manager"] }
+neo4rs = { version = "0.6.2" }
+async-nats = { version = "0.33.0" }
+scylla = { version = "0.9.0", features = ["ssl", "cloud"] }
+sea-orm = { version = "0.12.9", features = [
+    "debug-print",
+    "runtime-tokio-rustls",
+    "sqlx-mysql",
+    "sqlx-postgres",
+    "sqlx-sqlite",
+] }
+sea-orm-migration = { version = "0.12.6", features = [
+    # Enable following runtime and db backend features if you want to run migration via CLI
+    "runtime-tokio-rustls",
+    "sqlx-postgres",
+    "sqlx-mysql"
+] }
+
+reqwest = { version = "0.11.22", features = ["json"] }
+
+[dev-dependencies]
+tokio = { version = "1.35.0", features = ["macros", "rt"] }
+
+[build-dependencies]
+tonic-build = { version = "0.10.2", features = ["prost"] }
