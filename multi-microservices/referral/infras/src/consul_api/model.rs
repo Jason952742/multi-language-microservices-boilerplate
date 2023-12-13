@@ -7,6 +7,7 @@ pub struct ConsulOption {
     pub timeout_sec: u64,
     pub protocol: String,
 }
+
 impl Default for ConsulOption {
     fn default() -> Self {
         Self {
@@ -24,6 +25,14 @@ pub struct Registration {
     pub tags: Vec<String>,
     pub address: String,
     pub port: i32,
+    pub check: Check
+}
+
+#[derive(Default, Deserialize, Serialize)]
+pub struct Check {
+    pub grpc: String,
+    pub interval: String,
+    pub timeout: String,
 }
 
 impl Registration {
@@ -34,15 +43,25 @@ impl Registration {
             tags: tags.iter().map(|t| t.to_string()).collect(),
             address: addr.to_string(),
             port,
+            check: Check {
+                // grpc: format!("grpc://localhost:{}", port),
+                grpc: "127.0.0.1:50052".to_string(),
+                interval: "10s".to_string(),
+                timeout: "5s".to_string(),
+            },
         }
     }
+
     pub fn simple_with_tags(name: &str, tags: Vec<&str>, addr: &str, port: i32) -> Self {
-        Self::new(name, name, tags, addr, port)
+        let id: &str = &format!("{}-{}", name, port);
+        Self::new(name, id, tags, addr, port)
     }
+
     pub fn simple(name: &str, addr: &str, port: i32) -> Self {
         Self::simple_with_tags(name, vec![], addr, port)
     }
 }
+
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct Service {

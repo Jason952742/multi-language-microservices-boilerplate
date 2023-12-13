@@ -16,12 +16,14 @@ impl Consul {
             .build()?;
         Ok(Self { option, client })
     }
+
     fn api_url(&self, api_name: &str) -> String {
         format!(
             "{}://{}/v1/agent/{}",
             &self.option.protocol, &self.option.addr, api_name
         )
     }
+
     pub async fn register(&self, registration: &Registration) -> Result<(), reqwest::Error> {
         self.client
             .put(self.api_url("service/register"))
@@ -30,6 +32,7 @@ impl Consul {
             .await?;
         Ok(())
     }
+
     pub async fn deregister(&self, service_id: &str) -> Result<(), reqwest::Error> {
         let deregister_api = format!("service/deregister/{}", service_id);
         self.client
@@ -39,6 +42,7 @@ impl Consul {
             .await?;
         Ok(())
     }
+
     pub async fn services(&self) -> Result<Services, reqwest::Error> {
         let list: Services = self
             .client
@@ -49,6 +53,7 @@ impl Consul {
             .await?;
         Ok(list)
     }
+
     pub async fn get_service(&self, filter: &Filter) -> Result<Option<Service>, reqwest::Error> {
         let list = self.services().await?;
         for (_, s) in list {
@@ -67,6 +72,7 @@ impl Consul {
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[tokio::test]
     async fn test_list_services() {
         let opt = ConsulOption::default();
@@ -80,6 +86,7 @@ mod tests {
             println!("{:?}", srv);
         }
     }
+
     #[tokio::test]
     async fn test_register_service() {
         let opt = ConsulOption::default();
@@ -95,6 +102,7 @@ mod tests {
         let r = cs.register(&registration).await;
         assert!(r.is_ok());
     }
+
     #[tokio::test]
     async fn test_deregister_service() {
         let opt = ConsulOption::default();
@@ -105,6 +113,7 @@ mod tests {
         let r = cs.deregister("axum.rs").await;
         assert!(r.is_ok());
     }
+
     #[tokio::test]
     async fn test_get_services() {
         let opt = ConsulOption::default();

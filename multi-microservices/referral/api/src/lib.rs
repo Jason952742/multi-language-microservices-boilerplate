@@ -16,6 +16,8 @@ use crate::services::post_service::post_mod::blogpost_server::BlogpostServer;
 pub use crate::services::hello_service::hello_world;
 pub use crate::services::echo_service::pb;
 
+use infras::consul_api;
+
 mod services;
 mod orm;
 pub mod config;
@@ -41,7 +43,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
     let (tx, mut rx) = mpsc::unbounded_channel();
 
     for addr in &addrs {
-        let addr = addr.parse()?;
+        let saddr = addr.parse()?;
         let tx = tx.clone();
 
         let health_indicator = HealthIndicator::new().await;
@@ -57,7 +59,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
             None
         };
 
-        let echo = EchoServer { addr };
+        let echo = EchoServer { addr: saddr };
         let echo_service = pb::echo_server::EchoServer::with_interceptor(echo, check_auth);
 
         // establish database connection
@@ -75,7 +77,15 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
             .add_service(echo_service)
             .add_optional_service(optional_service)
             .add_service(post_service)
-            .serve(addr);
+            .serve(saddr);
+
+        // register consul service
+        let addrs: Vec<&str> = addr.split(":").collect();
+        let port: i32 = addrs[1].parse().unwrap();
+        let opt = consul_api::ConsulOption::default();
+        let cs = consul_api::Consul::new(opt).unwrap();
+        let reg = consul_api::Registration::simple(&format!("hello"), "127.0.0.1", port);
+        cs.register(&reg).await.unwrap();
 
         tokio::spawn(async move {
             if let Err(e) = serve.await {

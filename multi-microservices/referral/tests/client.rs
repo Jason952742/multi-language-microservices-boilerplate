@@ -1,4 +1,5 @@
 use std::time::Duration;
+use http::Uri;
 use tower::timeout::Timeout;
 use api::hello_world::greeter_client::GreeterClient;
 use api::hello_world::HelloRequest;
@@ -11,6 +12,7 @@ use tonic::{
 use tonic::metadata::MetadataValue;
 use api::pb::echo_client::EchoClient;
 use api::pb::EchoRequest;
+use infras::consul_api;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,11 +20,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let endpoints = ["http://127.0.0.1:50051", "http://127.0.0.1:50052"]
-        .iter()
-        .map(|a| Channel::from_static(a));
+    let srv_addr = discovery("referral-api").await?;
 
-    let channel = Channel::balance_list(endpoints);
+    let endpoint1 = Channel::builder(srv_addr.parse::<Uri>().unwrap());
+
+    let channel = Channel::balance_list(vec![endpoint1].into_iter());
 
     // test timeout
     let timeout_channel = Timeout::new(channel, Duration::from_millis(1500));
@@ -31,6 +33,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     echo_hello(timeout_channel).await?;
 
     Ok(())
+}
+
+async fn discovery(service_name: &str) -> Result<String, String> {
+    let opt = consul_api::ConsulOption::default();
+    let cs = consul_api::Consul::new(opt).unwrap();
+    let filter = consul_api::Filter::Service(service_name.into());
+    let srv = cs
+        .get_service(&filter)
+        .await
+        .map_err(|err| err.to_string())?;
+    if let Some(srv) = srv {
+        return Ok(format!("http://{}:{}", srv.address, srv.port));
+    }
+    Err("no service".to_string())
 }
 
 #[tracing::instrument]
