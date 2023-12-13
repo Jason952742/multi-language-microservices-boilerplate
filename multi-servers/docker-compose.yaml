@@ -69,60 +69,25 @@ services:
       - keycloak-db
     command: [ 'start --hostname localhost' ]
 
-  # nacos
-  nacos-db:
-    container_name: nacos-db
-    image: mysql:8
+  consul-server:
+    image: hashicorp/consul:latest
+    container_name: consul-server
     restart: always
-    command: [ "mysqld", "--port=3308", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-    ports:
-      - "3308:3308"
-    env_file:
-      - ./.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${NACOS_MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${NACOS_MYSQL_DATABASE}
-      MYSQL_USER: ${NACOS_MYSQL_USER}
-      MYSQL_PASSWORD: ${NACOS_MYSQL_PASSWORD}
-      MYSQL_PORT: ${NACOS_MYSQL_PORT}
-      LANG: ${NACOS_LANG}
     volumes:
-      - ./nacos/init.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
-      interval: 5s
-      timeout: 10s
-      retries: 10
+      - ./consul/server.json:/consul/config/server.json:ro
+    ports:
+      - "8500:8500"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
+    command: "agent"
 
-  nacos-server:
-    image: nacos/nacos-server:v2.2.3-slim
-    container_name: nacos-server
+  consul-client:
+    image: hashicorp/consul:latest
+    container_name: consul-client
     restart: always
-    ports:
-      - "8848:8848"
-      - "9848:9848"
-      - "9849:9849"
-    env_file:
-      - ./.env
-    environment:
-      MYSQL_SERVICE_DB_NAME: ${NACOS_MYSQL_DATABASE}
-      MYSQL_SERVICE_USER: ${NACOS_MYSQL_USER}
-      MYSQL_SERVICE_PASSWORD: ${NACOS_MYSQL_PASSWORD}
-      MYSQL_SERVICE_PORT: ${NACOS_MYSQL_PORT}
     volumes:
-      - ./nacos/standalone-logs/:/home/nacos/logs
-    depends_on:
-      nacos-db:
-        condition: service_healthy
-
-  etcd:
-    image: 'bitnami/etcd:latest'
-    environment:
-      - ALLOW_NONE_AUTHENTICATION=yes
-      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
-    ports:
-      - "2379:2379"
-      - "2380:2380"
+      - ./consul/client.json:/consul/config/client.json:ro
+    command: "agent"
 
   # seata
   seata-server:
