@@ -7,23 +7,22 @@ publish = false
 version = "0.1.0"
 
 [workspace]
-members = [".", "api"]
+members = [".", "api", "infras"]
 
 [features]
 health = ["dep:tonic-health"]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 tower = ["dep:hyper", "dep:tower", "dep:http"]
-json-codec = ["dep:serde", "dep:serde_json", "dep:bytes"]
 compression = ["tonic/gzip"]
-dynamic-load-balance = ["dep:tower"]
 timeout = ["tokio/time", "dep:tower"]
 types = ["dep:tonic-types"]
 
-full = [ "health",  "tracing",  "tower", "json-codec", "compression",  "dynamic-load-balance", "timeout",  "types"]
+full = [ "health",  "tracing",  "tower", "compression", "timeout",  "types"]
 default = ["full"]
 
 [dependencies]
 api = { path = "api" }
+infras = { path = "infras" }
 
 tokio = { version = "1.35.0", features = ["full", "tracing", "macros", "rt-multi-thread", "sync", "time"] }
 tokio-util = { version = "0.7.10", features = ["full"], optional = true }
