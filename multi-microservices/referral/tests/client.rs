@@ -20,7 +20,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let srv_addr = discovery("referral-api").await?;
+    let srv_addr = discovery("hello").await?;
 
     let endpoint1 = Channel::builder(srv_addr.parse::<Uri>().unwrap());
 

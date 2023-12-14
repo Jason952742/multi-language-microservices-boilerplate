@@ -44,7 +44,7 @@ impl Registration {
             address: addr.to_string(),
             port,
             check: Check {
-                grpc: format!("192.168.0.147:{}", port),
+                grpc: format!("host.docker.internal:{}", port),
                 interval: "10s".to_string(),
                 timeout: "5s".to_string(),
             },
