@@ -4,7 +4,7 @@
 use std::env;
 use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
-use crate::config::postgres::PgPool;
+use infras::config::postgres::PgPool;
 use crate::orm::migration::{Migrator, MigratorTrait};
 pub use crate::services::echo_service::{EchoServer};
 use crate::services::health_service::HealthIndicator;
@@ -20,7 +20,6 @@ use infras::consul_api;
 
 mod services;
 mod orm;
-pub mod config;
 
 #[tokio::main]
 async fn start() -> Result<(), Box<dyn std::error::Error>> {
