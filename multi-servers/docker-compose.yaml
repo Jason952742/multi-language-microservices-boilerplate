@@ -1,74 +1,8 @@
 version: "3.8"
 
 services:
-  # krakend
-  krakend-server:
-    container_name: krakend-server
-    image: devopsfaith/krakend:latest
-    restart: always
-    ports:
-      - "1234:1234"
-      - "8080:8080"
-      - "8090:8090"
-    volumes:
-      - ./krakend:/etc/krakend
-    command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
-    depends_on:
-      - jaeger
 
-  # jaeger
-  jaeger:
-    container_name: jaeger
-    image: jaegertracing/all-in-one:1
-    restart: always
-    ports:
-      - "16686:16686"
-      - "14268:14268"
-
-  # keycloak
-  keycloak-db:
-    container_name: keycloak-db
-    image: mysql:8
-    restart: always
-    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
-    ports:
-      - "3307:3307"
-    env_file:
-      - ./.env
-    environment:
-      MYSQL_ROOT_PASSWORD: ${KC_MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${KC_MYSQL_DATABASE}
-      MYSQL_USER: ${KC_MYSQL_USER}
-      MYSQL_PASSWORD: ${KC_MYSQL_PASSWORD}
-      MYSQL_PORT: ${KC_MYSQL_PORT}
-
-  keycloak-server:
-    container_name: keycloak-server
-    image: quay.io/keycloak/keycloak:22.0.5
-    restart: always
-    ports:
-      - "8443:8443"
-    env_file:
-      - ./.env
-    environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KC_HOSTNAME: ${KC_HOSTNAME}
-      KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED}
-      KC_METRICS_ENABLED: ${KC_METRICS_ENABLED}
-      KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
-      KC_DB: ${KC_DB}
-      KC_DB_URL: jdbc:${KC_DB}://keycloak-db:${KC_MYSQL_PORT}/${KC_MYSQL_DATABASE}
-      KC_DB_USERNAME: ${KC_MYSQL_USER}
-      KC_DB_PASSWORD: ${KC_MYSQL_PASSWORD}
-      KC_HTTPS_CERTIFICATE_FILE: /etc/x509/https/tls.crt
-      KC_HTTPS_CERTIFICATE_KEY_FILE: /etc/x509/https/tls.key
-    volumes:
-      - ./keycloak/app:/etc/x509/https # map certificates to container
-    depends_on:
-      - keycloak-db
-    command: [ 'start --hostname localhost' ]
-
+  # consul
   consul-server:
     image: hashicorp/consul:latest
     container_name: consul-server
@@ -89,19 +23,66 @@ services:
       - ./consul/client.json:/consul/config/client.json:ro
     command: "agent"
 
-  # seata
-  seata-server:
-    container_name: seata-server
-    image: seataio/seata-server:2.0.0-slim
-    hostname: seata-server
+  # traefik
+  traefik:
+    container_name: traefik
+    image: traefik:v2.5
+    restart: always
     ports:
-      - "7091:7091"
-      - "8091:8091"
+      - "8080:8080"
+      - "8090:8090"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
+#      - ./traefik/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - jaeger
+      - consul-server
+
+  whoami:
+    image: "traefik/whoami"
+    container_name: "simple-service"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.rule=Host(`localhost`)"
+      - "traefik.http.routers.whoami.entrypoints=web"
+
+  # jaeger
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:1
+    restart: always
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+
+  # keycloak
+  keycloak-db:
+    container_name: keycloak-db
+    image: mysql:8
+    restart: always
+    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+    ports:
+      - "3307:3307"
     env_file:
       - ./.env
-    environment:
-      STORE_MODE: file
-      SEATA_PORT: 8091
+    volumes:
+      - ./keycloak/db/data:/var/lib/mysql
+
+  keycloak-server:
+    container_name: keycloak-server
+    image: quay.io/keycloak/keycloak:22.0.5
+    restart: always
+    ports:
+      - "8443:8443"
+    env_file:
+      - ./.env
+    volumes:
+      - ./keycloak/app:/etc/x509/https # map certificates to container
+    depends_on:
+      - keycloak-db
+    command: [ 'start --hostname localhost' ]
 
 networks:
   default:
