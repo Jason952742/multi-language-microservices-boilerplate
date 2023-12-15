@@ -87,6 +87,17 @@ services:
     volumes:
       - ./scylla/data/:/var/lib/scylla
 
+  influxdb:
+    container_name: influxdb
+    image: influxdb:2.7.4
+    restart: always
+    ports:
+      - "8086:8086"
+    env_file:
+      - ./.env
+    volumes:
+      - ./influxdb/data:/var/lib/influxdb2
+
   # mongodb
   mongodb:
     container_name: mongodb
@@ -96,6 +107,18 @@ services:
       - "27017:27017"
     volumes:
       - ./mongo/data:/data
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3.12-management
+    restart: always
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    env_file:
+      - ./.env
+    volumes:
+      - ./rabbitmq/data:/var/lib/rabbitmq
 
   # nats
   nats:
