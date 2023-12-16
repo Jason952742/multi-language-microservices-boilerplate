@@ -32,6 +32,10 @@ services:
       - "5433:5432"
     env_file:
       - ./.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./kong/pg_data:/var/lib/postgresql/data/
 
@@ -60,14 +64,15 @@ services:
     env_file:
       - ./.env
 
-  # jaeger
-  jaeger:
-    container_name: jaeger
-    image: jaegertracing/all-in-one:1
+  # prometheus
+  prometheus:
+    container_name: prometheus
+    image: bitnami/prometheus:latest
     restart: always
     ports:
-      - "16686:16686"
-      - "14268:14268"
+      - "9090:9090"
+    volumes:
+      - ./prometheus/data:/opt/bitnami/prometheus/data
 
   # keycloak
   keycloak-db:
