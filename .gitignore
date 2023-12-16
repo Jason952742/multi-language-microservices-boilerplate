@@ -54,10 +54,9 @@ nb-configuration.xml
 *.orig
 *.rej
 
-# Local environment
-.env
+# docker data
 /multi-servers/keycloak/db
-/multi-servers/nacos/standalone-logs
+/multi-servers/kong/pg_data
 /multi-stores/postgres/pg_data
 /multi-stores/neo4j/data
 /multi-stores/neo4j/logs

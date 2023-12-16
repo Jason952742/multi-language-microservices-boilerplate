@@ -23,30 +23,42 @@ services:
       - ./consul/client.json:/consul/config/client.json:ro
     command: "agent"
 
-  # traefik
-  traefik:
-    container_name: traefik
-    image: traefik:v2.5
+  # kong
+  kong-db:
+    container_name: kong-db
+    image: postgres:latest
     restart: always
     ports:
-      - "8080:8080"
-      - "8090:8090"
+      - "5433:5432"
+    env_file:
+      - ./.env
     volumes:
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml
-      - ./traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
-#      - ./traefik/run/docker.sock:/var/run/docker.sock
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    depends_on:
-      - jaeger
-      - consul-server
+      - ./kong/pg_data:/var/lib/postgresql/data/
 
-  whoami:
-    image: "traefik/whoami"
-    container_name: "simple-service"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`localhost`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+  kong-migrations:
+    container_name: kong-migrations
+    image: kong/kong-gateway:3.5.0.1
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-db
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+    command: kong migrations bootstrap
+
+  kong-server:
+    container_name: kong-server
+    image: kong/kong-gateway:3.5.0.1
+    restart: always
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+      - "8002:8002"
+      - "8445:8445"
+      - "8003:8003"
+      - "8004:8004"
+    env_file:
+      - ./.env
 
   # jaeger
   jaeger:
@@ -75,14 +87,14 @@ services:
     image: quay.io/keycloak/keycloak:22.0.5
     restart: always
     ports:
-      - "8443:8443"
+      - "9443:9443"
     env_file:
       - ./.env
     volumes:
       - ./keycloak/app:/etc/x509/https # map certificates to container
     depends_on:
       - keycloak-db
-    command: [ 'start --hostname localhost' ]
+    command: [ 'start --hostname localhost --https-port 9443' ]
 
 networks:
   default:
