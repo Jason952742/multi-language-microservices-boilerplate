@@ -55,22 +55,22 @@ nb-configuration.xml
 *.rej
 
 # docker data
-/multi-servers/keycloak/db
-/multi-servers/kong/pg_data
-/multi-stores/postgres/pg_data
-/multi-stores/neo4j/data
-/multi-stores/neo4j/logs
-/multi-stores/dragonfly/data
-/multi-stores/scylla/data
-/multi-stores/mongo/data
-/multi-stores/influxdb/data
-/multi-stores/rabbitmq/data
-/multi-stores/elk/elasticsearch/indices
-/multi-stores/elk/elasticsearch/_state
-/multi-stores/elk/elasticsearch/snapshot_cache
-/multi-stores/elk/elasticsearch/node.lock
-/multi-stores/elk/elasticsearch/nodes
-!/multi-stores/elk/elasticsearch/config
+/servers/keycloak/db
+/servers/kong/pg_data
+/stores/postgres/pg_data
+/stores/neo4j/data
+/stores/neo4j/logs
+/stores/dragonfly/data
+/stores/scylla/data
+/stores/mongo/data
+/stores/influxdb/data
+/stores/rabbitmq/data
+/stores/elk/elasticsearch/indices
+/stores/elk/elasticsearch/_state
+/stores/elk/elasticsearch/snapshot_cache
+/stores/elk/elasticsearch/node.lock
+/stores/elk/elasticsearch/nodes
+!/elk/elasticsearch/config
 
 # Plugin directory
 /.quarkus/cli/plugins/
