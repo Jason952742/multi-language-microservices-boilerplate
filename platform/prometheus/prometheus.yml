@@ -41,10 +41,17 @@ scrape_configs:
     static_configs:
       - targets: [ 'keycloak-server:9443' ]
 
-  - job_name: 'kong'
+  - job_name: 'kong-server'
     scrape_interval: 5s
     static_configs:
       - targets: [ 'kong-server:8001' ]
+
+  - job_name: 'consul-server'
+    metrics_path: '/v1/agent/metrics'
+    params:
+      format: [ 'prometheus' ]
+    static_configs:
+      - targets: [ 'consul-server:8500' ]
 
 alerting:
   alertmanagers:

@@ -122,8 +122,8 @@ services:
     expose:
       - 9093
 
-  # nodeexporter
-  nodeexporter:
+  # node-exporter
+  node-exporter:
     container_name: nodeexporter
     image: prom/node-exporter:v1.7.0
     restart: unless-stopped

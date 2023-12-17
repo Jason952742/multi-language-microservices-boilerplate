@@ -2888,7 +2888,9 @@
   "refresh": false,
   "schemaVersion": 22,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "kong"
+  ],
   "templating": {
     "list": [
       {
@@ -3041,7 +3043,7 @@
     ]
   },
   "timezone": "",
-  "title": "Kong (official)",
+  "title": "Kong Metrics",
   "uid": "mY9p7dQmz",
   "variables": {
     "list": []

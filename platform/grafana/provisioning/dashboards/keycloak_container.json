@@ -2338,7 +2338,9 @@
   "refresh": false,
   "schemaVersion": 26,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "keycloak"
+  ],
   "templating": {
     "list": [
       {
@@ -2464,7 +2466,7 @@
     ]
   },
   "timezone": "",
-  "title": "Keycloak Metrics Dashboard",
+  "title": "Keycloak Metrics",
   "uid": "keycloak-dashboard",
   "version": 6,
   "description": "Dashboard of Keycloak metrics exported with Keycloak Metrics SPI\r\n\r\nhttps://github.com/aerogear/keycloak-metrics-spi"
