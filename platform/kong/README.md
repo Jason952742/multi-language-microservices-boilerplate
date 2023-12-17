@@ -99,7 +99,7 @@ Kong can also perform verification on registered claims, as defined in RFC 7519.
 You can patch an existing JWT plugin:
 
 ```bash
-# This adds verification for both nbf and exp claims:
+# This adds verification for nbf or exp claims:
 curl -X PATCH http://localhost:8001/plugins/704f0395-fc25-459e-8639-588c59d8042b \
  --data "config.claims_to_verify=exp"
 ```
