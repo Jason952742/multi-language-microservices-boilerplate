@@ -64,16 +64,6 @@ services:
     env_file:
       - ./.env
 
-  # prometheus
-  prometheus:
-    container_name: prometheus
-    image: bitnami/prometheus:latest
-    restart: always
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/data:/opt/bitnami/prometheus/data
-
   # keycloak
   keycloak-db:
     container_name: keycloak-db

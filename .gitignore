@@ -55,8 +55,8 @@ nb-configuration.xml
 *.rej
 
 # docker data
-/servers/keycloak/db
-/servers/kong/pg_data
+/platform/keycloak/db
+/platform/kong/pg_data
 /stores/postgres/pg_data
 /stores/neo4j/data
 /stores/neo4j/logs
