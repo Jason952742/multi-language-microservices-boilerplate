@@ -1,0 +1,6 @@
+# TLS and basic authentication configuration example.
+#
+# Additionally, a certificate and a key file are needed.
+tls_server_config:
+  cert_file: tls.crt
+  key_file: tls.key
