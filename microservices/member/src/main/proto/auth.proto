@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "auth";
+option java_outer_classname = "AuthProto";
+option objc_class_prefix = "HLW";
+
+package auth;
+
+import "identity.proto";
+
+service AuthService {
+  rpc login (SignInRequest) returns (identity.IdentityReply) {}
+}
+
+message SignInRequest {
+  string identifier = 1;
+  string password = 2;
+  bool rememberMe = 3;
+}

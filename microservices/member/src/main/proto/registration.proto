@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "registration";
+option java_outer_classname = "RegistrationProto";
+option objc_class_prefix = "HLW";
+
+package registration;
+
+import "identity.proto";
+
+service RegistrationService {
+  rpc register (RegistrationRequest) returns (identity.IdentityReply) {}
+}
+
+message RegistrationRequest {
+  string mold = 1; // enum IdentityMold
+  string loginCreds = 2;
+  string password = 3;
+  optional string nickname = 4;
+  optional string vcode = 5;
+}
+
+enum IdentityMold {
+  Phone = 0;
+  Email = 1;
+  WeChat = 2;
+  Username = 3;
+  IdentityCard = 4;
+  Passport = 5;
+  BusinessLicense = 6;
+}
