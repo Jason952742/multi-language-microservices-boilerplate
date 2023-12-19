@@ -1,5 +1,8 @@
 package org.acme.demo
 
+import examples.Greeter
+import examples.HelloReply
+import examples.HelloRequest
 import io.quarkus.grpc.GrpcService
 import io.smallrye.mutiny.Uni
 import java.util.concurrent.atomic.AtomicInteger

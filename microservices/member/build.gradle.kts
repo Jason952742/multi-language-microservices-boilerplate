@@ -68,6 +68,8 @@ dependencies {
 
     testImplementation("io.quarkus:quarkus-junit5:2.16.4.Final")
     testImplementation("io.rest-assured:rest-assured:5.3.0")
+    testImplementation("org.awaitility:awaitility:4.2.0")
+    testImplementation("org.assertj:assertj-core:3.24.2")
     testImplementation("io.rest-assured:kotlin-extensions:5.3.0")
     testImplementation("io.quarkus:quarkus-test-keycloak-server:2.16.4.Final")
 }
