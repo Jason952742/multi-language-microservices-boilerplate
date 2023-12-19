@@ -10,7 +10,7 @@ import java.util.*
 
 abstract class JasHandlerBase<E : JasEntityBase, C : JasCommandBase> {
 
-    private lateinit var entity: E
+    lateinit var entity: E
 
     abstract suspend fun ask(id: UUID, cmd: C): Uni<E>
 
