@@ -8,5 +8,3 @@ object MutinyUtils {
 
     fun <T> uni(data: T): Uni<T> = Uni.createFrom().item(data)
 }
-
-

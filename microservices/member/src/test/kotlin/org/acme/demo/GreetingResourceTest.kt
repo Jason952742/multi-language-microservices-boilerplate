@@ -1,4 +1,4 @@
-package org.acme
+package org.acme.demo
 
 import io.quarkus.test.junit.QuarkusTest
 import io.restassured.RestAssured.given
@@ -11,7 +11,7 @@ class GreetingResourceTest {
     @Test
     fun testHelloEndpoint() {
         given()
-            .`when`().get("/api/public/hello")
+            .`when`()["/hello"]
             .then()
             .statusCode(200)
             .body(`is`("Hello from RESTEasy Reactive"))

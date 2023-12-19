@@ -15,13 +15,12 @@ class HealthCheckTest {
             .then()
             .statusCode(200)
             .body("status", CoreMatchers.`is`("UP"))
-            .body("checks.size()", CoreMatchers.`is`(4))
+            .body("checks.size()", CoreMatchers.`is`(3))
             .body(
                 "checks.name", CoreMatchers.everyItem(
                     CoreMatchers.anyOf(
                         CoreMatchers.`is`("Simple health check"),
                         CoreMatchers.`is`("Health check with data"),
-                        CoreMatchers.`is`("alive"),
                         CoreMatchers.`is`("SmallRye Reactive Messaging - liveness check"),
                     )
                 )
