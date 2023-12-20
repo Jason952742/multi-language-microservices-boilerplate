@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "proto2";
 
 option java_multiple_files = true;
 option java_package = "auth";
@@ -7,14 +7,71 @@ option objc_class_prefix = "HLW";
 
 package auth;
 
-import "identity.proto";
+import "google/protobuf/wrappers.proto";
 
 service AuthService {
-  rpc login (SignInRequest) returns (identity.IdentityReply) {}
+  rpc login (SignInRequest) returns (IdentityReply) {}
+  rpc register (RegistrationRequest) returns (IdentityReply) {}
+  rpc getUser (google.protobuf.StringValue) returns (ProfileReply) {}
+  rpc updateUser (ProfileRequest) returns (ProfileReply) {}
+  rpc changePassword (PasswordChangeRequest) returns (google.protobuf.BoolValue) {}
 }
 
+// SignIn
 message SignInRequest {
-  string identifier = 1;
-  string password = 2;
-  bool rememberMe = 3;
+  required string identifier = 1;
+  required string password = 2;
+  required string mold = 3;
+  required bool rememberMe = 4;
+}
+
+// Registration
+message RegistrationRequest {
+  required string mold = 1; // enum IdentityMold
+  required string loginCreds = 2;
+  required string password = 3;
+  optional string nickname = 4;
+  optional string vcode = 5;
+}
+
+// Member Profile
+message ProfileRequest {
+  required string id = 1;
+  required string nickname = 2;
+  optional string gender = 3; // enum Gender
+  optional string birth = 4;
+  optional string gravatar = 5;
+}
+
+// Change Password
+message PasswordChangeRequest {
+  required string id = 1;
+  required string oldPassword = 2;
+  required string newPassword = 3;
+  required string confirm = 4;
+}
+
+message ProfileReply {
+  required string code = 1;
+  optional string message = 2;
+  optional UserProfile data = 3;
+}
+
+message UserProfile {
+  required string name = 1;
+  required string nickname = 2;
+  optional string gender = 3; // enum Gender
+  optional string birth = 4;
+  required string gravatar = 5;
+}
+
+message IdentityReply {
+  required string code = 1;
+  optional string message = 2;
+  optional Identity data = 3;
+}
+
+message Identity {
+  required string userId = 1;
+  required string loginCreds = 2;
 }
