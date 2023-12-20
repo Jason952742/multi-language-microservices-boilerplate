@@ -6,6 +6,7 @@ import jakarta.persistence.*
 import org.acme.common.base.Party
 import org.acme.common.hibernate.JasEntityBase
 import org.acme.common.model.Gender
+import org.acme.member.domain.enums.MemberStatus
 import java.time.LocalDate
 import java.util.*
 
@@ -21,7 +22,11 @@ class Member(
 
     var nickname: String,
 
+    @Enumerated(value = EnumType.STRING)
+    var status: MemberStatus = MemberStatus.Created,
+
     @JsonIgnore
+    @Column(length = 40, unique = true)
     var loginCreds: String,
 
     @Enumerated(value = EnumType.STRING)

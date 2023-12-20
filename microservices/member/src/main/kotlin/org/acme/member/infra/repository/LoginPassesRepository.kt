@@ -8,7 +8,7 @@ import org.acme.common.hibernate.JasPanacheRepository
 import org.acme.common.hibernate.JasQuery
 import org.acme.common.resource.JasPaging
 import org.acme.member.domain.entity.LoginPasses
-import org.acme.member.domain.entity.enums.IdentityMold
+import org.acme.member.domain.enums.IdentityMold
 import org.acme.utils.MutinyUtils
 
 @ApplicationScoped

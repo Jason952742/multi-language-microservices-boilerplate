@@ -1,7 +1,5 @@
 package org.acme.utils
 
-import examples.HelloReply
-import examples.HelloRequest
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.infrastructure.Infrastructure
 

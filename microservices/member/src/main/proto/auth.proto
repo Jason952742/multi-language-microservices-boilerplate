@@ -11,10 +11,12 @@ import "google/protobuf/wrappers.proto";
 
 service AuthService {
   rpc login (SignInRequest) returns (IdentityResponse) {}
+  rpc check (CheckRequest) returns (ProcessResponse) {}
   rpc register (RegistrationRequest) returns (IdentityResponse) {}
   rpc getMember (google.protobuf.StringValue) returns (MemberResponse) {}
   rpc updateMember (MemberUpdateRequest) returns (MemberResponse) {}
   rpc changePassword (PasswordChangeRequest) returns (ProcessResponse) {}
+  rpc deleteMember (google.protobuf.StringValue) returns (ProcessResponse) {}
 }
 
 // SignIn
@@ -23,6 +25,12 @@ message SignInRequest {
   required string password = 2;
   required string mold = 3;
   required bool rememberMe = 4;
+}
+
+// Check Registration
+message CheckRequest {
+  required string identifier = 1;
+  required string mold = 2;
 }
 
 // Registration
@@ -54,7 +62,7 @@ message PasswordChangeRequest {
 message ProcessResponse {
   required string code = 1;
   required string message = 2;
-  required bool changed = 3;
+  required bool result = 3;
   optional string processedId = 4;
 }
 

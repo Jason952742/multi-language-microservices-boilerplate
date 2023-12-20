@@ -1,8 +1,9 @@
 package org.acme.common.base
 
+import io.grpc.Status
+import io.grpc.StatusException
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.infrastructure.Infrastructure
-import jakarta.ws.rs.WebApplicationException
 
 
 interface JasEventHandlerBase {
@@ -11,6 +12,6 @@ interface JasEventHandlerBase {
 
     fun <R : JasReplayBase> uni(data: R): Uni<R> = Uni.createFrom().item(data).emitOn(Infrastructure.getDefaultExecutor())
 
-    fun error(msg: String? = null, code: Int = 504): Nothing = throw WebApplicationException( msg ?: "unknown error", code)
+    fun error(msg: String? = null, code: Int = 504): Nothing = throw StatusException(Status.UNKNOWN.withDescription("unknown error"))
 
 }

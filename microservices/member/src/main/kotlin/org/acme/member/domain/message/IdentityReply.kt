@@ -4,10 +4,7 @@ import auth.IdentityResponse
 import java.util.*
 import io.grpc.Status
 
-data class IdentityReply(
-    var userId: UUID,
-    var loginCreds: String
-) {
+data class IdentityReply(var userId: UUID, var loginCreds: String) {
 
     private fun toProto(): IdentityResponse.Identity = IdentityResponse.Identity.newBuilder().also {
         it.userId = userId.toString()

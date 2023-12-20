@@ -11,11 +11,12 @@ import jakarta.inject.Inject
 import org.acme.member.domain.entity.LoginPasses
 import org.acme.member.domain.entity.Member
 import org.acme.member.domain.entity.PasswordInfo
-import org.acme.member.domain.entity.enums.IdentityMold
+import org.acme.member.domain.enums.IdentityMold
 import org.acme.member.domain.message.IdentityReply
 import org.acme.member.domain.message.ProcessReply
 import org.acme.member.infra.repository.MemberRepository
 import org.acme.member.infra.search.MemberSearcher
+import org.acme.utils.CaptchaUtils
 import org.acme.utils.DateUtils
 import org.acme.utils.EncryptionUtils.encrypt
 import org.acme.utils.MutinyUtils.uniItem
@@ -36,6 +37,13 @@ class AuthenticationService {
 
     @Inject
     private lateinit var searcher: MemberSearcher
+
+    suspend fun checkLoginPasses(credentials: CheckRequest): Uni<ProcessResponse> = loginPassesRepository
+        .findByIdentifier(IdentityMold.valueOf(credentials.mold), credentials.identifier)
+        .awaitSuspending().run {
+            val processReply = ProcessReply(changed = this == null, processedId = credentials.identifier).toResponse()
+            uniItem(processReply)
+        }
 
     suspend fun authenticateCredentials(credentials: SignInRequest): Uni<IdentityResponse> = loginPassesRepository
         .findByIdentifier(IdentityMold.valueOf(credentials.mold), credentials.identifier)
@@ -59,7 +67,7 @@ class AuthenticationService {
                     )
                     val member = Member(
                         name = passwordInfo.loginCreds,
-                        nickname = if (data.hasNickname()) data.nickname else "",
+                        nickname = if (data.hasNickname()) data.nickname else "anonymous${CaptchaUtils.generator6Code()}",
                         loginCreds = passwordInfo.loginCreds,
                         passwordInfo = passwordInfo
                     )
@@ -74,7 +82,7 @@ class AuthenticationService {
 
                     member.loginPasses.add(loginPasses)
                     val user = memberRepository.persist(member).awaitSuspending()
-                    val identityReply: auth.IdentityResponse = IdentityReply(userId = user.id!!, loginCreds = user.loginCreds).toResponse()
+                    val identityReply: IdentityResponse = IdentityReply(userId = user.id!!, loginCreds = user.loginCreds).toResponse()
                     uniItem(identityReply)
                 }
 

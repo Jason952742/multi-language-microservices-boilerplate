@@ -1,6 +1,7 @@
-package org.acme.member.domain.entity.enums
+package org.acme.member.domain.enums
 
 enum class IdentityMold {
+    KeyCloak,
     Phone,
     Email,
     WeChat,

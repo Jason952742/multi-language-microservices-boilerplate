@@ -1,22 +1,21 @@
 package org.acme.common.hibernate
 
-
+import io.grpc.Status
+import io.grpc.StatusException
 import io.quarkus.hibernate.reactive.panache.PanacheQuery
 import io.quarkus.hibernate.reactive.panache.PanacheRepositoryBase
 import io.quarkus.panache.common.Parameters
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.persistence.LockModeType
-import jakarta.ws.rs.WebApplicationException
 import org.acme.common.resource.JasPaging
 import org.acme.utils.MutinyUtils.uniItem
 import java.util.*
 
-
 interface JasPanacheRepository<T : JasEntityBase> : PanacheRepositoryBase<T, UUID> {
 
-    suspend fun get(id: UUID): Uni<T> = findById(id) ?: throw WebApplicationException("$id non-existent...", 404)
-    suspend fun getAndLock(id: UUID): Uni<T> = findById(id, LockModeType.PESSIMISTIC_WRITE) ?: throw WebApplicationException("$id non-existent...", 404)
+    suspend fun get(id: UUID): Uni<T> = findById(id) ?: throw StatusException(Status.NOT_FOUND.withDescription("$id non-existent..."))
+    suspend fun getAndLock(id: UUID): Uni<T> = findById(id, LockModeType.PESSIMISTIC_WRITE) ?: throw StatusException(Status.NOT_FOUND.withDescription("$id non-existent..."))
     suspend fun getOrNull(id: UUID?): Uni<T>? = id?.let { findById(id) }
     suspend fun getIn(ids: List<UUID>): Uni<MutableList<T>> = list("id IN (:ids)", Parameters.with("ids", ids))
     suspend fun getInOrNull(ids: List<UUID>?): Uni<MutableList<T>>? = ids?.let { getIn(ids) }

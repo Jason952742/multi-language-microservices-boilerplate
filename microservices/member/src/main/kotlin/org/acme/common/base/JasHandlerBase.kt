@@ -1,8 +1,9 @@
 package org.acme.common.base
 
+import io.grpc.Status
+import io.grpc.StatusException
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import jakarta.ws.rs.WebApplicationException
 import org.acme.common.hibernate.JasEntityBase
 import org.acme.common.hibernate.JasPanacheRepository
 import org.acme.utils.MutinyUtils
@@ -16,9 +17,8 @@ abstract class JasHandlerBase<E : JasEntityBase, C : JasCommandBase> {
 
     abstract suspend fun add(cmd: C): Uni<E>
 
-    private fun error(msg: String? = null, code: Int = 504): Nothing = throw WebApplicationException(msg ?: "unknown error", code)
-
-    fun rejected(cmd: C, status: String? = null): Nothing = throw WebApplicationException("current $status status not allowed ${cmd.title} command", 403)
+    private fun error(msg: String? = null): Nothing = throw StatusException(Status.INVALID_ARGUMENT.withDescription(msg ?: "Invalid argument."))
+    fun rejected(cmd: C, status: String? = null): Nothing = throw StatusException(Status.INVALID_ARGUMENT.withDescription("current $status status not allowed ${cmd.title} command"))
 
     suspend fun entityRef(id: UUID, repo: JasPanacheRepository<E>): E {
         val m = repo.get(id).awaitSuspending()
@@ -34,7 +34,7 @@ abstract class JasHandlerBase<E : JasEntityBase, C : JasCommandBase> {
     }
 
     suspend fun delete(repo: JasPanacheRepository<E>): Uni<E> = repo.deleteById(entity.id).awaitSuspending().let {
-        if (it) MutinyUtils.uniItem(entity) else throw WebApplicationException("delete ${entity.id} fail", 403)
+        if (it) MutinyUtils.uniItem(entity) else throw StatusException(Status.DATA_LOSS.withDescription("delete ${entity.id} fail"))
     }
 
 }

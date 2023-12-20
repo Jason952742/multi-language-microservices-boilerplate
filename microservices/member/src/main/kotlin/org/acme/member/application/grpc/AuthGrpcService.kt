@@ -15,6 +15,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.acme.member.domain.message.MemberProfileChange
 import org.acme.member.domain.handler.MemberHandler
+import org.acme.member.domain.message.MemberDelete
 import org.acme.member.domain.message.MemberReply
 import org.acme.member.domain.message.ProcessReply
 import org.acme.member.infra.search.MemberSearcher
@@ -41,6 +42,11 @@ class AuthGrpcService : AuthService {
     @WithSession
     override fun login(request: SignInRequest): Uni<IdentityResponse> = scope.asyncUni {
         authenticationService.authenticateCredentials(request).awaitSuspending()
+    }
+
+    @WithSession
+    override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
+        authenticationService.checkLoginPasses(request).awaitSuspending()
     }
 
     @WithTransaction
@@ -80,5 +86,13 @@ class AuthGrpcService : AuthService {
         if (request.newPassword == request.confirm) {
             authenticationService.changePassword(UUID.fromString(request.id), request).awaitSuspending()
         } else ProcessReply.toError(Status.UNAUTHENTICATED, "New password and confirmation password do not match")
+    }
+
+    @WithTransaction
+    override fun deleteMember(request: StringValue): Uni<ProcessResponse> = scope.asyncUni {
+        val id = UUID.fromString(request.value)
+        memberHandler.ask(id = id, cmd = MemberDelete()).awaitSuspending().let {
+            ProcessReply(changed = true, processedId = id.toString()).toResponse()
+        }
     }
 }

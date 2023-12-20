@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 import org.acme.common.hibernate.JasEntityBase
-import org.acme.member.domain.entity.enums.IdentityMold
+import org.acme.member.domain.enums.IdentityMold
 import java.time.LocalDateTime
 import java.util.*
 
