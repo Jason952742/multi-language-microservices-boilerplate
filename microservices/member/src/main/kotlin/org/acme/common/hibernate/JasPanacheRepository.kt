@@ -9,7 +9,7 @@ import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.persistence.LockModeType
 import jakarta.ws.rs.WebApplicationException
 import org.acme.common.resource.JasPaging
-import org.acme.utils.MutinyUtils.uni
+import org.acme.utils.MutinyUtils.uniItem
 import java.util.*
 
 
@@ -38,6 +38,6 @@ interface JasPanacheRepository<T : JasEntityBase> : PanacheRepositoryBase<T, UUI
         val total: Long = count(q).awaitSuspending()
         val items: List<T> = list(q).awaitSuspending()
         val result = JasPaging.of(q = q, items = items, total = total)
-        return uni(result)
+        return uniItem(result)
     }
 }

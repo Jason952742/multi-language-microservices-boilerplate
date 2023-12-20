@@ -20,13 +20,21 @@ abstract class JasHandlerBase<E : JasEntityBase, C : JasCommandBase> {
 
     fun rejected(cmd: C, status: String? = null): Nothing = throw WebApplicationException("current $status status not allowed ${cmd.title} command", 403)
 
-    suspend fun entityRef(id: UUID, repo: JasPanacheRepository<E>): E = repo.getAndLock(id).awaitSuspending().also { entity = it }
+    suspend fun entityRef(id: UUID, repo: JasPanacheRepository<E>): E {
+        val m = repo.get(id).awaitSuspending()
+        // val m = repo.getAndLock(id).awaitSuspending()
+        this.entity = m
+        return m
+    }
 
     fun insert(data: E, repo: JasPanacheRepository<E>): Uni<E> = repo.persist(data)
-    fun update(data: E, repo: JasPanacheRepository<E>): Uni<E> = repo.persist(data).run { this }
+    fun update(data: E, repo: JasPanacheRepository<E>): Uni<E> {
+        val m = repo.persist(data)
+        return m
+    }
 
     suspend fun delete(repo: JasPanacheRepository<E>): Uni<E> = repo.deleteById(entity.id).awaitSuspending().let {
-        if (it) MutinyUtils.uni(entity) else throw WebApplicationException("delete ${entity.id} fail", 403)
+        if (it) MutinyUtils.uniItem(entity) else throw WebApplicationException("delete ${entity.id} fail", 403)
     }
 
 }

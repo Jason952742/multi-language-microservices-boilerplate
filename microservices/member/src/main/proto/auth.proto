@@ -10,11 +10,11 @@ package auth;
 import "google/protobuf/wrappers.proto";
 
 service AuthService {
-  rpc login (SignInRequest) returns (IdentityReply) {}
-  rpc register (RegistrationRequest) returns (IdentityReply) {}
-  rpc getUser (google.protobuf.StringValue) returns (ProfileReply) {}
-  rpc updateUser (ProfileRequest) returns (ProfileReply) {}
-  rpc changePassword (PasswordChangeRequest) returns (google.protobuf.BoolValue) {}
+  rpc login (SignInRequest) returns (IdentityResponse) {}
+  rpc register (RegistrationRequest) returns (IdentityResponse) {}
+  rpc getMember (google.protobuf.StringValue) returns (MemberResponse) {}
+  rpc updateMember (MemberUpdateRequest) returns (MemberResponse) {}
+  rpc changePassword (PasswordChangeRequest) returns (ProcessResponse) {}
 }
 
 // SignIn
@@ -31,11 +31,11 @@ message RegistrationRequest {
   required string loginCreds = 2;
   required string password = 3;
   optional string nickname = 4;
-  optional string vcode = 5;
+  optional string captcha = 5;
 }
 
-// Member Profile
-message ProfileRequest {
+// Member Profile Update
+message MemberUpdateRequest {
   required string id = 1;
   required string nickname = 2;
   optional string gender = 3; // enum Gender
@@ -51,27 +51,35 @@ message PasswordChangeRequest {
   required string confirm = 4;
 }
 
-message ProfileReply {
+message ProcessResponse {
   required string code = 1;
-  optional string message = 2;
-  optional UserProfile data = 3;
+  required string message = 2;
+  required bool changed = 3;
+  optional string processedId = 4;
 }
 
-message UserProfile {
-  required string name = 1;
-  required string nickname = 2;
-  optional string gender = 3; // enum Gender
-  optional string birth = 4;
-  required string gravatar = 5;
+message MemberResponse {
+  required string code = 1;
+  required string message = 2;
+  optional Member data = 3;
+
+  message Member {
+    required string name = 1;
+    required string nickname = 2;
+    optional string gender = 3; // enum Gender
+    optional string birth = 4;
+    required string gravatar = 5;
+  }
 }
 
-message IdentityReply {
+message IdentityResponse {
   required string code = 1;
-  optional string message = 2;
+  required string message = 2;
   optional Identity data = 3;
-}
 
-message Identity {
-  required string userId = 1;
-  required string loginCreds = 2;
+  message Identity {
+    required string userId = 1;
+    required string loginCreds = 2;
+  }
+
 }
