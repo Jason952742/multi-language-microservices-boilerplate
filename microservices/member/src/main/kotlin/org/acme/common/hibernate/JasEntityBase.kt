@@ -39,6 +39,7 @@ abstract class JasEntityBase {
     @UpdateTimestamp
     var updated: LocalDateTime? = null
 
+    var hide: Boolean = false
     var enabled: Boolean = true
 
     @Version
