@@ -1,6 +1,6 @@
 package org.acme.member.domain.message
 
-import auth.ProcessResponse
+import common_proto.ProcessResponse
 import io.grpc.Status
 
 data class ProcessReply(val changed: Boolean, val processedId: String) {

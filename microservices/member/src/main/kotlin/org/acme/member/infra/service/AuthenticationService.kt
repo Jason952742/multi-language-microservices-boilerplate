@@ -1,6 +1,7 @@
 package org.acme.member.infra.service
 
-import auth.*
+import auth_proto.*
+import common_proto.ProcessResponse
 import io.grpc.Status
 import org.acme.member.infra.repository.LoginPassesRepository
 import org.acme.member.infra.repository.PasswordInfoRepository

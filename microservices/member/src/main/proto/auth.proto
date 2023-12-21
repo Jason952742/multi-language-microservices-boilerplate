@@ -1,22 +1,20 @@
 syntax = "proto2";
 
 option java_multiple_files = true;
-option java_package = "auth";
+option java_package = "auth_proto";
 option java_outer_classname = "AuthProto";
 option objc_class_prefix = "HLW";
 
-package auth;
+package auth_proto;
 
 import "google/protobuf/wrappers.proto";
+import "common.proto";
 
-service AuthService {
+service AuthProtoService {
   rpc login (SignInRequest) returns (IdentityResponse) {}
-  rpc check (CheckRequest) returns (ProcessResponse) {}
+  rpc check (CheckRequest) returns (common_proto.ProcessResponse) {}
   rpc register (RegistrationRequest) returns (IdentityResponse) {}
-  rpc getMember (google.protobuf.StringValue) returns (MemberResponse) {}
-  rpc updateMember (MemberUpdateRequest) returns (MemberResponse) {}
-  rpc changePassword (PasswordChangeRequest) returns (ProcessResponse) {}
-  rpc deleteMember (google.protobuf.StringValue) returns (ProcessResponse) {}
+  rpc changePassword (PasswordChangeRequest) returns (common_proto.ProcessResponse) {}
 }
 
 // SignIn
@@ -42,40 +40,12 @@ message RegistrationRequest {
   optional string captcha = 5;
 }
 
-// Member Profile Update
-message MemberUpdateRequest {
-  required string id = 1;
-  required string nickname = 2;
-  optional string description = 3;
-}
-
 // Change Password
 message PasswordChangeRequest {
   required string id = 1;
   required string oldPassword = 2;
   required string newPassword = 3;
   required string confirm = 4;
-}
-
-message ProcessResponse {
-  required string code = 1;
-  required string message = 2;
-  required bool result = 3;
-  optional string processedId = 4;
-}
-
-message MemberResponse {
-  required string code = 1;
-  required string message = 2;
-  optional Member data = 3;
-
-  message Member {
-    required string name = 1;
-    required string nickname = 2;
-    required string status = 3;
-    required string memberType = 4;
-    required string description = 5;
-  }
 }
 
 message IdentityResponse {

@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "member_proto";
+option java_outer_classname = "MemberProto";
+option objc_class_prefix = "HLW";
+
+package member_proto;
+
+import "google/protobuf/wrappers.proto";
+import "common.proto";
+
+service MemberProtoService {
+  rpc getMember (google.protobuf.StringValue) returns (MemberResponse) {}
+  rpc updateMember (MemberUpdateRequest) returns (MemberResponse) {}
+  rpc deleteMember (google.protobuf.StringValue) returns (common_proto.ProcessResponse) {}
+}
+
+// Member Profile Update
+message MemberUpdateRequest {
+  required string id = 1;
+  required string nickname = 2;
+  optional string description = 3;
+}
+
+message MemberResponse {
+  required string code = 1;
+  required string message = 2;
+  optional Member data = 3;
+
+  message Member {
+    required string name = 1;
+    required string nickname = 2;
+    required string status = 3;
+    required string memberType = 4;
+    required string description = 5;
+  }
+}

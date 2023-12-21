@@ -1,6 +1,6 @@
 package org.acme.member.domain.message
 
-import auth.MemberUpdateRequest
+import member_proto.MemberUpdateRequest
 import org.acme.common.base.JasCommandBase
 import org.acme.member.domain.entity.Member
 

@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "common_proto";
+option java_outer_classname = "CommonProto";
+option objc_class_prefix = "HLW";
+
+package common_proto;
+
+import "google/protobuf/wrappers.proto";
+
+message ProcessResponse {
+  required string code = 1;
+  required string message = 2;
+  required bool result = 3;
+  optional string processedId = 4;
+}
+

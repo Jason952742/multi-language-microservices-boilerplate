@@ -1,6 +1,6 @@
 package org.acme.member.domain.message
 
-import auth.IdentityResponse
+import auth_proto.IdentityResponse
 import java.util.*
 import io.grpc.Status
 

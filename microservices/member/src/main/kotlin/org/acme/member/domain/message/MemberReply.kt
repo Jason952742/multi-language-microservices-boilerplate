@@ -1,6 +1,6 @@
 package org.acme.member.domain.message
 
-import auth.MemberResponse
+import member_proto.MemberResponse
 import io.grpc.Status
 import org.acme.common.model.MemberType
 import org.acme.member.domain.enums.MemberStatus
