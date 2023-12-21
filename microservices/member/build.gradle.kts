@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "1.9.10"
     kotlin("plugin.allopen") version "1.9.10"
     kotlin("plugin.noarg") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
 
     id("io.quarkus")
     id("java")
@@ -21,6 +22,7 @@ dependencies {
 
     implementation("io.quarkus:quarkus-kotlin:2.16.4.Final")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
 
     implementation("io.quarkus:quarkus-resteasy-reactive:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-reactive-qute:2.16.4.Final")
@@ -48,10 +50,6 @@ dependencies {
     implementation("io.quarkus:quarkus-redis-cache:2.16.4.Final")
     implementation("io.quarkus:quarkus-cache:2.16.4.Final")
     implementation("io.quarkiverse.neo4j:quarkus-neo4j:3.5.0")
-
-    implementation("io.quarkus:quarkus-keycloak-authorization:2.16.4.Final")
-    implementation("io.quarkus:quarkus-keycloak-admin-client-reactive:2.16.4.Final")
-    implementation("io.quarkus:quarkus-oidc:2.16.4.Final")
 
     implementation("io.quarkus:quarkus-websockets:2.16.4.Final")
     implementation("io.quarkus:quarkus-websockets-client:2.16.4.Final")
