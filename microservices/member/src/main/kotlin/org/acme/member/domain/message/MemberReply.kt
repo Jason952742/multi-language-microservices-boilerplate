@@ -1,24 +1,24 @@
 package org.acme.member.domain.message
 
-import org.acme.common.model.Gender
 import auth.MemberResponse
-import java.time.LocalDate
 import io.grpc.Status
+import org.acme.common.model.MemberType
+import org.acme.member.domain.enums.MemberStatus
 
 data class MemberReply(
-    val name: String = "",
-    val nickname: String = "",
-    val gender: Gender? = null,
-    val birth: LocalDate? = null,
-    val gravatar: String = ""
+    val name: String,
+    val nickname: String,
+    val status: MemberStatus,
+    val memberType: MemberType,
+    val description: String
 ) {
 
     private fun toProto(): MemberResponse.Member = MemberResponse.Member.newBuilder().also {
         it.name = name
         it.nickname = nickname
-        gender?.run { it.gender = this.toString() }
-        birth?.run { it.birth = this.toString() }
-        it.gravatar = gravatar
+        it.status = status.toString()
+        it.memberType = memberType.toString()
+        it.description = description
     }.build()
 
     fun toResponse(): MemberResponse = MemberResponse.newBuilder().also {

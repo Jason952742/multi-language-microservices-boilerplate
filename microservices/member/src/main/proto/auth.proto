@@ -46,9 +46,7 @@ message RegistrationRequest {
 message MemberUpdateRequest {
   required string id = 1;
   required string nickname = 2;
-  optional string gender = 3; // enum Gender
-  optional string birth = 4;
-  optional string gravatar = 5;
+  optional string description = 3;
 }
 
 // Change Password
@@ -74,9 +72,9 @@ message MemberResponse {
   message Member {
     required string name = 1;
     required string nickname = 2;
-    optional string gender = 3; // enum Gender
-    optional string birth = 4;
-    required string gravatar = 5;
+    required string status = 3;
+    required string memberType = 4;
+    required string description = 5;
   }
 }
 

@@ -1,7 +1,6 @@
 package org.acme.member.infra.search
 
 import org.acme.member.infra.repository.LoginPassesRepository
-import org.acme.member.domain.model.LoginPassesListItem
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
@@ -11,6 +10,7 @@ import org.acme.common.hibernate.JasQuery
 import org.acme.common.resource.JasPaging
 import org.acme.member.domain.entity.LoginPasses
 import org.acme.member.domain.enums.IdentityMold
+import org.acme.member.domain.message.LoginPassesListItem
 import org.acme.utils.MutinyUtils.uniItem
 import java.util.*
 

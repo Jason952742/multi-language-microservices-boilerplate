@@ -69,7 +69,8 @@ class AuthenticationService {
                         systemUserId = UUID.randomUUID(),
                         name = passwordInfo.loginCreds,
                         nickname = if (data.hasNickname()) data.nickname else "anonymous${CaptchaUtils.generator6Code()}",
-                        loginCreds = passwordInfo.loginCreds
+                        loginCreds = passwordInfo.loginCreds,
+                        passwordInfo = passwordInfo
                     )
                     val loginPasses = LoginPasses(
                         name = passwordInfo.name,

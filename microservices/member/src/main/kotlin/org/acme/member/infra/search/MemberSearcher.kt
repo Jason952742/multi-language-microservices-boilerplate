@@ -1,7 +1,6 @@
 package org.acme.member.infra.search
 
 import org.acme.member.infra.repository.MemberRepository
-import org.acme.member.domain.model.SystemUserListItem
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
@@ -10,6 +9,7 @@ import org.acme.common.hibernate.JasFilterOp
 import org.acme.common.hibernate.JasQuery
 import org.acme.common.resource.JasPaging
 import org.acme.member.domain.entity.Member
+import org.acme.member.domain.message.MemberListItem
 import org.acme.utils.MutinyUtils.uniItem
 import java.util.*
 
@@ -24,7 +24,7 @@ class MemberSearcher {
     suspend fun search(
         nickname: String?, id_card: String?, name: String?,
         order_by: String?, order_asc: Boolean?, limit: Int, offset: Int
-    ): Uni<JasPaging<SystemUserListItem>> {
+    ): Uni<JasPaging<MemberListItem>> {
         val filters = listOf(
             JasFilter("nickname", JasFilterOp.Like, nickname),
             JasFilter("id_card", JasFilterOp.Equal, id_card),

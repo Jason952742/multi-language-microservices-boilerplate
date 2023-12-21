@@ -1,6 +1,5 @@
 package org.acme.member.infra.repository
 
-import org.acme.member.domain.model.LoginPassesListItem
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.context.ApplicationScoped
@@ -9,6 +8,7 @@ import org.acme.common.hibernate.JasQuery
 import org.acme.common.resource.JasPaging
 import org.acme.member.domain.entity.LoginPasses
 import org.acme.member.domain.enums.IdentityMold
+import org.acme.member.domain.message.LoginPassesListItem
 import org.acme.utils.MutinyUtils
 
 @ApplicationScoped

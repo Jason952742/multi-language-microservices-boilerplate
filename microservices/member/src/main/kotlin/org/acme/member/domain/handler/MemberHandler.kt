@@ -53,9 +53,7 @@ class MemberHandler : JasHandlerBase<Member, MemberCommand>() {
 
     private fun onUpdate(cmd: MemberProfileChange): Uni<Member> = update(entity.apply {
         cmd.nickname?.let { nickname = it }
-        cmd.gender?.let { gender = it }
-        cmd.birth?.let { birth = it }
-        cmd.gravatar?.let { gravatar = it }
+        description = cmd.description
     }, repo)
 
 }

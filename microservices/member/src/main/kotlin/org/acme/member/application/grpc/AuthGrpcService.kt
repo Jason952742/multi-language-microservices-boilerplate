@@ -60,9 +60,9 @@ class AuthGrpcService : AuthService {
             MemberReply(
                 name = it.name,
                 nickname = it.nickname,
-                gender = it.gender,
-                birth = it.birth,
-                gravatar = it.gravatar
+                status = it.status,
+                memberType = it.memberType,
+                description = it.description
             ).toResponse()
         }
     }
@@ -74,9 +74,9 @@ class AuthGrpcService : AuthService {
             MemberReply(
                 name = it.name,
                 nickname = it.nickname,
-                gender = it.gender,
-                birth = it.birth,
-                gravatar = it.gravatar
+                status = it.status,
+                memberType = it.memberType,
+                description = it.description
             ).toResponse()
         }
     }
