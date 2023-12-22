@@ -17,6 +17,7 @@ import org.acme.member.domain.message.ProcessReply
 import org.acme.member.infra.service.KeycloakAdminRestService
 import org.acme.member.infra.service.KeycloakTokenRestService
 import org.acme.utils.MyScope
+import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.jboss.resteasy.reactive.ClientWebApplicationException
 import java.util.*
@@ -34,17 +35,26 @@ class KeycloakGrpcService : KeycloakProtoService {
     @RestClient
     lateinit var keycloakAdminService: KeycloakAdminRestService
 
+    @ConfigProperty(name = "keycloak.admin.user")
+    lateinit var keycloakAdminUser: String
+    @ConfigProperty(name = "keycloak.admin.password")
+    lateinit var keycloakAdminPassword: String
+    @ConfigProperty(name = "keycloak.client.id")
+    lateinit var keycloakClientId: String
+    @ConfigProperty(name = "keycloak.client.secret")
+    lateinit var keycloakClientSecret: String
+
     private suspend fun getAdminToken(): KeyCloakTokenReply = keycloakService.getAdminToken(
         grantType = GrantType.password.toString(),
         clientId = "admin-cli",
-        username = "admin",
-        password = "adminpassword"
+        username = keycloakAdminUser,
+        password = keycloakAdminPassword
     )
 
     private suspend fun getUserToken(username: String, password: String): KeyCloakTokenReply = keycloakService.getUserToken(
         grantType = GrantType.password.toString(),
-        clientId = "web-auth-client",
-        clientSecret = "eHuKZX0iGqKB7glv0T5yGFqwjK38zjS9",
+        clientId = keycloakClientId,
+        clientSecret = keycloakClientSecret,
         username = username,
         password = password,
         scope = "openid"
