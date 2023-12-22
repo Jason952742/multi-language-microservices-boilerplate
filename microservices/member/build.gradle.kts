@@ -11,6 +11,7 @@ plugins {
 repositories {
     mavenCentral()
     mavenLocal()
+    jcenter()
 }
 
 val quarkusPlatformGroupId: String by project
@@ -63,6 +64,7 @@ dependencies {
     implementation("io.github.microcks.quarkus:quarkus-microcks:0.1.3")
     implementation("io.quarkus:quarkus-arc:2.16.4.Final")
     implementation("commons-codec:commons-codec:1.15")
+    implementation("io.github.novacrypto:BIP39:2019.01.27")
 
     testImplementation("io.quarkus:quarkus-junit5:2.16.4.Final")
     testImplementation("io.rest-assured:rest-assured:5.3.0")
