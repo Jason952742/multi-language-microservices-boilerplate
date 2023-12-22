@@ -13,7 +13,9 @@ import keycloak_proto.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.acme.member.domain.entity.Member
 import org.acme.member.domain.enums.IdentityMold
+import org.acme.member.domain.keycloak.KeyCloakTokenReply
 import org.acme.member.domain.message.ProcessReply
+import org.acme.member.infra.search.MemberSearcher
 import org.acme.member.infra.service.AuthenticationService
 import org.acme.member.infra.service.KeycloakService
 import org.acme.utils.MnemonicUtil
@@ -33,6 +35,10 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
     @Inject
     @field: Default
     lateinit var authenticationService: AuthenticationService
+
+    @Inject
+    @field: Default
+    lateinit var memberSearcher: MemberSearcher
 
     @WithSession
     override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
@@ -56,8 +62,11 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
                 password = mnemonic,
                 nickname = request.nickname
             ).awaitSuspending()
+
+            getTokenResponse(request.loginCreds, token.data)
+        } else {
+            KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
         }
-        token
     }
 
     @WithTransaction
@@ -67,7 +76,24 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
 
     @WithSession
     override fun login(request: SignInRequest): Uni<KeycloakTokenResponse> = scope.asyncUni {
-        keycloakService.login(request)
+        val token = keycloakService.login(request)
+        if (token.code == Status.OK.code.toString()) {
+            getTokenResponse(request.identifier, token.data)
+        } else {
+            KeyCloakTokenReply.toError(Status.ALREADY_EXISTS, "member not found")
+        }
     }
+
+    private suspend fun getTokenResponse(identifier: String, token: KeycloakTokenResponse.KeycloakToken) = memberSearcher
+        .getByName(identifier)
+        .awaitSuspending()?.run {
+            KeycloakTokenResponse.newBuilder().also {
+                it.code = Status.OK.code.toString()
+                it.message = "Success"
+                it.data = token
+                it.userId = this.id.toString()
+                it.userName = this.nickname
+            }.build()
+        } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
 
 }

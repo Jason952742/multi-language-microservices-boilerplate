@@ -48,7 +48,8 @@ class AuthenticationService {
         .awaitSuspending()?.let {
             // Verify that the password is correct
             passwordRepository.verify(it.loginCreds, credentials.password).awaitSuspending()?.run {
-                val identityReply: IdentityResponse = IdentityReply(userId = it.user.id!!, loginCreds = it.loginCreds).toResponse()
+                // todo: get user profile
+                val identityReply: IdentityResponse = IdentityReply(userId = it.user.id!!, loginCreds = it.loginCreds, nickname = "").toResponse()
                 uniItem(identityReply)
             } ?: uniItem(IdentityReply.toError(Status.UNAUTHENTICATED, "Incorrect user or password"))
         } ?: uniItem(IdentityReply.toError(Status.NOT_FOUND, "user not found"))
@@ -65,7 +66,7 @@ class AuthenticationService {
                     )
                     val member = Member(
                         name = passwordInfo.loginCreds,
-                        nickname = nickname ?: "anonymous${CaptchaUtils.generator6Code()}",
+                        nickname = if (nickname !== null && nickname !== "") nickname else "anonymous${CaptchaUtils.generator6Code()}",
                         loginCreds = passwordInfo.loginCreds,
                         passwordInfo = passwordInfo
                     )
@@ -79,8 +80,8 @@ class AuthenticationService {
                     )
 
                     member.loginPasses.add(loginPasses)
-                    val user = memberRepository.persist(member).awaitSuspending()
-                    val identityReply: IdentityResponse = IdentityReply(userId = user.id!!, loginCreds = user.loginCreds).toResponse()
+                    val user = memberRepository.persistAndFlush(member).awaitSuspending()
+                    val identityReply: IdentityResponse = IdentityReply(userId = user.id!!, loginCreds = user.loginCreds, nickname = user.nickname).toResponse()
                     uniItem(identityReply)
                 }
 

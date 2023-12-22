@@ -21,6 +21,8 @@ class MemberSearcher {
 
     suspend fun getById(id: UUID): Uni<Member> = memberRepository.get(id)
 
+    suspend fun getByName(name: String): Uni<Member?> = memberRepository.findByName(name)
+
     suspend fun search(
         nickname: String?, id_card: String?, name: String?,
         order_by: String?, order_asc: Boolean?, limit: Int, offset: Int

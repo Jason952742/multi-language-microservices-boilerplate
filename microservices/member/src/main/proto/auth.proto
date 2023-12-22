@@ -55,6 +55,7 @@ message IdentityResponse {
   message Identity {
     required string userId = 1;
     required string loginCreds = 2;
+    optional string nickname = 3;
   }
 
 }
