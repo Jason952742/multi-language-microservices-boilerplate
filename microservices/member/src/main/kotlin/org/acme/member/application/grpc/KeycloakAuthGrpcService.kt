@@ -43,12 +43,12 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
 
     fun generateMnemonic(): String {
         val entropy = ByteArray(Words.TWELVE.byteLength())
-        val mnemonic = MnemonicGenerator(English.INSTANCE).createMnemonic(entropy)
-        println(mnemonic)
+//        val mnemonic = MnemonicGenerator(English.INSTANCE).createMnemonic(entropy)
+//        println(mnemonic)
 
         val seedCalculator = SeedCalculator()
-        val seed = seedCalculator.calculateSeed(mnemonic, "")
-        println(seed)
+//        val seed = seedCalculator.calculateSeed(mnemonic, "")
+//        println(seed)
     }
 
     @WithSession
