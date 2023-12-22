@@ -63,7 +63,7 @@ class MemberGrpcService : MemberProtoService {
     override fun deleteMember(request: StringValue): Uni<ProcessResponse> = scope.asyncUni {
         val id = UUID.fromString(request.value)
         memberHandler.ask(id = id, cmd = MemberDelete()).awaitSuspending().let {
-            ProcessReply(changed = true, processedId = id.toString()).toResponse()
+            ProcessReply(result = true, processedId = id.toString()).toResponse()
         }
     }
 }

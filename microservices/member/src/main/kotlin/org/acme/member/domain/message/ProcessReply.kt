@@ -3,12 +3,12 @@ package org.acme.member.domain.message
 import common_proto.ProcessResponse
 import io.grpc.Status
 
-data class ProcessReply(val changed: Boolean, val processedId: String) {
+data class ProcessReply(val result: Boolean, val processedId: String) {
 
     fun toResponse(): ProcessResponse = ProcessResponse.newBuilder().also {
         it.code = Status.OK.code.toString()
         it.message = "Success"
-        it.result = this.changed
+        it.result = result
         it.processedId = processedId
     }.build()
 

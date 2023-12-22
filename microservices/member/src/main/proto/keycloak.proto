@@ -1,0 +1,55 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "keycloak_proto";
+option java_outer_classname = "KeycloakProto";
+option objc_class_prefix = "HLW";
+
+package keycloak_proto;
+
+import "common.proto";
+
+service KeycloakProtoService {
+  rpc check (CheckRequest) returns (common_proto.ProcessResponse) {}
+  rpc register (RegistrationRequest) returns (KeycloakTokenResponse) {}
+  rpc changePassword (PasswordChangeRequest) returns (common_proto.ProcessResponse) {}
+  rpc login (SignInRequest) returns (KeycloakTokenResponse) {}
+}
+
+message CheckRequest {
+  required string identifier = 1;
+}
+
+message RegistrationRequest {
+  required string loginCreds = 1;
+  required string password = 2;
+  optional string nickname = 3;
+}
+
+message PasswordChangeRequest {
+  required string id = 1;
+  required string oldPassword = 2;
+  required string newPassword = 3;
+  required string confirm = 4;
+}
+
+message SignInRequest {
+  required string identifier = 1;
+  required string password = 2;
+  required bool rememberMe = 3;
+}
+
+message KeycloakTokenResponse {
+  required string code = 1;
+  required string message = 2;
+  optional KeycloakToken data = 3;
+
+  message KeycloakToken {
+    required string accessToken = 1;
+    required int32 expiresIn = 2;
+    required int32 refreshExpiresIn = 3;
+    required string refreshToken = 4;
+    required string tokenType = 5;
+  }
+
+}

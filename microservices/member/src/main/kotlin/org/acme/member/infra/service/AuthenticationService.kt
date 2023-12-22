@@ -42,7 +42,7 @@ class AuthenticationService {
     suspend fun checkLoginPasses(credentials: CheckRequest): Uni<ProcessResponse> = loginPassesRepository
         .findByIdentifier(IdentityMold.valueOf(credentials.mold), credentials.identifier)
         .awaitSuspending().run {
-            val processReply = ProcessReply(changed = this == null, processedId = credentials.identifier).toResponse()
+            val processReply = ProcessReply(result = this == null, processedId = credentials.identifier).toResponse()
             uniItem(processReply)
         }
 
@@ -98,7 +98,7 @@ class AuthenticationService {
             // Verify that the password is correct
             passwordRepository.verify(it.loginCreds, passwordChange.oldPassword).awaitSuspending()?.run {
                 val passwordInfo = passwordRepository.save(this.updateNewPassword(passwordChange.newPassword)).awaitSuspending()
-                val processReply = ProcessReply(changed = true, processedId = passwordInfo.loginCreds).toResponse()
+                val processReply = ProcessReply(result = true, processedId = passwordInfo.loginCreds).toResponse()
                 uniItem(processReply)
             } ?: uniItem(ProcessReply.toError(Status.UNAUTHENTICATED, "Old password incorrect"))
         }

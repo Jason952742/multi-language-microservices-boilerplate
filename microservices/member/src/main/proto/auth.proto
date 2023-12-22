@@ -7,7 +7,6 @@ option objc_class_prefix = "HLW";
 
 package auth_proto;
 
-import "google/protobuf/wrappers.proto";
 import "common.proto";
 
 service AuthProtoService {

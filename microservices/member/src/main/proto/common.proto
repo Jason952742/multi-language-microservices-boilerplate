@@ -7,8 +7,6 @@ option objc_class_prefix = "HLW";
 
 package common_proto;
 
-import "google/protobuf/wrappers.proto";
-
 message ProcessResponse {
   required string code = 1;
   required string message = 2;
