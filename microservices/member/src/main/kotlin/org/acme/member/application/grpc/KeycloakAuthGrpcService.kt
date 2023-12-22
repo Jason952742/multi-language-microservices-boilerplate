@@ -2,6 +2,10 @@ package org.acme.member.application.grpc
 
 import keycloak_proto.*
 import common_proto.ProcessResponse
+import io.github.novacrypto.bip39.MnemonicGenerator
+import io.github.novacrypto.bip39.SeedCalculator
+import io.github.novacrypto.bip39.Words
+import io.github.novacrypto.bip39.wordlists.English
 import io.grpc.Status
 import io.quarkus.grpc.GrpcService
 import io.quarkus.hibernate.reactive.panache.common.WithSession
@@ -18,6 +22,7 @@ import org.acme.member.infra.service.AuthenticationService
 import org.acme.member.infra.service.KeycloakService
 import org.acme.utils.CaptchaUtils
 import org.acme.utils.MyScope
+import java.security.SecureRandom
 import java.util.*
 
 @GrpcService
@@ -35,8 +40,23 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
     @field: Default
     lateinit var authenticationService: AuthenticationService
 
+
+    fun generateMnemonic(): String {
+        val entropy = ByteArray(Words.TWELVE.byteLength())
+        val mnemonic = MnemonicGenerator(English.INSTANCE).createMnemonic(entropy)
+        println(mnemonic)
+
+        val seedCalculator = SeedCalculator()
+        val seed = seedCalculator.calculateSeed(mnemonic, "")
+        println(seed)
+    }
+
     @WithSession
     override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
+
+        generateMnemonic()
+
+
         val user: Member? = authenticationService.checkMember(request.identifier).awaitSuspending()
         if (user != null) {
             ProcessReply(result = false, processedId = request.identifier).toResponse()
