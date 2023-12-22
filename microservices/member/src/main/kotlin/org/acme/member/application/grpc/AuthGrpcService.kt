@@ -12,6 +12,7 @@ import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.acme.member.domain.enums.IdentityMold
 import org.acme.member.domain.message.ProcessReply
 import org.acme.utils.MyScope
 import java.util.*
@@ -28,18 +29,24 @@ class AuthGrpcService : AuthProtoService {
     lateinit var authenticationService: AuthenticationService
 
     @WithSession
-    override fun login(request: SignInRequest): Uni<IdentityResponse> = scope.asyncUni {
-        authenticationService.authenticateCredentials(request).awaitSuspending()
-    }
-
-    @WithSession
     override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
-        authenticationService.checkLoginPasses(request).awaitSuspending()
+        val loginPasses = authenticationService.checkLoginPasses(IdentityMold.valueOf(request.mold), request.identifier).awaitSuspending()
+        ProcessReply(result = loginPasses == null, processedId = request.identifier).toResponse()
     }
 
     @WithTransaction
     override fun register(request: RegistrationRequest): Uni<IdentityResponse> = scope.asyncUni {
-        authenticationService.register(request).awaitSuspending()
+        authenticationService.register(
+            mold = IdentityMold.valueOf(request.mold),
+            loginCreds = request.loginCreds,
+            password = request.password,
+            nickname = request.nickname
+        ).awaitSuspending()
+    }
+
+    @WithSession
+    override fun login(request: SignInRequest): Uni<IdentityResponse> = scope.asyncUni {
+        authenticationService.authenticateCredentials(request).awaitSuspending()
     }
 
     @WithTransaction

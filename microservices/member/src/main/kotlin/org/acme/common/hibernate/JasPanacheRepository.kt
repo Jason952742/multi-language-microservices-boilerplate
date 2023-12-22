@@ -20,7 +20,7 @@ interface JasPanacheRepository<T : JasEntityBase> : PanacheRepositoryBase<T, UUI
     suspend fun getIn(ids: List<UUID>): Uni<MutableList<T>> = list("id IN (:ids)", Parameters.with("ids", ids))
     suspend fun getInOrNull(ids: List<UUID>?): Uni<MutableList<T>>? = ids?.let { getIn(ids) }
 
-    suspend fun findByName(name: String): Uni<T>? = find("name", name).firstResult()
+    suspend fun findByName(name: String): Uni<T?> = find("name", name).firstResult()
     suspend fun deleteByName(name: String): Uni<Long>? = delete("name", name)
 
     suspend fun count(q: JasQuery): Uni<Long> {

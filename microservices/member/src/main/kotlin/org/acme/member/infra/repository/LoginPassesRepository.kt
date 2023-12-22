@@ -16,7 +16,7 @@ class LoginPassesRepository : JasPanacheRepository<LoginPasses> {
 
     fun findByLoginCreds(loginCreds: String): Uni<LoginPasses?> = find("loginCreds", loginCreds).firstResult()
 
-    fun findByIdentifier(mold: IdentityMold, identifier: String): Uni<LoginPasses?>  = find("mold = : mold and identifier = : identifier", mapOf(
+    suspend fun findByIdentifier(mold: IdentityMold, identifier: String): Uni<LoginPasses?>  = find("mold = : mold and identifier = : identifier", mapOf(
         "mold" to mold,
         "identifier" to identifier
     )).firstResult()

@@ -39,12 +39,9 @@ class AuthenticationService {
     @Inject
     private lateinit var searcher: MemberSearcher
 
-    suspend fun checkLoginPasses(credentials: CheckRequest): Uni<ProcessResponse> = loginPassesRepository
-        .findByIdentifier(IdentityMold.valueOf(credentials.mold), credentials.identifier)
-        .awaitSuspending().run {
-            val processReply = ProcessReply(result = this == null, processedId = credentials.identifier).toResponse()
-            uniItem(processReply)
-        }
+    suspend fun checkMember(identifier: String): Uni<Member?> = memberRepository.findByName(identifier)
+
+    suspend fun checkLoginPasses(mold: IdentityMold, identifier: String): Uni<LoginPasses?> = loginPassesRepository.findByIdentifier(mold, identifier)
 
     suspend fun authenticateCredentials(credentials: SignInRequest): Uni<IdentityResponse> = loginPassesRepository
         .findByIdentifier(IdentityMold.valueOf(credentials.mold), credentials.identifier)
@@ -56,28 +53,27 @@ class AuthenticationService {
             } ?: uniItem(IdentityReply.toError(Status.UNAUTHENTICATED, "Incorrect user or password"))
         } ?: uniItem(IdentityReply.toError(Status.NOT_FOUND, "user not found"))
 
-    suspend fun register(data: RegistrationRequest): Uni<IdentityResponse> = loginPassesRepository
-        .findByLoginCreds(data.loginCreds)
+    suspend fun register(mold: IdentityMold, loginCreds: String, password: String, nickname: String?): Uni<IdentityResponse> = loginPassesRepository
+        .findByLoginCreds(loginCreds)
         .awaitSuspending().run {
             when (this) {
                 null -> {
                     val passwordInfo = PasswordInfo(
-                        name = data.loginCreds,
-                        loginCreds = data.loginCreds,
-                        password = data.password.encrypt()
+                        name = loginCreds,
+                        loginCreds = loginCreds,
+                        password = password.encrypt()
                     )
                     val member = Member(
-                        systemUserId = UUID.randomUUID(),
                         name = passwordInfo.loginCreds,
-                        nickname = if (data.hasNickname()) data.nickname else "anonymous${CaptchaUtils.generator6Code()}",
+                        nickname = nickname ?: "anonymous${CaptchaUtils.generator6Code()}",
                         loginCreds = passwordInfo.loginCreds,
                         passwordInfo = passwordInfo
                     )
                     val loginPasses = LoginPasses(
                         name = passwordInfo.name,
                         loginCreds = passwordInfo.loginCreds,
-                        mold = IdentityMold.valueOf(data.mold),
-                        identifier = data.loginCreds,
+                        mold = mold,
+                        identifier = loginCreds,
                         expired = DateUtils.farFarAway,
                         user = member
                     )

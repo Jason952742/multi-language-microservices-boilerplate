@@ -17,7 +17,6 @@ class Member(
     @Id
     @GeneratedValue
     override var id: UUID? = null,
-    var systemUserId: UUID,
 
     override var name: String,
 
