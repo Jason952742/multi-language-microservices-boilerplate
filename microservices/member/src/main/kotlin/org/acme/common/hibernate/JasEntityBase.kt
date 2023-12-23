@@ -14,8 +14,8 @@ import java.util.*
 abstract class JasEntityBase {
 
     abstract var id: UUID?
-
     abstract var name: String
+    abstract var userId: UUID
 
     @Column(updatable = false)
     @JsonIgnore

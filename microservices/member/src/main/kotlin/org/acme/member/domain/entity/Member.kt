@@ -17,8 +17,10 @@ class Member(
     @Id
     @GeneratedValue
     override var id: UUID? = null,
-
+    @Column(updatable = false, unique = true)
     override var name: String,
+    @Column(updatable = false, unique = true)
+    override var userId: UUID,
 
     var nickname: String,
 
@@ -35,7 +37,7 @@ class Member(
     var point: Long = 0,
     var creditScore: Double = 0.0,
     var level: Int = 0,
-    var expirationDate: LocalDateTime = LocalDateTime.now(),
+    var expiredAt: LocalDateTime = LocalDateTime.now(),
     var referrerCode: String,
 
     var description: String = "",

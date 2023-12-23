@@ -5,6 +5,7 @@ import io.grpc.Status
 import io.quarkus.grpc.GrpcService
 import io.quarkus.hibernate.reactive.panache.common.WithSession
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction
+import io.smallrye.jwt.auth.principal.*
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.inject.Default
@@ -20,8 +21,8 @@ import org.acme.member.infra.service.AuthenticationService
 import org.acme.member.infra.service.KeycloakService
 import org.acme.utils.MnemonicUtil
 import org.acme.utils.MyScope
-import org.acme.utils.UuidUtils
 import java.util.*
+
 
 @GrpcService
 @ExperimentalCoroutinesApi
@@ -58,10 +59,14 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
 
         val token = keycloakService.register(request).awaitSuspending()
         if (token.code == Status.OK.code.toString()) {
+
+            val userId = keycloakService.getJwt(token.data.accessToken).subject
+
             authenticationService.register(
                 mold = IdentityMold.KeyCloak,
                 loginCreds = request.loginCreds,
                 password = mnemonic,
+                userId = UUID.fromString(userId),
                 nickname = request.nickname
             ).awaitSuspending()
 
@@ -96,7 +101,7 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
                 it.userId = this.id.toString()
                 it.userName = this.nickname
                 it.referrerCode = this.referrerCode
-                it.expirationDate = this.expirationDate.toString()
+                it.expiredAt = this.expiredAt.toString()
             }.build()
         } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
 

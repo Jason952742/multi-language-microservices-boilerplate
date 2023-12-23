@@ -55,24 +55,27 @@ class AuthenticationService {
             } ?: uniItem(IdentityReply.toError(Status.UNAUTHENTICATED, "Incorrect user or password"))
         } ?: uniItem(IdentityReply.toError(Status.NOT_FOUND, "user not found"))
 
-    suspend fun register(mold: IdentityMold, loginCreds: String, password: String, nickname: String?): Uni<IdentityResponse> = loginPassesRepository
+    suspend fun register(mold: IdentityMold, loginCreds: String, password: String, userId: UUID, nickname: String?): Uni<IdentityResponse> = loginPassesRepository
         .findByLoginCreds(loginCreds)
         .awaitSuspending().run {
             when (this) {
                 null -> {
                     val passwordInfo = PasswordInfo(
+                        userId = userId,
                         name = loginCreds,
                         loginCreds = loginCreds,
                         password = password.encrypt()
                     )
                     val member = Member(
                         name = passwordInfo.loginCreds,
+                        userId = userId,
                         nickname = if (nickname !== null && nickname !== "") nickname else "anonymous${CaptchaUtils.generator6Code()}",
                         loginCreds = passwordInfo.loginCreds,
                         passwordInfo = passwordInfo,
                         referrerCode = UuidUtils.encodeUUID(UUID.randomUUID())
                     )
                     val loginPasses = LoginPasses(
+                        userId = userId,
                         name = passwordInfo.name,
                         loginCreds = passwordInfo.loginCreds,
                         mold = mold,

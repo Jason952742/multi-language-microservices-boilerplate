@@ -1,9 +1,6 @@
 package org.acme.member.domain.entity
 
-import jakarta.persistence.Cacheable
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.Id
+import jakarta.persistence.*
 import org.acme.common.hibernate.JasEntityBase
 import org.acme.utils.EncryptionUtils
 import org.acme.utils.EncryptionUtils.encrypt
@@ -15,6 +12,8 @@ class PasswordInfo(
     @Id
     @GeneratedValue
     override var id: UUID? = null,
+    @Column(updatable = false, unique = true)
+    override var userId: UUID,
 
     override var name: String,
 

@@ -3,8 +3,13 @@ package org.acme.member.infra.service
 import keycloak_proto.*
 import common_proto.ProcessResponse
 import io.grpc.Status
+import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal
+import io.smallrye.jwt.auth.principal.JWTAuthContextInfo
+import io.smallrye.jwt.auth.principal.JWTCallerPrincipal
+import io.smallrye.jwt.auth.principal.ParseException
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
+import jakarta.inject.Inject
 import org.acme.member.domain.keycloak.KeycloakCredentialRepresentation
 import org.acme.member.domain.keycloak.GrantType
 import org.acme.member.domain.keycloak.KeyCloakTokenReply
@@ -14,6 +19,10 @@ import org.acme.utils.MutinyUtils.uniItem
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
 import org.jboss.resteasy.reactive.ClientWebApplicationException
+import org.jose4j.jwt.JwtClaims
+import org.jose4j.jwt.consumer.InvalidJwtException
+import java.nio.charset.StandardCharsets
+import java.time.LocalDateTime
 import java.util.*
 
 @ApplicationScoped
@@ -39,6 +48,36 @@ class KeycloakService {
 
     @ConfigProperty(name = "keycloak.client.secret")
     private lateinit var keycloakClientSecret: String
+
+    @Inject
+    lateinit var authContextInfo: JWTAuthContextInfo
+
+    @Throws(ParseException::class)
+    private fun parse(token: String, authContextInfo: JWTAuthContextInfo): JWTCallerPrincipal {
+        try {
+            // The Token has already been verified, parse the token claims only
+            val json = String(Base64.getUrlDecoder().decode(token.split("\\.".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[1]), StandardCharsets.UTF_8)
+            return DefaultJWTCallerPrincipal(JwtClaims.parse(json))
+        } catch (ex: InvalidJwtException) {
+            throw ParseException(ex.message)
+        }
+    }
+
+    suspend fun getJwt(token: String): JWTCallerPrincipal {
+        val jwt = parse(token, authContextInfo)
+        // println("issuer:" + jwt.issuer)
+        // println("subject:" + jwt.subject)
+        // println("name:" + jwt.name)
+        // println("audience:" + jwt.audience)
+        // println("groups:" + jwt.groups)
+        // println("expirationTime:" + jwt.expirationTime)
+        // println("claimNames:" + jwt.claimNames)
+        // println("issuedAtTime:" + jwt.issuedAtTime)
+        // println("tokenID:" + jwt.tokenID)
+        // println("realm_access:" + jwt.getClaim("realm_access"))
+        // println("gender:" + jwt.getClaim("gender"))
+        return jwt
+    }
 
     private suspend fun getAdminToken(): KeyCloakTokenReply = keycloakService.getAdminToken(
         grantType = GrantType.password.toString(),
@@ -68,6 +107,7 @@ class KeycloakService {
                 val user = KeycloakUserRepresentation(
                     username = request.loginCreds,
                     enabled = true,
+                    attributes = mapOf("expiredAt" to setOf(LocalDateTime.now().toString())),
                     credentials = listOf(
                         KeycloakCredentialRepresentation(type = "password", value = request.password, temporary = false)
                     )

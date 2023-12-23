@@ -24,6 +24,7 @@ dependencies {
     implementation("io.quarkus:quarkus-kotlin:2.16.4.Final")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("io.smallrye.reactive:mutiny-kotlin:2.1.0")
 
     implementation("io.quarkus:quarkus-resteasy-reactive:2.16.4.Final")
     implementation("io.quarkus:quarkus-resteasy-reactive-qute:2.16.4.Final")
@@ -42,7 +43,8 @@ dependencies {
     implementation("io.quarkus:quarkus-smallrye-health:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-context-propagation:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging:2.16.4.Final")
-    implementation("io.smallrye.reactive:mutiny-kotlin:2.1.0")
+    implementation("io.quarkus:quarkus-smallrye-jwt:2.16.4.Final")
+    implementation("io.quarkus:quarkus-smallrye-jwt-build:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-fault-tolerance:2.16.4.Final")
 
     implementation("io.quarkus:quarkus-redis-client:2.16.4.Final")

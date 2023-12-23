@@ -40,6 +40,7 @@ class AuthGrpcService : AuthProtoService {
             mold = IdentityMold.valueOf(request.mold),
             loginCreds = request.loginCreds,
             password = request.password,
+            userId = UUID.randomUUID(), // TODO: get userID
             nickname = request.nickname
         ).awaitSuspending()
     }

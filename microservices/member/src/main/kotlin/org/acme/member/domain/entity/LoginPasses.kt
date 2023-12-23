@@ -26,6 +26,8 @@ class LoginPasses(
     @Id
     @GeneratedValue
     override var id: UUID? = null,
+    @Column(updatable = false, unique = true)
+    override var userId: UUID,
 
     override var name: String,
 
