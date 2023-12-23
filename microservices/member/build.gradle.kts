@@ -38,9 +38,7 @@ dependencies {
     implementation("io.quarkus:quarkus-reactive-pg-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-hibernate-validator:2.16.4.Final")
 
-    implementation("io.quarkus:quarkus-smallrye-graphql:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-openapi:2.16.4.Final")
-    implementation("io.quarkus:quarkus-smallrye-graphql-client:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-health:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-context-propagation:2.16.4.Final")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging:2.16.4.Final")
@@ -57,7 +55,7 @@ dependencies {
 
     implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.2.14")
     implementation("io.quarkus:quarkus-mutiny:2.16.4.Final")
-    implementation("io.quarkus:quarkus-grpc:2.16.4.Final")
+    implementation("io.quarkus:quarkus-grpc:3.2.1.Final")
     implementation("io.quarkus:quarkus-quartz:2.16.4.Final")
 
     implementation("io.quarkus:quarkus-jackson:2.16.4.Final")
