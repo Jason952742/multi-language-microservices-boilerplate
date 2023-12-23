@@ -4,6 +4,7 @@ import jakarta.ws.rs.*
 import org.acme.member.domain.keycloak.KeyCloakTokenReply
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import jakarta.ws.rs.core.MediaType
+import org.jboss.resteasy.reactive.RestPath
 
 @Path("/realms")
 @RegisterRestClient(configKey = "keycloak-api")
@@ -21,8 +22,9 @@ interface KeycloakTokenRestService {
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Path("/multi_lang/protocol/openid-connect/token")
+    @Path("/{realm}/protocol/openid-connect/token")
     suspend fun getUserToken(
+        @RestPath realm: String,
         @FormParam("grant_type") grantType: String,
         @FormParam("client_id") clientId: String,
         @FormParam("client_secret") clientSecret: String,

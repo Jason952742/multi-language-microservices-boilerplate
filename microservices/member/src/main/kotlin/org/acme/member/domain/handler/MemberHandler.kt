@@ -32,6 +32,16 @@ class MemberHandler : JasHandlerBase<Member, MemberCommand>() {
                 is MemberProfileChange -> onUpdate(cmd)
                 else -> rejected(cmd)
             }
+            Subscriber -> when (cmd) {
+                is MemberGet -> uniItem(it)
+                is MemberProfileChange -> onUpdate(cmd)
+                else -> rejected(cmd)
+            }
+            Expired -> when (cmd) {
+                is MemberGet -> uniItem(it)
+                is MemberProfileChange -> onUpdate(cmd)
+                else -> rejected(cmd)
+            }
             Hide -> when (cmd) {
                 is MemberDelete -> delete(repo)
                 else -> rejected(cmd)

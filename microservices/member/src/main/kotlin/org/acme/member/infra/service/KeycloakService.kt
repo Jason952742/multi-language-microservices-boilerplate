@@ -31,6 +31,9 @@ class KeycloakService {
     @ConfigProperty(name = "keycloak.admin.password")
     private lateinit var keycloakAdminPassword: String
 
+    @ConfigProperty(name = "keycloak.realm")
+    private lateinit var keycloakRealm: String
+
     @ConfigProperty(name = "keycloak.client.id")
     private lateinit var keycloakClientId: String
 
@@ -45,6 +48,7 @@ class KeycloakService {
     )
 
     private suspend fun getUserToken(username: String, password: String): KeyCloakTokenReply = keycloakService.getUserToken(
+        realm = keycloakRealm,
         grantType = GrantType.password.toString(),
         clientId = keycloakClientId,
         clientSecret = keycloakClientSecret,
@@ -54,12 +58,12 @@ class KeycloakService {
     )
 
     suspend fun check(request: CheckRequest): Uni<ProcessResponse> = getAdminToken().let {
-        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", request.identifier)
+        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, request.identifier)
         uniItem(ProcessReply(result = userResult.isEmpty(), processedId = request.identifier).toResponse())
     }
 
     suspend fun register(request: RegistrationRequest): Uni<KeycloakTokenResponse> = getAdminToken().let {
-        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", request.loginCreds).run {
+        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, request.loginCreds).run {
             if (this.isEmpty()) {
                 val user = KeycloakUserRepresentation(
                     username = request.loginCreds,
@@ -68,7 +72,7 @@ class KeycloakService {
                         KeycloakCredentialRepresentation(type = "password", value = request.password, temporary = false)
                     )
                 )
-                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", user)
+                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", keycloakRealm, user)
                 if (result.status == 201) {
                     val userToken: KeyCloakTokenReply = getUserToken(request.loginCreds, request.password)
                     uniItem(userToken.toResponse())
@@ -83,7 +87,7 @@ class KeycloakService {
 
     suspend fun changePassword(request: PasswordChangeRequest): Uni<ProcessResponse> = getAdminToken().let {
         val credential = KeycloakCredentialRepresentation(type = "password", value = request.newPassword, temporary = false)
-        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", UUID.fromString(request.id), credential)
+        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", keycloakRealm, UUID.fromString(request.id), credential)
         if (result.status == 204) {
             uniItem(ProcessReply(result = true, processedId = request.id).toResponse())
         } else {

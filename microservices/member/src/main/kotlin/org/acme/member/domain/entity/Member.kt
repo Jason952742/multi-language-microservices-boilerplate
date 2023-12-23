@@ -28,6 +28,8 @@ class Member(
     @Enumerated(value = EnumType.STRING)
     var memberType: MemberType = MemberType.Wood,
 
+    var expirationDate: LocalDateTime = LocalDateTime.now(),
+
     @JsonIgnore
     @Column(length = 40, unique = true)
     var loginCreds: String,

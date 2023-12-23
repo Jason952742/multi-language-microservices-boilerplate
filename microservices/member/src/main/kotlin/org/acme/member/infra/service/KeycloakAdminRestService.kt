@@ -14,14 +14,14 @@ import java.util.*
 interface KeycloakAdminRestService {
 
     @GET
-    @Path("/multi_lang/users")
-    suspend fun findUserByName(@HeaderParam("Authorization") token: String, @RestQuery username: String): Set<KeycloakUserRepresentation>
+    @Path("/{realm}/users")
+    suspend fun findUserByName(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestQuery username: String): Set<KeycloakUserRepresentation>
 
     @POST
-    @Path("/multi_lang/users")
-    suspend fun createUser(@HeaderParam("Authorization") token: String, user: KeycloakUserRepresentation): Response
+    @Path("/{realm}/users")
+    suspend fun createUser(@HeaderParam("Authorization") token: String, @RestPath realm: String, user: KeycloakUserRepresentation): Response
 
     @PUT
-    @Path("/multi_lang/users/{id}/reset-password")
-    suspend fun changePassword(@HeaderParam("Authorization") token: String, @RestPath id: UUID, credential: KeycloakCredentialRepresentation): Response
+    @Path("/{realm}/users/{id}/reset-password")
+    suspend fun changePassword(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestPath id: UUID, credential: KeycloakCredentialRepresentation): Response
 }
