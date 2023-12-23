@@ -18,16 +18,41 @@ object UuidUtils {
         return shortenedUUID
     }
 
+    fun uuidTobase64() {
+        val uuid = UUID.randomUUID()
+        val encodedString = encodeUUID(uuid)
+        println(uuid)
+        println("Encoded UUID: $encodedString")
+
+        val decodedUUID = decodeUUID(encodedString)
+        println(encodedString)
+        println("Decoded UUID: $decodedUUID")
+    }
+
+    /**
+     *  Convert UUID to Base64
+     *
+     * @sample uuidTobase64
+     */
     fun encodeUUID(uuid: UUID): String {
         val uuidBytes = toBytes(uuid)
         val encodedBytes = Base64.getUrlEncoder().encode(uuidBytes)
-        return String(encodedBytes)
+        return removePadding(String(encodedBytes))
     }
 
     fun decodeUUID(encodedString: String): UUID {
-        val decodedBytes = Base64.getUrlDecoder().decode(encodedString)
+        val decodedBytes = Base64.getUrlDecoder().decode(addPadding(encodedString))
         val uuidBytes = toUUIDBytes(decodedBytes)
         return toUUID(uuidBytes)
+    }
+
+    private fun removePadding(encodedString: String): String {
+        return encodedString.removeSuffix("==")
+    }
+
+    private fun addPadding(encodedString: String): String {
+        val paddingLength = encodedString.length % 4
+        return encodedString + "=".repeat(paddingLength)
     }
 
     private fun toBytes(uuid: UUID): ByteArray {

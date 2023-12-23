@@ -21,6 +21,7 @@ import org.acme.utils.CaptchaUtils
 import org.acme.utils.DateUtils
 import org.acme.utils.EncryptionUtils.encrypt
 import org.acme.utils.MutinyUtils.uniItem
+import org.acme.utils.UuidUtils
 import org.jboss.logging.Logger
 import java.util.*
 
@@ -68,7 +69,8 @@ class AuthenticationService {
                         name = passwordInfo.loginCreds,
                         nickname = if (nickname !== null && nickname !== "") nickname else "anonymous${CaptchaUtils.generator6Code()}",
                         loginCreds = passwordInfo.loginCreds,
-                        passwordInfo = passwordInfo
+                        passwordInfo = passwordInfo,
+                        referrerCode = UuidUtils.encodeUUID(UUID.randomUUID())
                     )
                     val loginPasses = LoginPasses(
                         name = passwordInfo.name,

@@ -28,8 +28,6 @@ class Member(
     @Enumerated(value = EnumType.STRING)
     var memberType: MemberType = MemberType.Wood,
 
-    var expirationDate: LocalDateTime = LocalDateTime.now(),
-
     @JsonIgnore
     @Column(length = 40, unique = true)
     var loginCreds: String,
@@ -37,6 +35,8 @@ class Member(
     var point: Long = 0,
     var creditScore: Double = 0.0,
     var level: Int = 0,
+    var expirationDate: LocalDateTime = LocalDateTime.now(),
+    var referrerCode: String,
 
     var description: String = "",
     var lastLoginAt: LocalDateTime? = null,

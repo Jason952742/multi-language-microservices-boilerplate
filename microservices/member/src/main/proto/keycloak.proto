@@ -45,6 +45,8 @@ message KeycloakTokenResponse {
   optional KeycloakToken data = 3;
   optional string userId = 4;
   optional string userName = 5;
+  optional string referrerCode = 6;
+  optional string expirationDate = 7;
 
   message KeycloakToken {
     required string accessToken = 1;
