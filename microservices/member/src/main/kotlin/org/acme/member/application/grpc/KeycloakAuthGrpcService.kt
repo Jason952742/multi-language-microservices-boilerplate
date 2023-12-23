@@ -20,6 +20,8 @@ import org.acme.member.infra.service.AuthenticationService
 import org.acme.member.infra.service.KeycloakService
 import org.acme.utils.MnemonicUtil
 import org.acme.utils.MyScope
+import org.acme.utils.UuidUtils
+import java.util.*
 
 @GrpcService
 @ExperimentalCoroutinesApi
@@ -42,6 +44,17 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
 
     @WithSession
     override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
+
+        val uuid = UUID.randomUUID()
+        val encodedString = UuidUtils.encodeUUID(uuid)
+        println(uuid)
+        println("Encoded UUID: $encodedString")
+
+        val decodedUUID = UuidUtils.decodeUUID(encodedString)
+        println(encodedString)
+        println("Decoded UUID: $decodedUUID")
+
+
         val user: Member? = authenticationService.checkMember(request.identifier).awaitSuspending()
         if (user != null) {
             ProcessReply(result = false, processedId = request.identifier).toResponse()
