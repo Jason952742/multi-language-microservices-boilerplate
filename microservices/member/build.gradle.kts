@@ -57,8 +57,9 @@ dependencies {
 
     implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.2.14")
     implementation("io.quarkus:quarkus-mutiny:3.6.4.Final")
-    implementation("io.quarkus:quarkus-grpc:3.2.1.Final")
+    implementation("io.quarkus:quarkus-grpc:3.6.4.Final")
     implementation("io.quarkus:quarkus-quartz:3.6.4.Final")
+    implementation("io.quarkus:quarkus-scheduler:3.6.4.Final")
 
     implementation("io.quarkus:quarkus-jackson:3.6.4.Final")
     implementation("io.quarkus:quarkus-scheduler:3.6.4.Final")
