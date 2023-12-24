@@ -43,6 +43,7 @@ dependencies {
     implementation("io.quarkus:quarkus-smallrye-health:3.6.4.Final")
     implementation("io.quarkus:quarkus-smallrye-context-propagation:3.6.4.Final")
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging:3.6.4.Final")
+    implementation("io.quarkus:quarkus-smallrye-reactive-messaging-rabbitmq:3.6.4.Final")
     implementation("io.quarkus:quarkus-smallrye-jwt:3.6.4.Final")
     implementation("io.quarkus:quarkus-smallrye-jwt-build:3.6.4.Final")
     implementation("io.quarkus:quarkus-smallrye-fault-tolerance:3.6.4.Final")

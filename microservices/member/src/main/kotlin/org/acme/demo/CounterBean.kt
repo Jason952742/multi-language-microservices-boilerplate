@@ -21,12 +21,12 @@ class CounterBean {
     @Scheduled(cron = "0 15 10 * * ?")
     fun cronJob(execution: ScheduledExecution) {
         counter.incrementAndGet()
-        println(execution.scheduledFireTime)
+        // println(execution.scheduledFireTime)
     }
 
     @Scheduled(cron = "{cron.expr}")
     fun cronJobWithExpressionInConfig() {
         counter.incrementAndGet()
-        println("Cron expression configured in application.properties")
+        // println("Cron expression configured in application.properties")
     }
 }
