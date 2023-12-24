@@ -1,5 +1,6 @@
 package org.acme.common.resource
 
+import org.acme.common.model.SystemDefault
 import java.util.*
 
 
@@ -14,6 +15,6 @@ data class JasIdentity(
 ) {
     companion object {
         var current: JasIdentity? = null
-        fun getOrgId(): UUID = current?.orgId ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+        fun getOrgId(): UUID = current?.orgId ?: SystemDefault.ID
     }
 }

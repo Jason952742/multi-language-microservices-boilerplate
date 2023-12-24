@@ -5,13 +5,15 @@ import io.grpc.Status
 import io.quarkus.grpc.GrpcService
 import io.quarkus.hibernate.reactive.panache.common.WithSession
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction
-import io.smallrye.jwt.auth.principal.*
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import keycloak_proto.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.acme.common.model.SystemDefault
+import org.acme.member.application.event.publish.MemberCreatedEvent
+import org.acme.member.application.event.publish.MemberProducer
 import org.acme.member.domain.entity.Member
 import org.acme.member.domain.enums.IdentityMold
 import org.acme.member.domain.keycloak.KeyCloakTokenReply
@@ -43,6 +45,9 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
     @field: Default
     lateinit var memberSearcher: MemberSearcher
 
+    @Inject
+    lateinit var memberProducer: MemberProducer
+
     @WithSession
     override fun check(request: CheckRequest): Uni<ProcessResponse> = scope.asyncUni {
         val user: Member? = authenticationService.checkMember(request.identifier).awaitSuspending()
@@ -70,7 +75,25 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
                 nickname = request.nickname
             ).awaitSuspending()
 
-            getTokenResponse(request.loginCreds, token.data)
+            memberSearcher.getByName(request.loginCreds).awaitSuspending()?.run {
+
+                memberProducer.sendCreatedEvent(
+                    MemberCreatedEvent(
+                        userId = this.userId,
+                        userName = this.name,
+                        memberType = this.memberType,
+                        memberId = this.id!!,
+                        loginCreds = this.loginCreds,
+                        level = this.level,
+                        memberReferrerCode = this.referrerCode,
+                        refereeId = SystemDefault.ID,
+                        refereeName = SystemDefault.NAME,
+                        refereeReferrerCode = SystemDefault.NAME
+                    )
+                )
+
+                getTokenResponse(this, token.data)
+            } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
         } else {
             KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
         }
@@ -85,24 +108,23 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
     override fun login(request: SignInRequest): Uni<KeycloakTokenResponse> = scope.asyncUni {
         val token = keycloakService.login(request)
         if (token.code == Status.OK.code.toString()) {
-            getTokenResponse(request.identifier, token.data)
+            memberSearcher.getByName(request.identifier).awaitSuspending()?.run {
+                getTokenResponse(this, token.data)
+            } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
         } else {
             KeyCloakTokenReply.toError(Status.ALREADY_EXISTS, "member not found")
         }
     }
 
-    private suspend fun getTokenResponse(identifier: String, token: KeycloakTokenResponse.KeycloakToken) = memberSearcher
-        .getByName(identifier)
-        .awaitSuspending()?.run {
-            KeycloakTokenResponse.newBuilder().also {
-                it.code = Status.OK.code.toString()
-                it.message = "Success"
-                it.data = token
-                it.userId = this.id.toString()
-                it.userName = this.nickname
-                it.referrerCode = this.referrerCode
-                it.expiredAt = this.expiredAt.toString()
-            }.build()
-        } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
+    private fun getTokenResponse(member: Member, token: KeycloakTokenResponse.KeycloakToken) =
+        KeycloakTokenResponse.newBuilder().also {
+            it.code = Status.OK.code.toString()
+            it.message = "Success"
+            it.data = token
+            it.userId = member.id.toString()
+            it.userName = member.nickname
+            it.referrerCode = member.referrerCode
+            it.expiredAt = member.expiredAt.toString()
+        }.build()
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.Version
+import org.acme.common.model.SystemDefault
 import org.acme.common.resource.JasIdentity
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -19,18 +20,18 @@ abstract class JasEntityBase {
 
     @Column(updatable = false)
     @JsonIgnore
-    var orgId: UUID = JasIdentity.current?.orgId ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+    var orgId: UUID = JasIdentity.current?.orgId ?: SystemDefault.ID
 
     @Column(updatable = false)
     @JsonIgnore
-    var creatorId: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
+    var creatorId: UUID = JasIdentity.current?.id ?: SystemDefault.ID
 
     @Column(updatable = false)
-    var creatorName: String = JasIdentity.current?.name ?: "system"
+    var creatorName: String = JasIdentity.current?.name ?: SystemDefault.NAME
 
     @JsonIgnore
-    var lastModifierId: UUID = JasIdentity.current?.id ?: UUID.fromString("88888888-8888-8888-8888-888888888888")
-    var lastModifierName: String = JasIdentity.current?.name ?: "system"
+    var lastModifierId: UUID = JasIdentity.current?.id ?: SystemDefault.ID
+    var lastModifierName: String = JasIdentity.current?.name ?: SystemDefault.NAME
 
     @CreationTimestamp
     @Column(updatable = false)
