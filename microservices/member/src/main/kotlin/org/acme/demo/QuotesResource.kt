@@ -1,21 +1,21 @@
 package org.acme.demo
 
 import io.smallrye.mutiny.Multi
+import jakarta.inject.Inject
 import jakarta.ws.rs.GET
 import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
 import jakarta.ws.rs.Produces
 import jakarta.ws.rs.core.MediaType
 import org.eclipse.microprofile.reactive.messaging.Channel
-import org.eclipse.microprofile.reactive.messaging.Emitter
-import java.util.*
 
 @Path("/quotes")
 class QuotesResource {
-    @Channel("quote-requests")
-    lateinit var quoteRequestEmitter: Emitter<String>
 
-    @Channel("quotes")
+    @Inject
+    lateinit var producerService: QuoteProducer
+
+    @Channel("quotes-p")
     lateinit var quotes: Multi<Quote>
 
     /**
@@ -34,8 +34,7 @@ class QuotesResource {
     @Path("/request")
     @Produces(MediaType.TEXT_PLAIN)
     fun createRequest(): String {
-        val uuid = UUID.randomUUID()
-        quoteRequestEmitter.send(uuid.toString())
-        return uuid.toString()
+        val result = producerService.createRequest()
+        return result
     }
 }
