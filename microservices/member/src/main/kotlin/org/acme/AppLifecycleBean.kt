@@ -28,7 +28,8 @@ class AppLifecycleBean {
     fun onStart(@Observes ev: StartupEvent?) {
         LOGGER.info("$CYAN The application is starting...{} $RESET", bean.hello())
 
-        consulService.registerServiceWithHealthCheck("member-microservice")
+        consulService.registerServiceWithHealthCheck()
+        consulService.discover()
     }
 
     fun onStop(@Observes ev: ShutdownEvent?) {
