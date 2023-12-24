@@ -64,10 +64,10 @@ dependencies {
 
     implementation("io.quarkus:quarkus-jackson:3.6.4.Final")
     implementation("io.quarkus:quarkus-scheduler:3.6.4.Final")
-    implementation("io.github.microcks.quarkus:quarkus-microcks:0.1.3")
     implementation("io.quarkus:quarkus-arc:3.6.4.Final")
     implementation("commons-codec:commons-codec:1.15")
     implementation("io.github.novacrypto:BIP39:2019.01.27")
+    implementation("com.ecwid.consul:consul-api:1.4.5")
 
     testImplementation("io.quarkus:quarkus-junit5:3.6.4.Final")
     testImplementation("io.rest-assured:rest-assured:5.3.0")
