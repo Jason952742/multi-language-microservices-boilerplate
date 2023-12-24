@@ -13,8 +13,6 @@ data class MemberCreatedEvent(
     val memberId: UUID,
     val loginCreds: String,
     val level: Int,
-    val memberReferrerCode: String,
-    val refereeId: UUID,
-    val refereeName: String,
-    val refereeReferrerCode: String
+    val myReferrerCode: String,
+    val refereeCode: String
 )

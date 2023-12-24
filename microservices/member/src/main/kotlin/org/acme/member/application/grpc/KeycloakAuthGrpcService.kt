@@ -11,7 +11,6 @@ import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import keycloak_proto.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.acme.common.model.SystemDefault
 import org.acme.member.application.event.publish.MemberCreatedEvent
 import org.acme.member.application.event.publish.MemberProducer
 import org.acme.member.domain.entity.Member
@@ -53,19 +52,17 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
         val user: Member? = authenticationService.checkMember(request.identifier).awaitSuspending()
         if (user != null) {
             ProcessReply(result = false, processedId = request.identifier).toResponse()
-        } else {
-            keycloakService.check(request).awaitSuspending()
-        }
+        } else keycloakService.check(request).awaitSuspending()
     }
 
     @WithTransaction
     override fun register(request: RegistrationRequest): Uni<KeycloakTokenResponse> = scope.asyncUni {
         val mnemonic = MnemonicUtil.generateMnemonic()
 
-        val token = keycloakService.register(request).awaitSuspending()
-        if (token.code == Status.OK.code.toString()) {
+        val tokenResponse = keycloakService.register(request).awaitSuspending()
+        if (tokenResponse.code == Status.OK.code.toString()) {
 
-            val userId = keycloakService.getJwt(token.data.accessToken).subject
+            val userId = keycloakService.getJwt(tokenResponse.data.accessToken).subject
 
             authenticationService.register(
                 mold = IdentityMold.KeyCloak,
@@ -76,7 +73,7 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
             ).awaitSuspending()
 
             memberSearcher.getByName(request.loginCreds).awaitSuspending()?.run {
-
+                // publish member create event to rabbitmq
                 memberProducer.sendCreatedEvent(
                     MemberCreatedEvent(
                         userId = this.userId,
@@ -85,18 +82,13 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
                         memberId = this.id!!,
                         loginCreds = this.loginCreds,
                         level = this.level,
-                        memberReferrerCode = this.referrerCode,
-                        refereeId = SystemDefault.ID,
-                        refereeName = SystemDefault.NAME,
-                        refereeReferrerCode = SystemDefault.NAME
+                        myReferrerCode = this.referrerCode,
+                        refereeCode = request.refereeCode
                     )
                 )
-
-                getTokenResponse(this, token.data)
+                getTokenResponse(this, tokenResponse.data)
             } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
-        } else {
-            KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
-        }
+        } else tokenResponse
     }
 
     @WithTransaction
@@ -106,14 +98,12 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
 
     @WithSession
     override fun login(request: SignInRequest): Uni<KeycloakTokenResponse> = scope.asyncUni {
-        val token = keycloakService.login(request)
-        if (token.code == Status.OK.code.toString()) {
+        val tokenResponse = keycloakService.login(request)
+        if (tokenResponse.code == Status.OK.code.toString()) {
             memberSearcher.getByName(request.identifier).awaitSuspending()?.run {
-                getTokenResponse(this, token.data)
+                getTokenResponse(this, tokenResponse.data)
             } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")
-        } else {
-            KeyCloakTokenReply.toError(Status.ALREADY_EXISTS, "member not found")
-        }
+        } else tokenResponse
     }
 
     private fun getTokenResponse(member: Member, token: KeycloakTokenResponse.KeycloakToken) =

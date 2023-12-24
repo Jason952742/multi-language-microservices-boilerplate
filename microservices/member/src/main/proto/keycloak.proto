@@ -24,6 +24,7 @@ message RegistrationRequest {
   required string loginCreds = 1;
   required string password = 2;
   optional string nickname = 3;
+  optional string refereeCode = 4;
 }
 
 message PasswordChangeRequest {
