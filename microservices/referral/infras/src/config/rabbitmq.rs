@@ -26,19 +26,24 @@ impl Rabbitmq {
         queue
     }
 
-    pub async fn consume(channel: &Channel, channel_cl: Channel, queue: &str, consumer_tag: &str) -> () {
+    pub async fn longlive_consume() {}
+
+    pub async fn consume(conn: &Connection, queue: &str, consumer_tag: &str) -> () {
+        // receive channel
+        let channel_receive = Rabbitmq::channel(&conn).await;
         let consumer_tag = Arc::new(consumer_tag.to_string());
 
-        channel
+        let _ = &channel_receive
             .basic_consume(queue, &consumer_tag, BasicConsumeOptions::default(), FieldTable::default())
             .await.expect("basic_consume")
             .set_delegate(move |delivery: DeliveryResult| {
-                let channel = channel_cl.clone();
+                let channel = channel_receive.clone();
                 let consumer_tag = Arc::clone(&consumer_tag);
 
                 async move {
-                    info!(message=?delivery, "received message");
+                    info!(message=?delivery, "consume received message: ");
                     if let Ok(Some(delivery)) = delivery {
+
                         delivery
                             .ack(BasicAckOptions::default())
                             .await.expect("basic_ack");
@@ -74,22 +79,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         {
             // send channel
             let channel_send = Rabbitmq::channel(&conn).await;
-            // receive channel
-            let channel_receive = Rabbitmq::channel(&conn).await;
-
-            info!(state=?conn.status().state(), "第一个连接状态");
+            // info!(state=?conn.status().state());
 
             // create the hello queue
             let _ = Rabbitmq::queue(&channel_send, "hello").await;
 
-            info!(state=?conn.status().state(), "第二个连接状态");
+            // info!(state=?conn.status().state());
 
             info!("will consume");
-            let channel = channel_receive.clone();
+            Rabbitmq::consume(&conn, "hello", "my_consumer").await;
 
-            Rabbitmq::consume(&channel_receive, channel, "hello", "my_consumer").await;
-
-            info!(state=?conn.status().state(), "第三个连接状态");
+            // info!(state=?conn.status().state());
 
             info!("will publish");
             let payload = b"Hello world!";
@@ -97,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             assert_eq!(confirm, Confirmation::NotRequested);
 
-            info!(state=?conn.status().state(), "第四个连接状态");
+            // info!(state=?conn.status().state());
         }
 
         conn.run().expect("conn.run");
