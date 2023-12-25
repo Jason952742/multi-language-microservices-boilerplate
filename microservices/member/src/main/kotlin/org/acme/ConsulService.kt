@@ -8,17 +8,28 @@ import com.ecwid.consul.v1.health.HealthServicesRequest
 import com.ecwid.consul.v1.health.model.HealthService
 import io.quarkus.scheduler.Scheduled
 import jakarta.enterprise.context.ApplicationScoped
+import org.acme.utils.StrUtils
 import org.eclipse.microprofile.config.inject.ConfigProperty
 
 
 @ApplicationScoped
 class ConsulService {
 
+    enum class ServiceName {
+        MuReferral,
+        MuMember;
+
+        fun toSnakeCase(): String {
+            return StrUtils.toSnakeCase(name)
+        }
+
+    }
+
     @ConfigProperty(name = "quarkus.grpc.server.port")
     private lateinit var grpcPort: String
 
     private val consulClient = ConsulClient("127.0.0.1")
-    private val memberServiceName = "member-microservice"
+    private val memberServiceName = ServiceName.MuMember.toSnakeCase()
 
     @Scheduled(every = "30s")
     fun discover() {
