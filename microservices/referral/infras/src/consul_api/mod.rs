@@ -1,6 +1,7 @@
 mod model;
 
 use std::time::Duration;
+use tokio::time::{Instant, interval};
 
 pub use model::*;
 
@@ -18,10 +19,7 @@ impl Consul {
     }
 
     fn api_url(&self, api_name: &str) -> String {
-        format!(
-            "{}://{}/v1/agent/{}",
-            &self.option.protocol, &self.option.addr, api_name
-        )
+        format!("{}://{}/v1/agent/{}", &self.option.protocol, &self.option.addr, api_name)
     }
 
     pub async fn register(&self, registration: &Registration) -> Result<(), reqwest::Error> {
@@ -67,6 +65,19 @@ impl Consul {
         }
         Ok(None)
     }
+
+    pub async fn discover_service(&self) -> Result<i32, reqwest::Error> {
+        let mut interval = interval(Duration::from_secs(10));
+
+        loop {
+            interval.tick().await;
+
+            // Execute discover task when the timer is triggered
+             let filter = Filter::Service(ServiceName::MuReferral.to_string());
+            let memberService = self.get_service(&filter).await;
+            println!("{:?}", memberService.unwrap())
+        }
+    }
 }
 
 #[cfg(test)]
@@ -94,7 +105,7 @@ mod tests {
         assert!(cs.is_ok());
         let cs = cs.unwrap();
         let registration = Registration::simple_with_tags(
-            "axum.rs",
+            ServiceName::MuMember,
             vec!["axum", "tokio", "grpc", "tonic"],
             "127.0.0.1",
             12345,

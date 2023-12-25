@@ -8,7 +8,7 @@ use tracing::log;
 #[derive(Debug)]
 pub struct PgPool;
 
-static REFERRAL_CONN: OnceCell<DatabaseConnection> = OnceCell::const_new();
+static CONN: OnceCell<DatabaseConnection> = OnceCell::const_new();
 
 impl PgPool {
     fn get_url(pre: &str, database: &str) -> String {
@@ -21,15 +21,12 @@ impl PgPool {
         format!("{pre}://{username}:{password}@{host}:{port}/{database}")
     }
 
-    pub async fn referral_conn() -> &'static DatabaseConnection {
-        REFERRAL_CONN
-            .get_or_init(|| async {
-                let url = Self::get_url("postgres", "PG_DATABASE");
-                get_connection(url).await
-            })
-            .await
+    pub async fn conn() -> &'static DatabaseConnection {
+        CONN.get_or_init(|| async {
+            let url = Self::get_url("postgres", "PG_DATABASE");
+            get_connection(url).await
+        }).await
     }
-
 }
 
 async fn get_connection(database_url: String) -> DatabaseConnection {
@@ -42,7 +39,7 @@ async fn get_connection(database_url: String) -> DatabaseConnection {
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(false) // open/close sql log
         .sqlx_logging_level(log::LevelFilter::Error); // default Info
-        // .set_schema_search_path("public".into());
+    // .set_schema_search_path("public".into());
     // let connection = Database::connect(&database_url)
     let connection = Database::connect(opt).await.expect("Database connection failed");
     println!("{}", "Database connection!".color("magenta"));

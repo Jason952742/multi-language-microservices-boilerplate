@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use strum_macros::EnumString;
+use std::str::FromStr;
 
 #[derive(Deserialize, Serialize)]
 pub struct ConsulOption {
@@ -36,7 +38,7 @@ pub struct Check {
 }
 
 impl Registration {
-    pub fn new(name: &str, id: &str, tags: Vec<&str>, addr: &str, port: i32) -> Self {
+    pub fn new(name: ServiceName, id: &str, tags: Vec<&str>, addr: &str, port: i32) -> Self {
         Self {
             name: name.to_string(),
             id: id.to_string(),
@@ -51,12 +53,12 @@ impl Registration {
         }
     }
 
-    pub fn simple_with_tags(name: &str, tags: Vec<&str>, addr: &str, port: i32) -> Self {
+    pub fn simple_with_tags(name: ServiceName, tags: Vec<&str>, addr: &str, port: i32) -> Self {
         let id: &str = &format!("{}-{}", name, port);
         Self::new(name, id, tags, addr, port)
     }
 
-    pub fn simple(name: &str, addr: &str, port: i32) -> Self {
+    pub fn simple(name: ServiceName, addr: &str, port: i32) -> Self {
         Self::simple_with_tags(name, vec![], addr, port)
     }
 }
@@ -80,4 +82,13 @@ pub type Services = HashMap<String, Service>;
 pub enum Filter {
     Service(String),
     ID(String),
+}
+
+
+#[derive(Debug, Deserialize, Serialize, EnumString, strum_macros::Display)]
+pub enum ServiceName {
+    #[strum(serialize = "mu_referral")]
+    MuReferral,
+    #[strum(serialize = "mu_member")]
+    MuMember,
 }

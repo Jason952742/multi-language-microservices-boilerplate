@@ -38,6 +38,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
 
     // port
     let addrs = ["0.0.0.0:50051", "0.0.0.0:50052", "0.0.0.0:50053"];
+    let cs = consul_api::Consul::new(consul_api::ConsulOption::default()).unwrap();
 
     let (tx, mut rx) = mpsc::unbounded_channel();
 
@@ -62,7 +63,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
         let echo_service = pb::echo_server::EchoServer::with_interceptor(echo, check_auth);
 
         // establish database connection
-        let connection = PgPool::referral_conn().await.clone();
+        let connection = PgPool::conn().await.clone();
         Migrator::up(&connection, None).await?;
         let hello_server = MyServer { connection };
         let post_service = BlogpostServer::new(hello_server);
@@ -79,12 +80,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
             .serve(saddr);
 
         // register consul service
-        let addrs: Vec<&str> = addr.split(":").collect();
-        let port: i32 = addrs[1].parse().unwrap();
-        let opt = consul_api::ConsulOption::default();
-        let cs = consul_api::Consul::new(opt).unwrap();
-        let reg = consul_api::Registration::simple(&format!("hello"), "127.0.0.1", port);
-        cs.register(&reg).await.unwrap();
+        register(&cs, addr).await;
 
         tokio::spawn(async move {
             if let Err(e) = serve.await {
@@ -93,12 +89,25 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
 
             tx.send(()).unwrap();
         });
-
     }
+
+    tokio::spawn(async move {
+        cs.discover_service().await.expect("discover_service failed");
+    });
 
     rx.recv().await;
 
+
     Ok(())
+}
+
+pub async fn register(cs: &consul_api::Consul, addr: &str) {
+    // register consul service
+    let addrs: Vec<&str> = addr.split(":").collect();
+    let port: i32 = addrs[1].parse().unwrap();
+
+    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuReferral, "127.0.0.1", port);
+    cs.register(&reg).await.unwrap();
 }
 
 pub fn main() {
