@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 tokio = {version = "1.35.0", features = ["full"]}
-tokio-executor-trait = "2.1.0"
+tokio-executor-trait = "2.1.1"
 tokio-reactor-trait = "1.1.0"
 
 executor-trait = "^2.1"
