@@ -4,10 +4,7 @@ use amqprs::callbacks::{DefaultChannelCallback, DefaultConnectionCallback};
 use amqprs::channel::{BasicConsumeArguments, BasicPublishArguments, QueueBindArguments, QueueDeclareArguments};
 use amqprs::connection::{Connection, OpenConnectionArguments};
 use amqprs::consumer::DefaultConsumer;
-use tokio::time::sleep;
-use tracing_subscriber::{EnvFilter, fmt};
-use tracing_subscriber::layer::SubscriberExt;
-use tracing_subscriber::util::SubscriberInitExt;
+
 
 #[derive(Debug)]
 pub struct Rabbitmq;
@@ -33,6 +30,11 @@ impl Rabbitmq {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use tokio::time::sleep;
+    use tracing_subscriber::{EnvFilter, fmt};
+    use tracing_subscriber::layer::SubscriberExt;
+    use tracing_subscriber::util::SubscriberInitExt;
+
     // construct a subscriber that prints formatted traces to stdout
     // global subscriber with log level according to RUST_LOG
     tracing_subscriber::registry()

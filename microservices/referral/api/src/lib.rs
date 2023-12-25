@@ -6,19 +6,19 @@ use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use infras::config::postgres::PgPool;
 use crate::orm::migration::{Migrator, MigratorTrait};
-pub use crate::services::echo_service::{EchoServer};
-use crate::services::health_service::HealthIndicator;
-use crate::services::hello_service::MyGreeter;
-use crate::services::hello_service::hello_world::greeter_server::GreeterServer;
-use crate::services::post_service::MyServer;
-use crate::services::post_service::post_mod::blogpost_server::BlogpostServer;
+pub use application::grpc::echo_service::{EchoServer};
+use application::grpc::health_service::HealthIndicator;
+use application::grpc::hello_service::MyGreeter;
+use application::grpc::hello_service::hello_world::greeter_server::GreeterServer;
+use application::grpc::post_service::MyServer;
+use application::grpc::post_service::post_mod::blogpost_server::BlogpostServer;
 
-pub use crate::services::hello_service::hello_world;
-pub use crate::services::echo_service::pb;
+pub use application::grpc::hello_service::hello_world;
+pub use application::grpc::echo_service::pb;
 
 use infras::consul_api;
 
-mod services;
+mod application;
 mod orm;
 
 #[tokio::main]

@@ -2,8 +2,8 @@ use tonic::{Request, Response, Status};
 
 use crate::orm::entity::post;
 use sea_orm::{DatabaseConnection};
-use crate::orm::service::mutation::Mutation;
-use crate::orm::service::query::Query;
+use crate::orm::repo::mutation::Mutation;
+use crate::orm::repo::query::Query;
 
 
 pub mod post_mod {
