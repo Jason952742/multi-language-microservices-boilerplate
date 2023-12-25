@@ -1,144 +1,108 @@
-use std::time::Duration;
-use amqprs::{
-    callbacks::{ChannelCallback, ConnectionCallback},
-    channel::Channel, connection::{Connection, OpenConnectionArguments},
-    Ack, BasicProperties, Cancel, Close, CloseChannel, Nack, Return,
-};
-use amqprs::channel::{BasicConsumeArguments, BasicPublishArguments, QueueBindArguments, QueueDeclareArguments};
-use amqprs::consumer::DefaultConsumer;
-use async_trait::async_trait;
-
-////////////////////////////////////////////////////////////////////////////////
-type Result<T> = std::result::Result<T, amqprs::error::Error>;
-
-////////////////////////////////////////////////////////////////////////////////
-struct ExampleConnectionCallback;
-
-#[allow(unused_variables, /* template */)]
-#[async_trait]
-impl ConnectionCallback for ExampleConnectionCallback {
-    async fn close(&mut self, connection: &Connection, close: Close) -> Result<()> {
-        Ok(())
-    }
-
-    async fn blocked(&mut self, connection: &Connection, reason: String) {}
-    async fn unblocked(&mut self, connection: &Connection) {}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-struct ExampleChannelCallback;
-
-#[allow(unused_variables, /* template */)]
-#[async_trait]
-impl ChannelCallback for ExampleChannelCallback {
-    async fn close(&mut self, channel: &Channel, close: CloseChannel) -> Result<()> {
-        Ok(())
-    }
-    async fn cancel(&mut self, channel: &Channel, cancel: Cancel) -> Result<()> {
-        Ok(())
-    }
-    async fn flow(&mut self, channel: &Channel, active: bool) -> Result<bool> {
-        Ok(true)
-    }
-    async fn publish_ack(&mut self, channel: &Channel, ack: Ack) {}
-    async fn publish_nack(&mut self, channel: &Channel, nack: Nack) {}
-    async fn publish_return(
-        &mut self,
-        channel: &Channel,
-        ret: Return,
-        basic_properties: BasicProperties,
-        content: Vec<u8>,
-    ) {}
-}
+use std::sync::Arc;
+use lapin::{options::*, publisher_confirm::Confirmation, types::FieldTable, BasicProperties, Connection, ConnectionProperties, Channel, Queue};
+use lapin::message::DeliveryResult;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct Rabbitmq;
 
 impl Rabbitmq {
     pub async fn connection() -> Connection {
-        // open a connection to RabbitMQ server
-        let args = OpenConnectionArguments::new("localhost", 5672, "rabbit", "rabbitpassword");
-        let connection = Connection::open(&args).await.unwrap();
-        connection.register_callback(ExampleConnectionCallback).await.unwrap();
-        connection
+        let addr = std::env::var("AMQP_ADDR").unwrap_or_else(|_| "amqp://rabbit:rabbitpassword@127.0.0.1:5672/%2f".into());
+        let conn = Connection::connect(&addr, ConnectionProperties::default()).await.expect("connection error");
+        info!("CONNECTED");
+        conn
     }
 
-    pub async fn channel(connection: &Connection) -> Channel {
-        // open a channel on the connection
-        let channel = connection.open_channel(None).await.unwrap();
-        channel.register_callback(ExampleChannelCallback).await.unwrap();
+    pub async fn channel(conn: &Connection) -> Channel {
+        conn.create_channel().await.expect("create_channel")
+    }
+
+    pub async fn queue(channel: &Channel, queue_name: &str) -> Queue {
+        let queue = channel
+            .queue_declare(queue_name, QueueDeclareOptions::default(), FieldTable::default())
+            .await.expect("queue_declare");
+        info!(?queue, "Declared queue");
+        queue
+    }
+
+    pub async fn consume(channel: &Channel, channel_cl: Channel, queue: &str, consumer_tag: &str) -> () {
+        let consumer_tag = Arc::new(consumer_tag.to_string());
+
         channel
+            .basic_consume(queue, &consumer_tag, BasicConsumeOptions::default(), FieldTable::default())
+            .await.expect("basic_consume")
+            .set_delegate(move |delivery: DeliveryResult| {
+                let channel = channel_cl.clone();
+                let consumer_tag = Arc::clone(&consumer_tag);
+
+                async move {
+                    info!(message=?delivery, "received message");
+                    if let Ok(Some(delivery)) = delivery {
+                        delivery
+                            .ack(BasicAckOptions::default())
+                            .await.expect("basic_ack");
+
+                        channel
+                            .basic_cancel(&consumer_tag, BasicCancelOptions::default())
+                            .await.expect("basic_cancel");
+                    }
+                }
+            });
     }
 
-    pub async fn consume(channel: &Channel, queue_name: &str, consumer_tag: &str) -> String {
-        let args = BasicConsumeArguments::new(&queue_name, consumer_tag);
-        channel.basic_consume(DefaultConsumer::new(args.no_ack), args).await.unwrap()
-    }
-
-    pub async fn publish(channel: &Channel, exchange_name: &str, routing_key: &str, content: Vec<u8>) -> () {
-        let args = BasicPublishArguments::new(exchange_name, routing_key);
-        channel.basic_publish(BasicProperties::default(), content, args).await.unwrap();
-    }
-
-    pub async fn bind(channel: &Channel, queue_name: &str, routing_key: &str, exchange_name: &str) -> () {
-        channel.queue_declare(QueueDeclareArguments::durable_client_named(queue_name)).await.unwrap().unwrap();
-        channel.queue_bind(QueueBindArguments::new(&queue_name, exchange_name, routing_key)).await.unwrap();
+    pub async fn publish(channel: &Channel, exchange: &str, routing_key: &str, payload: &[u8]) -> Confirmation {
+        channel
+            .basic_publish(exchange, routing_key, BasicPublishOptions::default(), payload, BasicProperties::default())
+            .await.expect("basic_publish")
+            .await.expect("publisher-confirms")
     }
 }
 
 
 #[tokio::test]
-async fn main() -> Result<()> {
-    use tokio::time::sleep;
-    use tracing_subscriber::{EnvFilter, fmt};
-    use tracing_subscriber::layer::SubscriberExt;
-    use tracing_subscriber::util::SubscriberInitExt;
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
 
-    // construct a subscriber that prints formatted traces to stdout
-    // global subscriber with log level according to RUST_LOG
-    tracing_subscriber::registry()
-        .with(fmt::layer())
-        .with(EnvFilter::from_default_env())
-        .try_init()
-        .ok();
+    tracing_subscriber::fmt::init();
 
-    // open a connection to RabbitMQ server
-    let connection = Rabbitmq::connection().await;
-    // open a channel on the connection
-    let channel = Rabbitmq::channel(&connection).await;
+    async_global_executor::block_on(async {
+        let conn = Rabbitmq::connection().await;
 
-    // bind the queue to exchange
-    let queue_name = "hello.examples.basic";
-    let routing_key = "hello.example";
-    let exchange_name = "hello";
+        {
+            // send channel
+            let channel_send = Rabbitmq::channel(&conn).await;
+            // receive channel
+            let channel_receive = Rabbitmq::channel(&conn).await;
 
-    let _ = Rabbitmq::bind(&channel, &queue_name, routing_key, exchange_name).await;
+            info!(state=?conn.status().state(), "第一个连接状态");
 
-    //////////////////////////////////////////////////////////////////////////////
-    // start consumer with given name
-    let _ = Rabbitmq::consume(&channel, queue_name, "example_basic_pub_sub").await;
+            // create the hello queue
+            let _ = Rabbitmq::queue(&channel_send, "hello").await;
 
+            info!(state=?conn.status().state(), "第二个连接状态");
 
-    //////////////////////////////////////////////////////////////////////////////
-    // publish message
-    let content = String::from(
-        r#"
-            {
-                "publisher": "example"
-                "data": "Hello, Rust Rabbit!"
-            }
-        "#,
-    ).into_bytes();
+            info!("will consume");
+            let channel = channel_receive.clone();
 
-    // create arguments for basic_publish
-    Rabbitmq::publish(&channel, exchange_name, routing_key, content).await;
+            Rabbitmq::consume(&channel_receive, channel, "hello", "my_consumer").await;
 
-    // keep the `channel` and `connection` object from dropping before pub/sub is done.
-    // channel/connection will be closed when drop.
-    sleep(Duration::from_secs(1)).await;
-    // explicitly close
-    channel.close().await.unwrap();
-    connection.close().await.unwrap();
+            info!(state=?conn.status().state(), "第三个连接状态");
+
+            info!("will publish");
+            let payload = b"Hello world!";
+            let confirm = Rabbitmq::publish(&channel_send, "", "hello", payload).await;
+
+            assert_eq!(confirm, Confirmation::NotRequested);
+
+            info!(state=?conn.status().state(), "第四个连接状态");
+        }
+
+        conn.run().expect("conn.run");
+    });
+
 
     Ok(())
 }
