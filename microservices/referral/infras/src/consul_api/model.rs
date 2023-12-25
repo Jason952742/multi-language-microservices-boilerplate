@@ -65,7 +65,7 @@ impl Registration {
 
 #[derive(Default, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]
-pub struct Service {
+pub struct HealthService {
     #[serde(rename = "ID")]
     pub id: String,
     pub service: String,
@@ -75,7 +75,7 @@ pub struct Service {
     pub datacenter: String,
 }
 
-pub type Services = HashMap<String, Service>;
+pub type Services = HashMap<String, HealthService>;
 
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "PascalCase")]

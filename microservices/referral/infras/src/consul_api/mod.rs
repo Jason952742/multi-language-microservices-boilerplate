@@ -1,7 +1,9 @@
 mod model;
 
+use std::collections::HashMap;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
-use tokio::time::{Instant, interval};
+use tokio::time::interval;
 
 pub use model::*;
 
@@ -52,7 +54,7 @@ impl Consul {
         Ok(list)
     }
 
-    pub async fn get_service(&self, filter: &Filter) -> Result<Option<Service>, reqwest::Error> {
+    pub async fn get_service(&self, filter: &Filter) -> Result<Option<HealthService>, reqwest::Error> {
         let list = self.services().await?;
         for (_, s) in list {
             let has = match &filter {
@@ -67,16 +69,50 @@ impl Consul {
     }
 
     pub async fn discover_service(&self) -> Result<i32, reqwest::Error> {
-        let mut interval = interval(Duration::from_secs(10));
+        let mut interval = interval(Duration::from_secs(30));
 
         loop {
             interval.tick().await;
 
             // Execute discover task when the timer is triggered
-             let filter = Filter::Service(ServiceName::MuReferral.to_string());
-            let memberService = self.get_service(&filter).await;
-            println!("{:?}", memberService.unwrap())
+            let services = vec![ServiceName::MuReferral, ServiceName::MuMember];
+
+            for service in services.iter() {
+                let filter = Filter::Service(service.to_string());
+                let opt = self.get_service(&filter).await.unwrap();
+                if let Some(s) = opt {
+                    Self::put(service, vec![s])
+                }
+            }
         }
+    }
+}
+
+lazy_static::lazy_static! {
+    static ref CACHE: RwLock<HashMap<String, Arc<Vec<HealthService>>>> = RwLock::new(HashMap::new());
+}
+
+impl Consul {
+
+    pub fn put(key: &ServiceName, value: Vec<HealthService>) {
+        let shared_value = Arc::new(value);
+        let mut cache = CACHE.write().unwrap();
+        cache.insert(key.to_string(), shared_value);
+    }
+
+    pub fn get(key: &ServiceName) -> Option<Arc<Vec<HealthService>>> {
+        let cache = CACHE.read().unwrap();
+        cache.get(&key.to_string()).map(|v| Arc::clone(v))
+    }
+
+    pub fn remove(key: ServiceName) {
+        let mut cache = CACHE.write().unwrap();
+        cache.remove(&key.to_string());
+    }
+
+    pub fn clear() {
+        let mut cache = CACHE.write().unwrap();
+        cache.clear();
     }
 }
 
