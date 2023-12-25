@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumString;
-use std::str::FromStr;
 
 #[derive(Deserialize, Serialize)]
 pub struct ConsulOption {
