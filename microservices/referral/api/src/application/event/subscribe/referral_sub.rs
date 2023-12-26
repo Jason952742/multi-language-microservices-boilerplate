@@ -4,6 +4,7 @@ use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
 use tracing::info;
+use crate::domain::messages::MemberCreatedEvent;
 
 #[derive(Clone)]
 pub struct ReferralSub;
@@ -42,7 +43,9 @@ impl ReferralSub {
                     };
 
                     // Do something with the delivery data (The message payload)
-                    info!(message=?delivery.data, "consumer received message");
+                    // info!(message=?delivery.data, "consumer received message");
+                    let payload = MemberCreatedEvent::from(delivery.data.as_ref());
+                    println!("{:?}", payload);
 
                     delivery
                         .ack(BasicAckOptions::default())
