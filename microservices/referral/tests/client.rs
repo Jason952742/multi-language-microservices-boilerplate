@@ -12,7 +12,7 @@ use tonic::{
 use tonic::metadata::MetadataValue;
 use api::pb::echo_client::EchoClient;
 use api::pb::EchoRequest;
-use infras::consul_api;
+use shared::consul_api;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

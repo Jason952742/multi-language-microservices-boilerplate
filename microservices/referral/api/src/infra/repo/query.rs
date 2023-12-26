@@ -1,4 +1,4 @@
-use crate::orm::entity::{post, post::Entity as Post};
+use crate::domain::entity::{post, post::Entity as Post};
 use sea_orm::*;
 
 pub struct Query;

@@ -4,22 +4,22 @@
 use std::env;
 use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
-use infras::config::postgres::PgPool;
-use crate::orm::migration::{Migrator, MigratorTrait};
+use shared::datasource::postgres::PgPool;
+use crate::infra::migration::{Migrator, MigratorTrait};
 pub use application::grpc::echo_service::{EchoServer};
 use application::grpc::health_service::HealthIndicator;
 use application::grpc::hello_service::MyGreeter;
 use application::grpc::hello_service::hello_world::greeter_server::GreeterServer;
 use application::grpc::post_service::MyServer;
 use application::grpc::post_service::post_mod::blogpost_server::BlogpostServer;
-
 pub use application::grpc::hello_service::hello_world;
 pub use application::grpc::echo_service::pb;
-
-use infras::consul_api;
+use application::event::subscribe::ReferralSub;
+use shared::consul_api;
 
 mod application;
-mod orm;
+mod infra;
+mod domain;
 
 #[tokio::main]
 async fn start() -> Result<(), Box<dyn std::error::Error>> {
@@ -90,6 +90,8 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
             tx.send(()).unwrap();
         });
     }
+
+    ReferralSub::start_subscribe().await?;
 
     tokio::spawn(async move {
         cs.discover_service().await.expect("discover_service failed");

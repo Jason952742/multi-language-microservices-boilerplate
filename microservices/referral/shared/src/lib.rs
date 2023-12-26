@@ -1,5 +1,5 @@
 pub mod consul_api;
-pub mod config;
+pub mod datasource;
 
 pub use consul_api::*;
-pub use config::*;
+pub use datasource::*;
