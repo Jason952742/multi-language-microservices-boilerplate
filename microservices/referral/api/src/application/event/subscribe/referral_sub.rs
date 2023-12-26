@@ -1,5 +1,8 @@
+use std::sync::mpsc::channel;
+use lapin::ExchangeKind;
 use lapin::message::DeliveryResult;
-use lapin::options::BasicAckOptions;
+use lapin::options::{BasicAckOptions, QueueBindOptions};
+use lapin::types::FieldTable;
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
 use tracing::info;
@@ -24,7 +27,7 @@ impl ReferralSub {
             async move {
                 let connection = Rabbitmq::connection().await;
                 let channel = Rabbitmq::channel(&connection).await;
-                let _queue = Rabbitmq::queue(&channel, "queue_test").await;
+                let _queue = Rabbitmq::queue(&channel, "queue_test", "mytest").await;
                 let consumer = Rabbitmq::consumer(&channel, "queue_test", "tag_foo").await;
 
                 consumer.set_delegate(move |delivery: DeliveryResult| async move {

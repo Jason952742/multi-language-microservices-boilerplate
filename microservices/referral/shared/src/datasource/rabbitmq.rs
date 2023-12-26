@@ -22,10 +22,14 @@ impl Rabbitmq {
         conn.create_channel().await.expect("create channel failed")
     }
 
-    pub async fn queue(channel: &Channel, queue_name: &str) -> Queue {
-        channel
+    pub async fn queue(channel: &Channel, queue_name: &str, exchange: &str) -> Queue {
+        let q = channel
             .queue_declare(queue_name, QueueDeclareOptions::default(), FieldTable::default())
-            .await.expect("queue_declare failed")
+            .await.expect("queue_declare failed");
+
+        channel.queue_bind(queue_name, exchange, queue_name, QueueBindOptions::default(), FieldTable::default()).await.expect("TODO: panic message");
+
+        q
     }
 
     pub async fn consumer(channel: &Channel, queue: &str, consumer_tag: &str) -> Consumer {
@@ -56,7 +60,7 @@ async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
 
     let connection = Rabbitmq::connection().await;
     let channel = Rabbitmq::channel(&connection).await;
-    let _queue = Rabbitmq::queue(&channel, "queue_test").await;
+    let _queue = Rabbitmq::queue(&channel, "queue_test", "mytest").await;
     let consumer = Rabbitmq::consumer(&channel, "queue_test", "tag_foo").await;
 
     consumer.set_delegate(move |delivery: DeliveryResult| async move {
