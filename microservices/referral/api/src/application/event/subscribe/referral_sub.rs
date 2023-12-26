@@ -43,7 +43,7 @@ impl ReferralSub {
                     };
 
                     // Do something with the delivery data (The message payload)
-                    info!(message=?delivery, "consumer received message");
+                    info!(message=?delivery.data, "consumer received message");
 
                     delivery
                         .ack(BasicAckOptions::default())
