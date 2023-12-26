@@ -75,17 +75,16 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
             memberSearcher.getByName(request.loginCreds).awaitSuspending()?.run {
                 // publish member create event to rabbitmq
                 memberProducer.sendCreatedEvent(
-//                    MemberCreatedEvent(
-//                        userId = this.userId,
-//                        userName = this.name,
-//                        memberType = this.memberType,
-//                        memberId = this.id!!,
-//                        loginCreds = this.loginCreds,
-//                        level = this.level,
-//                        myReferrerCode = this.referrerCode,
-//                        refereeCode = request.refereeCode
-//                    )
-                    this.loginCreds
+                    MemberCreatedEvent(
+                        user_id = this.userId,
+                        user_name = this.name,
+                        member_type = this.memberType,
+                        member_id = this.id!!,
+                        login_creds = this.loginCreds,
+                        level = this.level,
+                        my_referrer_code = this.referrerCode,
+                        referee_code = request.refereeCode
+                    )
                 )
                 getTokenResponse(this, tokenResponse.data)
             } ?: KeyCloakTokenReply.toError(Status.NOT_FOUND, "member not found")

@@ -12,9 +12,9 @@ import java.time.ZonedDateTime
 class MemberProducer {
 
     @Channel("member")
-    private lateinit var createdEmitter: Emitter<String>
+    private lateinit var createdEmitter: Emitter<MemberCreatedEvent>
 
-    fun sendCreatedEvent(event: String) : Message<String>? {
+    fun sendCreatedEvent(event: MemberCreatedEvent) : Message<MemberCreatedEvent>? {
         val metadata = OutgoingRabbitMQMetadata.Builder()
             .withHeader("my-header", "xyzzy")
             .withRoutingKey("created")

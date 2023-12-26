@@ -7,12 +7,12 @@ import java.util.*
 
 @RegisterForReflection
 data class MemberCreatedEvent(
-    val userId: UUID,
-    val userName: String,
-    val memberType: MemberType,
-    val memberId: UUID,
-    val loginCreds: String,
+    val user_id: UUID,
+    val user_name: String,
+    val member_type: MemberType,
+    val member_id: UUID,
+    val login_creds: String,
     val level: Int,
-    val myReferrerCode: String,
-    val refereeCode: String
+    val my_referrer_code: String,
+    val referee_code: String
 )
