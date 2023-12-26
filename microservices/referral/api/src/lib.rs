@@ -94,8 +94,6 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
 
     ReferralSub::start_subscribe().await?;
 
-    ReferralPub::publish().await.expect("publish");
-
     tokio::spawn(async move {
         cs.discover_service().await.expect("discover_service failed");
         // tokio::time::sleep(Duration::from_secs(5)).await;
