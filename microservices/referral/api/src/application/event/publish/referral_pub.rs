@@ -1,5 +1,3 @@
-use futures::TryFutureExt;
-use tonic::Status;
 use shared::rabbitmq::Rabbitmq;
 
 #[derive(Debug)]
@@ -13,7 +11,7 @@ impl ReferralPub {
                 let channel = Rabbitmq::channel(&connection).await;
                 let _queue = Rabbitmq::queue(&channel, "queue_test").await;
 
-                for _ in 0..7 {
+                for _ in 0..3 {
                     let _ = Rabbitmq::send(&channel, "", "queue_test", b"Hello world!").await;
                 }
                 std::future::pending::<()>().await;

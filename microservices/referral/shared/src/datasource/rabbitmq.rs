@@ -1,6 +1,4 @@
-use std::time::Duration;
 use lapin::{options::*, publisher_confirm::Confirmation, types::FieldTable, BasicProperties, Connection, ConnectionProperties, Channel, Queue, Consumer};
-use lapin::message::DeliveryResult;
 use tracing::info;
 
 #[derive(Debug)]
@@ -53,31 +51,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
+    use std::time::Duration;
+    use lapin::message::DeliveryResult;
+
     let connection = Rabbitmq::connection().await;
     let channel = Rabbitmq::channel(&connection).await;
     let _queue = Rabbitmq::queue(&channel, "queue_test").await;
     let consumer = Rabbitmq::consumer(&channel, "queue_test", "tag_foo").await;
 
-    // consumer.set_delegate(move |delivery: DeliveryResult| async move {
-    //     let delivery = match delivery {
-    //         // Carries the delivery alongside its channel
-    //         Ok(Some(delivery)) => delivery,
-    //         // The consumer got canceled
-    //         Ok(None) => return,
-    //         // Carries the error and is always followed by Ok(None)
-    //         Err(error) => {
-    //             dbg!("Failed to consume queue message {}", error);
-    //             return;
-    //         }
-    //     };
-    //
-    //     // Do something with the delivery data (The message payload)
-    //     info!(message=?delivery, "consumer received message");
-    //
-    //     delivery
-    //         .ack(BasicAckOptions::default())
-    //         .await.expect("Failed to ack send_webhook_event message");
-    // });
+    consumer.set_delegate(move |delivery: DeliveryResult| async move {
+        let delivery = match delivery {
+            // Carries the delivery alongside its channel
+            Ok(Some(delivery)) => delivery,
+            // The consumer got canceled
+            Ok(None) => return,
+            // Carries the error and is always followed by Ok(None)
+            Err(error) => {
+                dbg!("Failed to consume queue message {}", error);
+                return;
+            }
+        };
+
+        // Do something with the delivery data (The message payload)
+        info!(message=?delivery, "consumer received message");
+
+        delivery
+            .ack(BasicAckOptions::default())
+            .await.expect("Failed to ack send_webhook_event message");
+    });
 
 
     for _ in 0..10 {

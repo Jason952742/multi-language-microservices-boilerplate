@@ -1,5 +1,3 @@
-use colored::Colorize;
-use futures::stream::StreamExt;
 use lapin::message::DeliveryResult;
 use lapin::options::BasicAckOptions;
 use tokio::sync::{mpsc, oneshot};
