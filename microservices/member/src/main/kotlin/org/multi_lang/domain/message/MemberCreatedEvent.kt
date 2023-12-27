@@ -1,4 +1,4 @@
-package org.multi_lang.application.event.publish
+package org.multi_lang.domain.message
 
 import io.quarkus.runtime.annotations.RegisterForReflection
 import org.shared.common.model.MemberType

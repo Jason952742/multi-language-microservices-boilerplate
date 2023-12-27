@@ -1,4 +1,4 @@
-package org.multi_lang.domain.message
+package org.multi_lang.application.grpc.assembler
 
 import common_proto.ProcessResponse
 import io.grpc.Status

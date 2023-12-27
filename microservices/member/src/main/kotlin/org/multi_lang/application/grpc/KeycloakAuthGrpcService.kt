@@ -11,11 +11,11 @@ import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import keycloak_proto.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.multi_lang.application.event.publish.MemberCreatedEvent
+import org.multi_lang.domain.message.MemberCreatedEvent
 import org.multi_lang.application.event.publish.MemberProducer
-import org.multi_lang.domain.enums.IdentityMold
-import org.multi_lang.domain.keycloak.KeyCloakTokenReply
-import org.multi_lang.domain.message.ProcessReply
+import org.multi_lang.domain.entity.enums.IdentityMold
+import org.multi_lang.application.grpc.assembler.KeyCloakTokenReply
+import org.multi_lang.application.grpc.assembler.ProcessReply
 import org.multi_lang.infra.search.MemberSearcher
 import org.multi_lang.domain.service.AuthenticationService
 import org.multi_lang.domain.service.KeycloakService

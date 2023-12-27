@@ -1,4 +1,4 @@
-package org.multi_lang.domain.keycloak
+package org.multi_lang.application.service.dto
 
 import kotlinx.serialization.Serializable
 

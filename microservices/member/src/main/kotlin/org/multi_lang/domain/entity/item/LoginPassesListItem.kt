@@ -1,9 +1,9 @@
-package org.multi_lang.domain.message
+package org.multi_lang.domain.entity.item
 
 import io.quarkus.runtime.annotations.RegisterForReflection
 import java.time.LocalDateTime
 import java.util.*
-import org.multi_lang.domain.enums.IdentityMold
+import org.multi_lang.domain.entity.enums.IdentityMold
 
 @RegisterForReflection
 data class LoginPassesListItem(

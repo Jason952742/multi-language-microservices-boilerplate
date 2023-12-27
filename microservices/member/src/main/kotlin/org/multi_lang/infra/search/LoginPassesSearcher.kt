@@ -4,8 +4,8 @@ import org.multi_lang.infra.repository.LoginPassesRepository
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.multi_lang.domain.enums.IdentityMold
-import org.multi_lang.domain.message.LoginPassesListItem
+import org.multi_lang.domain.entity.enums.IdentityMold
+import org.multi_lang.domain.entity.item.LoginPassesListItem
 import org.shared.common.hibernate.JasFilter
 import org.shared.common.hibernate.JasFilterOp
 import org.shared.common.hibernate.JasQuery

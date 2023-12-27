@@ -10,11 +10,11 @@ import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.multi_lang.domain.message.MemberProfileChange
+import org.multi_lang.domain.command.MemberProfileChange
 import org.multi_lang.domain.handler.MemberHandler
-import org.multi_lang.domain.message.MemberDelete
-import org.multi_lang.domain.message.MemberReply
-import org.multi_lang.domain.message.ProcessReply
+import org.multi_lang.domain.command.MemberDelete
+import org.multi_lang.application.grpc.assembler.MemberReply
+import org.multi_lang.application.grpc.assembler.ProcessReply
 import org.multi_lang.infra.search.MemberSearcher
 import org.shared.utils.MyScope
 import java.util.*

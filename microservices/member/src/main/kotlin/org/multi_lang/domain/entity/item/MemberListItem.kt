@@ -1,7 +1,7 @@
-package org.multi_lang.domain.message
+package org.multi_lang.domain.entity.item
 
 import io.quarkus.runtime.annotations.RegisterForReflection
-import org.multi_lang.domain.enums.MemberStatus
+import org.multi_lang.domain.entity.enums.MemberStatus
 import org.shared.common.model.MemberType
 import java.time.LocalDateTime
 import java.util.*

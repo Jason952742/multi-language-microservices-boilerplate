@@ -1,10 +1,10 @@
-package org.multi_lang.infra.service
+package org.multi_lang.application.service
 
 import jakarta.ws.rs.*
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import jakarta.ws.rs.core.MediaType
 import org.jboss.resteasy.reactive.RestPath
-import org.multi_lang.domain.keycloak.KeyCloakTokenReply
+import org.multi_lang.application.grpc.assembler.KeyCloakTokenReply
 
 @Path("/realms")
 @RegisterRestClient(configKey = "keycloak-api")

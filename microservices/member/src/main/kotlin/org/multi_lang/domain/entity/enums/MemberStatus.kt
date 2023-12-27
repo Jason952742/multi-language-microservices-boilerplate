@@ -1,4 +1,4 @@
-package org.multi_lang.domain.enums
+package org.multi_lang.domain.entity.enums
 
 enum class MemberStatus {
     Created,

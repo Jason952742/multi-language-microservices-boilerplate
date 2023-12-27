@@ -1,4 +1,4 @@
-package org.multi_lang.domain.message
+package org.multi_lang.application.grpc.assembler
 
 import auth_proto.IdentityResponse
 import java.util.*

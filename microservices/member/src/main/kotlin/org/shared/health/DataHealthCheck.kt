@@ -1,4 +1,4 @@
-package org.multi_lang.application.health
+package org.shared.health
 
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.health.HealthCheck
@@ -7,8 +7,12 @@ import org.eclipse.microprofile.health.Liveness
 
 @Liveness
 @ApplicationScoped
-class SimpleHealthCheck : HealthCheck {
+class DataHealthCheck : HealthCheck {
     override fun call(): HealthCheckResponse {
-        return HealthCheckResponse.up("Simple health check")
+        return HealthCheckResponse.named("Health check with data")
+            .up()
+            .withData("foo", "fooValue")
+            .withData("bar", "barValue")
+            .build()
     }
 }

@@ -12,8 +12,8 @@ import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.multi_lang.domain.enums.IdentityMold
-import org.multi_lang.domain.message.ProcessReply
+import org.multi_lang.domain.entity.enums.IdentityMold
+import org.multi_lang.application.grpc.assembler.ProcessReply
 import org.shared.utils.MyScope
 import java.util.*
 

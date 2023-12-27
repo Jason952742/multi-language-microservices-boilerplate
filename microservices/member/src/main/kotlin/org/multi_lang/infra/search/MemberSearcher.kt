@@ -4,7 +4,7 @@ import org.multi_lang.infra.repository.MemberRepository
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.multi_lang.domain.message.MemberListItem
+import org.multi_lang.domain.entity.item.MemberListItem
 import org.shared.common.hibernate.JasFilter
 import org.shared.common.hibernate.JasFilterOp
 import org.shared.common.hibernate.JasQuery

@@ -4,7 +4,7 @@ import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.context.ApplicationScoped
 import org.multi_lang.domain.entity.Member
-import org.multi_lang.domain.message.MemberListItem
+import org.multi_lang.domain.entity.item.MemberListItem
 import org.shared.common.hibernate.JasPanacheRepository
 import org.shared.common.hibernate.JasQuery
 import org.shared.common.resource.JasPaging
@@ -18,7 +18,7 @@ class MemberRepository : JasPanacheRepository<Member> {
         val total = p
             .count()
             .awaitSuspending()
-        val items = p.range<org.multi_lang.domain.entity.Member>(q.offset, q.last())
+        val items = p.range<Member>(q.offset, q.last())
             .project(MemberListItem::class.java)
             .list<MemberListItem>()
             .awaitSuspending()

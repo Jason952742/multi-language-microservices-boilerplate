@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import jakarta.persistence.*
 import org.shared.common.hibernate.JasEntityBase
 import org.shared.common.model.MemberType
-import org.multi_lang.domain.enums.MemberStatus
+import org.multi_lang.domain.entity.enums.MemberStatus
 import java.time.LocalDateTime
 import java.util.*
 
@@ -43,10 +43,10 @@ class Member(
     var lastLoginAt: LocalDateTime? = null,
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var loginPasses: MutableSet<org.multi_lang.domain.entity.LoginPasses> = mutableSetOf(),
+    var loginPasses: MutableSet<LoginPasses> = mutableSetOf(),
 
     @OneToOne(cascade = [CascadeType.ALL], orphanRemoval = true)
     @JsonIgnore
-    var passwordInfo: org.multi_lang.domain.entity.PasswordInfo
+    var passwordInfo: PasswordInfo
 
 ) : JasEntityBase(), org.shared.common.base.Party

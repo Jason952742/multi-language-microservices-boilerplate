@@ -1,8 +1,6 @@
-package org.multi_lang.domain.message
+package org.multi_lang.domain.command
 
 import member_proto.MemberUpdateRequest
-import org.shared.common.base.JasCommandBase
-import org.multi_lang.domain.entity.Member
 
 sealed class MemberCommand : org.shared.common.base.JasCommandBase
 

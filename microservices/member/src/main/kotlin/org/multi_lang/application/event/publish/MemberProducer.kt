@@ -6,6 +6,7 @@ import org.eclipse.microprofile.reactive.messaging.Channel
 import org.eclipse.microprofile.reactive.messaging.Emitter
 import org.eclipse.microprofile.reactive.messaging.Message
 import org.eclipse.microprofile.reactive.messaging.Metadata
+import org.multi_lang.domain.message.MemberCreatedEvent
 import java.time.ZonedDateTime
 
 @ApplicationScoped

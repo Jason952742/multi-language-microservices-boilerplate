@@ -3,8 +3,8 @@ package org.multi_lang.domain.entity.valobj
 import jakarta.persistence.Embeddable
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import org.multi_lang.domain.enums.FunctionType
-import org.multi_lang.domain.enums.ModuleType
+import org.multi_lang.domain.entity.enums.FunctionType
+import org.multi_lang.domain.entity.enums.ModuleType
 
 
 @Embeddable

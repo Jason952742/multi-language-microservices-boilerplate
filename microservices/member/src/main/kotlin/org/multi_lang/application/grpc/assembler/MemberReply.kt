@@ -1,8 +1,8 @@
-package org.multi_lang.domain.message
+package org.multi_lang.application.grpc.assembler
 
 import member_proto.MemberResponse
 import io.grpc.Status
-import org.multi_lang.domain.enums.MemberStatus
+import org.multi_lang.domain.entity.enums.MemberStatus
 import org.shared.common.model.MemberType
 
 data class MemberReply(

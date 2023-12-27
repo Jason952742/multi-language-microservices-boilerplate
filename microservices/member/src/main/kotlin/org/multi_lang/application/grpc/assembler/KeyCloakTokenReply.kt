@@ -1,4 +1,4 @@
-package org.multi_lang.domain.keycloak
+package org.multi_lang.application.grpc.assembler
 
 import io.grpc.Status
 import keycloak_proto.KeycloakTokenResponse

@@ -1,4 +1,4 @@
-package org.multi_lang.application.health
+package org.shared.health
 
 import jakarta.enterprise.context.ApplicationScoped
 import org.eclipse.microprofile.config.inject.ConfigProperty

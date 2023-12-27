@@ -5,8 +5,8 @@ import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
-import org.multi_lang.domain.enums.MemberStatus.*
-import org.multi_lang.domain.message.*
+import org.multi_lang.domain.command.*
+import org.multi_lang.domain.entity.enums.MemberStatus.*
 import org.shared.utils.MutinyUtils.uniItem
 import java.util.*
 

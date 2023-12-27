@@ -17,9 +17,9 @@ import org.shared.utils.EncryptionUtils.encrypt
 import org.shared.utils.MutinyUtils.uniItem
 import org.shared.utils.UuidUtils
 import org.jboss.logging.Logger
-import org.multi_lang.domain.enums.IdentityMold
-import org.multi_lang.domain.message.IdentityReply
-import org.multi_lang.domain.message.ProcessReply
+import org.multi_lang.domain.entity.enums.IdentityMold
+import org.multi_lang.application.grpc.assembler.IdentityReply
+import org.multi_lang.application.grpc.assembler.ProcessReply
 import java.util.*
 
 @ApplicationScoped

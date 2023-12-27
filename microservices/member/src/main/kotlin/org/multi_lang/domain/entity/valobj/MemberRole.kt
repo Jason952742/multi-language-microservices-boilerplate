@@ -3,7 +3,7 @@ package org.multi_lang.domain.entity.valobj
 import jakarta.persistence.Embeddable
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
-import org.multi_lang.domain.enums.MemberRoleType
+import org.multi_lang.domain.entity.enums.MemberRoleType
 import java.time.LocalDateTime
 
 
