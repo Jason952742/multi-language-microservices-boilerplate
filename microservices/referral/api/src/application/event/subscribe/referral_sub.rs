@@ -3,7 +3,7 @@ use lapin::message::DeliveryResult;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
-use crate::domain::messages::MemberCreatedEvent;
+use crate::domain::message::MemberCreatedEvent;
 
 #[derive(Clone)]
 pub struct ReferralSub;
