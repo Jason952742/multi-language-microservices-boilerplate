@@ -3,7 +3,7 @@ package org.multi_lang.infra.service.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class KeycloakUserRepresentation(
+data class KeycloakUser(
     var id: String? = null,
     var createdTimestamp: Long? = null,
     var username: String? = null,
@@ -16,7 +16,7 @@ data class KeycloakUserRepresentation(
     var access: Map<String, Boolean>? = null,
     // optional from response
     var attributes: Map<String, Set<String>>? = null,
-    var credentials: List<KeycloakCredentialRepresentation>? = null,
+    var credentials: List<KeycloakCredential>? = null,
     var email: String? = null,
     var federationLink: String? = null,
     var firstName: String? = null,

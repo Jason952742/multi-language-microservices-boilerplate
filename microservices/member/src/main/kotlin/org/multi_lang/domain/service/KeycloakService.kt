@@ -1,28 +1,25 @@
 package org.multi_lang.domain.service
 
-import keycloak_proto.*
-import common_proto.ProcessResponse
 import io.grpc.Status
+import io.grpc.StatusException
 import io.smallrye.jwt.auth.principal.DefaultJWTCallerPrincipal
 import io.smallrye.jwt.auth.principal.JWTAuthContextInfo
 import io.smallrye.jwt.auth.principal.JWTCallerPrincipal
 import io.smallrye.jwt.auth.principal.ParseException
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.multi_lang.infra.service.KeycloakAdminRestService
 import org.multi_lang.infra.service.KeycloakTokenRestService
-import org.shared.utils.MutinyUtils.uniItem
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
-import org.jboss.resteasy.reactive.ClientWebApplicationException
 import org.jose4j.jwt.JwtClaims
 import org.jose4j.jwt.consumer.InvalidJwtException
 import org.multi_lang.domain.entity.enums.GrantType
-import org.multi_lang.application.grpc.assembler.KeyCloakTokenReply
-import org.multi_lang.infra.service.dto.KeycloakCredentialRepresentation
-import org.multi_lang.infra.service.dto.KeycloakUserRepresentation
-import org.multi_lang.application.grpc.assembler.ProcessReply
+import org.multi_lang.infra.service.dto.KeycloakAccessToken
+import org.multi_lang.infra.service.dto.KeycloakCredential
+import org.multi_lang.infra.service.dto.KeycloakUser
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
@@ -81,67 +78,72 @@ class KeycloakService {
         return jwt
     }
 
-    private suspend fun getAdminToken(): KeyCloakTokenReply = keycloakService.getAdminToken(
+    private suspend fun getAdminToken(): Uni<KeycloakAccessToken> = keycloakService.getAdminToken(
         grantType = GrantType.password.toString(),
         clientId = "admin-cli",
         username = keycloakAdminUser,
         password = keycloakAdminPassword
-    )
+    ).onItem().ifNotNull().transform {
+        Uni.createFrom().item(it)
+    }.onFailure().transform { throwable ->
+        println("Received error: ${throwable.message}")
+        throwable
+    }.awaitSuspending()
 
-    private suspend fun getUserToken(username: String, password: String): KeyCloakTokenReply = keycloakService.getUserToken(
+    suspend fun getUserToken(identifier: String, password: String): Uni<KeycloakAccessToken> = keycloakService.getUserToken(
         realm = keycloakRealm,
         grantType = GrantType.password.toString(),
         clientId = keycloakClientId,
         clientSecret = keycloakClientSecret,
-        username = username,
+        username = identifier,
         password = password,
         scope = "openid"
     )
 
-    suspend fun check(request: CheckRequest): Uni<ProcessResponse> = getAdminToken().let {
-        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, request.identifier)
-        uniItem(ProcessReply(result = userResult.isEmpty(), processedId = request.identifier).toResponse())
+    suspend fun check(identifier: String): Uni<Set<KeycloakUser>> = getAdminToken().awaitSuspending().let {
+        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, identifier).awaitSuspending()
+        Uni.createFrom().item(userResult)
     }
 
-    suspend fun register(request: RegistrationRequest): Uni<KeycloakTokenResponse> = getAdminToken().let {
-        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, request.loginCreds).run {
+    suspend fun register(loginCreds: String, password: String): Uni<KeycloakAccessToken> = getAdminToken().awaitSuspending().let {
+        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, loginCreds).awaitSuspending().run {
             if (this.isEmpty()) {
-                val user = KeycloakUserRepresentation(
-                    username = request.loginCreds,
+                val user = KeycloakUser(
+                    username = loginCreds,
                     enabled = true,
                     attributes = mapOf("expiredAt" to setOf(LocalDateTime.now().toString())),
                     credentials = listOf(
-                        KeycloakCredentialRepresentation(type = "password", value = request.password, temporary = false)
+                        KeycloakCredential(type = "password", value = password, temporary = false)
                     )
                 )
-                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", keycloakRealm, user)
+                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", keycloakRealm, user).awaitSuspending()
                 if (result.status == 201) {
-                    val userToken: KeyCloakTokenReply = getUserToken(request.loginCreds, request.password)
-                    uniItem(userToken.toResponse())
+                    getUserToken(loginCreds, password)
                 } else {
-                    uniItem(KeyCloakTokenReply.toError(Status.INTERNAL, "create user failed"))
+                    Uni.createFrom().failure(StatusException(Status.INTERNAL.withDescription("create user failed")))
                 }
             } else {
-                uniItem(KeyCloakTokenReply.toError(Status.ALREADY_EXISTS, "Already registered"))
+                Uni.createFrom().failure(StatusException(Status.ALREADY_EXISTS.withDescription("Already registered")))
             }
         }
     }
 
-    suspend fun changePassword(request: PasswordChangeRequest): Uni<ProcessResponse> = getAdminToken().let {
-        val credential = KeycloakCredentialRepresentation(type = "password", value = request.newPassword, temporary = false)
-        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", keycloakRealm, UUID.fromString(request.id), credential)
+    suspend fun changePassword(id: UUID, newPassword: String): Uni<String> = getAdminToken().awaitSuspending().let {
+        val credential = KeycloakCredential(type = "password", value = newPassword, temporary = false)
+        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", keycloakRealm, id, credential).awaitSuspending()
         if (result.status == 204) {
-            uniItem(ProcessReply(result = true, processedId = request.id).toResponse())
+            Uni.createFrom().item(id.toString())
         } else {
-            uniItem(ProcessReply.toError(Status.INTERNAL, "change password failed"))
+            Uni.createFrom().failure(StatusException(Status.INTERNAL.withDescription("change password failed")))
         }
     }
 
-    suspend fun login(request: SignInRequest): KeycloakTokenResponse = try {
-        val userToken: KeyCloakTokenReply = getUserToken(request.identifier, request.password)
-        userToken.toResponse()
-    } catch (e: ClientWebApplicationException) {
-        KeyCloakTokenReply.toError(Status.UNAUTHENTICATED, "user name or password is incorrect")
-    }
+    suspend fun login(identifier: String, password: String): Uni<KeycloakAccessToken> = getUserToken(identifier, password)
+        .onItem().ifNotNull().transform {
+            Uni.createFrom().item(it)
+        }.onFailure().transform { throwable ->
+            println("Received error: ${throwable.message}")
+            throwable
+        }.awaitSuspending()
 
 }

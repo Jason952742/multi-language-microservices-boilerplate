@@ -25,19 +25,6 @@ data class KeyCloakTokenReply(
     var sessionState: String? = null,
     var scope: String = "openid"
 ) {
-    private fun toProto(): KeycloakTokenResponse.KeycloakToken = KeycloakTokenResponse.KeycloakToken.newBuilder().also {
-        it.accessToken = accessToken
-        it.expiresIn = expiresIn
-        it.refreshExpiresIn = refreshExpiresIn
-        it.refreshToken = refreshToken
-        it.tokenType = tokenType
-    }.build()
-
-    fun toResponse(): KeycloakTokenResponse = KeycloakTokenResponse.newBuilder().also {
-        it.code = Status.OK.code.toString()
-        it.message = "Success"
-        it.data = toProto()
-    }.build()
 
     companion object {
         fun toError(status: Status, message: String): KeycloakTokenResponse = KeycloakTokenResponse.newBuilder().also {

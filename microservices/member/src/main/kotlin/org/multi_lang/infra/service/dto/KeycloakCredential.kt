@@ -3,7 +3,7 @@ package org.multi_lang.infra.service.dto
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class KeycloakCredentialRepresentation(
+data class KeycloakCredential(
     var createdDate: Long? = null,
     var credentialData: String? = null,
     var id: String? = null,

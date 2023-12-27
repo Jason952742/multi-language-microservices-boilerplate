@@ -5,7 +5,7 @@ import jakarta.ws.rs.*
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import jakarta.ws.rs.core.MediaType
 import org.jboss.resteasy.reactive.RestPath
-import org.multi_lang.infra.service.dto.KeyCloakAccessTokenResponse
+import org.multi_lang.infra.service.dto.KeycloakAccessToken
 
 @Path("/realms")
 @RegisterRestClient(configKey = "keycloak-api")
@@ -19,7 +19,7 @@ interface KeycloakTokenRestService {
         @FormParam("client_id") clientId: String,
         @FormParam("username") username: String,
         @FormParam("password") password: String,
-    ): Uni<KeyCloakAccessTokenResponse>
+    ): Uni<KeycloakAccessToken>
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -32,6 +32,6 @@ interface KeycloakTokenRestService {
         @FormParam("username") username: String,
         @FormParam("password") password: String,
         @FormParam("scope") scope: String,
-    ): Uni<KeyCloakAccessTokenResponse>
+    ): Uni<KeycloakAccessToken>
 
 }

@@ -20,7 +20,7 @@ class MemberSearcher {
 
     suspend fun getById(id: UUID): Uni<org.multi_lang.domain.entity.Member> = memberRepository.get(id)
 
-    suspend fun getByName(name: String): Uni<org.multi_lang.domain.entity.Member?> = memberRepository.findByName(name)
+     suspend fun getByName(name: String): Uni<org.multi_lang.domain.entity.Member?> = memberRepository.findByName(name)
 
     suspend fun search(
         nickname: String?, id_card: String?, name: String?,

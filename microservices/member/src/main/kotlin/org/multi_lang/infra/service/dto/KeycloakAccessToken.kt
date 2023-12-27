@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class KeyCloakAccessTokenResponse(
+data class KeycloakAccessToken(
     @SerialName("access_token")
     var accessToken: String,
     @SerialName("expires_in")
