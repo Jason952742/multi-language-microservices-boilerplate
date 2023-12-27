@@ -6,13 +6,14 @@ pub struct Rabbitmq;
 
 impl Rabbitmq {
     pub async fn connection() -> Connection {
-        let uri = "amqp://rabbit:rabbitpassword@127.0.0.1:5672/%2f";
+        dotenvy::dotenv().ok();
+        let uri = std::env::var("AMQP_ADDR").expect("AMQP_ADDR must be set");
         // Use tokio executor and reactor.
         // At the moment the reactor is only available for unix.
         let options = ConnectionProperties::default()
             .with_executor(tokio_executor_trait::Tokio::current())
             .with_reactor(tokio_reactor_trait::Tokio);
-        let connection = Connection::connect(uri.into(), options)
+        let connection = Connection::connect(&uri, options)
             .await.expect("Connection failed");
         info!("RABBITMQ CONNECTED");
         connection
