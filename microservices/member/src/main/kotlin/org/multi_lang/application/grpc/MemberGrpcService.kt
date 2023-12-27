@@ -47,7 +47,10 @@ class MemberGrpcService : MemberProtoService {
 
     @WithTransaction
     override fun updateMember(request: MemberUpdateRequest): Uni<MemberResponse> = scope.asyncUni {
-        val cmd = MemberProfileChange.fromProto(request)
+        val cmd = MemberProfileChange(
+            nickname = request.nickname,
+            description = request.description
+        )
         memberHandler.ask(id = UUID.fromString(request.id), cmd = cmd).awaitSuspending().let {
             MemberReply(
                 name = it.name,

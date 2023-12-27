@@ -1,12 +1,12 @@
-package org.multi_lang.application.service
+package org.multi_lang.infra.service
 
 import jakarta.ws.rs.*
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient
 import jakarta.ws.rs.core.Response
 import org.jboss.resteasy.reactive.RestPath
 import org.jboss.resteasy.reactive.RestQuery
-import org.multi_lang.application.service.dto.KeycloakCredentialRepresentation
-import org.multi_lang.application.service.dto.KeycloakUserRepresentation
+import org.multi_lang.infra.service.dto.KeycloakCredentialRepresentation
+import org.multi_lang.infra.service.dto.KeycloakUserRepresentation
 import java.util.*
 
 @Path("/admin/realms")

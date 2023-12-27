@@ -1,6 +1,9 @@
 package org.shared.utils
 
+import io.grpc.Status
+import io.grpc.StatusException
 import io.smallrye.mutiny.Uni
+import io.smallrye.mutiny.groups.UniOnItem
 import io.smallrye.mutiny.infrastructure.Infrastructure
 
 object MutinyUtils {
@@ -12,5 +15,6 @@ object MutinyUtils {
     }
 
     fun <T> uniItem(data: T): Uni<T> = Uni.createFrom().item(data)
+    fun <T> unOnItem(data: T): UniOnItem<T> = Uni.createFrom().item(data).onItem()
 
 }

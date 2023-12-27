@@ -12,6 +12,7 @@ import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.inject.Default
 import jakarta.inject.Inject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.multi_lang.application.grpc.assembler.IdentityReply
 import org.multi_lang.domain.entity.enums.IdentityMold
 import org.multi_lang.application.grpc.assembler.ProcessReply
 import org.shared.utils.MyScope
@@ -42,18 +43,41 @@ class AuthGrpcService : AuthProtoService {
             password = request.password,
             userId = UUID.randomUUID(), // TODO: get userID
             nickname = request.nickname
-        ).awaitSuspending()
+        ).onItem().ifNotNull().transform { user ->
+            IdentityReply(userId = user.id!!, loginCreds = user.loginCreds, nickname = user.nickname).toResponse()
+        }.onFailure().transform { throwable ->
+            println("Received error: ${throwable.message}")
+            throwable
+        }.awaitSuspending()
     }
 
     @WithSession
     override fun login(request: SignInRequest): Uni<IdentityResponse> = scope.asyncUni {
-        authenticationService.authenticateCredentials(request).awaitSuspending()
+        authenticationService.authenticateCredentials(
+            mold = IdentityMold.valueOf(request.mold),
+            identifier = request.identifier,
+            password = request.password
+        ).onItem().ifNotNull().transform {
+            IdentityReply(userId = it.userId, loginCreds = it.loginCreds, nickname = "").toResponse()
+        }.onFailure().transform { throwable ->
+            println("Received error: ${throwable.message}")
+            throwable
+        }.awaitSuspending()
     }
 
     @WithTransaction
     override fun changePassword(request: PasswordChangeRequest): Uni<ProcessResponse> = scope.asyncUni {
         if (request.newPassword == request.confirm) {
-            authenticationService.changePassword(UUID.fromString(request.id), request).awaitSuspending()
+            authenticationService.changePassword(
+                UUID.fromString(request.id),
+                request.oldPassword,
+                request.newPassword
+            ).onItem().ifNotNull().transform {
+                ProcessReply(result = true, processedId = it.loginCreds).toResponse()
+            }.onFailure().transform { throwable ->
+                println("Received error: ${throwable.message}")
+                throwable
+            }.awaitSuspending()
         } else ProcessReply.toError(Status.UNAUTHENTICATED, "New password and confirmation password do not match")
     }
 

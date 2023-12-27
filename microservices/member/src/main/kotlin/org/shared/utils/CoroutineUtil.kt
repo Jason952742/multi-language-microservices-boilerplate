@@ -1,5 +1,6 @@
 package org.shared.utils
 
+import auth_proto.IdentityResponse
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.asUni
 import io.vertx.core.Context

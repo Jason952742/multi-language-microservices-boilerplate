@@ -1,4 +1,4 @@
-package org.multi_lang.application.service.dto
+package org.multi_lang.infra.service.dto
 
 import kotlinx.serialization.Serializable
 

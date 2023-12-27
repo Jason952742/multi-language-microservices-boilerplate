@@ -1,4 +1,4 @@
-package org.multi_lang.application.service
+package org.multi_lang.infra.service
 
 import jakarta.ws.rs.*
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient

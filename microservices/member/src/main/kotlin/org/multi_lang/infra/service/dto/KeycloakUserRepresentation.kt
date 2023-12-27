@@ -1,7 +1,7 @@
-package org.multi_lang.application.service.dto
+package org.multi_lang.infra.service.dto
 
 import kotlinx.serialization.Serializable
-import org.multi_lang.application.service.dto.KeycloakCredentialRepresentation
+import org.multi_lang.infra.service.dto.KeycloakCredentialRepresentation
 
 @Serializable
 data class KeycloakUserRepresentation(

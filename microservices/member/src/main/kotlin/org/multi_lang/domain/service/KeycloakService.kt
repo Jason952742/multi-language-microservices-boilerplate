@@ -10,8 +10,8 @@ import io.smallrye.jwt.auth.principal.ParseException
 import io.smallrye.mutiny.Uni
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
-import org.multi_lang.application.service.KeycloakAdminRestService
-import org.multi_lang.application.service.KeycloakTokenRestService
+import org.multi_lang.infra.service.KeycloakAdminRestService
+import org.multi_lang.infra.service.KeycloakTokenRestService
 import org.shared.utils.MutinyUtils.uniItem
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
@@ -20,8 +20,8 @@ import org.jose4j.jwt.JwtClaims
 import org.jose4j.jwt.consumer.InvalidJwtException
 import org.multi_lang.domain.entity.enums.GrantType
 import org.multi_lang.application.grpc.assembler.KeyCloakTokenReply
-import org.multi_lang.application.service.dto.KeycloakCredentialRepresentation
-import org.multi_lang.application.service.dto.KeycloakUserRepresentation
+import org.multi_lang.infra.service.dto.KeycloakCredentialRepresentation
+import org.multi_lang.infra.service.dto.KeycloakUserRepresentation
 import org.multi_lang.application.grpc.assembler.ProcessReply
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
