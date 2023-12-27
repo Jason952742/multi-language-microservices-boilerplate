@@ -15,7 +15,6 @@ use application::grpc::post_service::post_mod::blogpost_server::BlogpostServer;
 pub use application::grpc::hello_service::hello_world;
 pub use application::grpc::echo_service::pb;
 use application::event::subscribe::ReferralSub;
-use application::event::publish::ReferralPub;
 use shared::consul_api;
 
 mod application;

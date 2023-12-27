@@ -1,22 +1,31 @@
+use std::env;
 use lapin::{options::*, publisher_confirm::Confirmation, types::FieldTable, BasicProperties, Connection, ConnectionProperties, Channel, Queue, Consumer};
+use tokio::sync::OnceCell;
 use tracing::info;
 
 #[derive(Debug)]
 pub struct Rabbitmq;
 
+static CLIENT: OnceCell<Connection> = OnceCell::const_new();
+
 impl Rabbitmq {
-    pub async fn connection() -> Connection {
-        dotenvy::dotenv().ok();
-        let uri = std::env::var("AMQP_ADDR").expect("AMQP_ADDR must be set");
-        // Use tokio executor and reactor.
-        // At the moment the reactor is only available for unix.
-        let options = ConnectionProperties::default()
-            .with_executor(tokio_executor_trait::Tokio::current())
-            .with_reactor(tokio_reactor_trait::Tokio);
-        let connection = Connection::connect(&uri, options)
-            .await.expect("Connection failed");
-        info!("RABBITMQ CONNECTED");
-        connection
+
+    pub async fn connection() -> &'static Connection {
+        CLIENT
+            .get_or_init(|| async {
+                dotenvy::dotenv().ok();
+                let uri = env::var("AMQP_ADDR").expect("AMQP_ADDR must be set");
+                // Use tokio executor and reactor.
+                // At the moment the reactor is only available for unix.
+                let options = ConnectionProperties::default()
+                    .with_executor(tokio_executor_trait::Tokio::current())
+                    .with_reactor(tokio_reactor_trait::Tokio);
+                let connection = Connection::connect(&uri, options)
+                    .await.expect("Connection failed");
+                info!("RABBITMQ CONNECTED");
+                connection
+            })
+            .await
     }
 
     pub async fn channel(conn: &Connection) -> Channel {

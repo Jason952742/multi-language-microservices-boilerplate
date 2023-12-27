@@ -3,7 +3,6 @@ use lapin::message::DeliveryResult;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
-use tracing::info;
 use crate::domain::messages::MemberCreatedEvent;
 
 #[derive(Clone)]

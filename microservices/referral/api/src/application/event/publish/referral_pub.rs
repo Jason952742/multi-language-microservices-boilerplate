@@ -4,7 +4,7 @@ use shared::rabbitmq::Rabbitmq;
 pub struct ReferralPub;
 
 impl ReferralPub {
-    pub async fn publish() -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn _publish() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn({
             async move {
                 let connection = Rabbitmq::connection().await;
