@@ -1,7 +1,6 @@
 package org.multi_lang.infra.service.dto
 
 import kotlinx.serialization.Serializable
-import org.multi_lang.infra.service.dto.KeycloakCredentialRepresentation
 
 @Serializable
 data class KeycloakUserRepresentation(
@@ -27,6 +26,4 @@ data class KeycloakUserRepresentation(
     var realmRoles: Set<String>? = null,
     var self: String? = null,
     var serviceAccountClientId: String? = null,
-) {
-
-}
+)
