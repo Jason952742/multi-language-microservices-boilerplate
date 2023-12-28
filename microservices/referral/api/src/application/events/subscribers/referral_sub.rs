@@ -23,14 +23,14 @@ impl ReferralSub {
 
     /// Handle member created
     pub async fn subscribe_member_created(tx: mpsc::Sender<ReferralCommand>) -> Result<(), lapin::Error> {
-        tokio::task::spawn(async move {
-            let event_name = "member_created";
-            let connection = Rabbitmq::connection().await;
-            let channel = Rabbitmq::channel(&connection).await;
-            let _queue = Rabbitmq::queue(&channel, &event_name, "member", "created").await;
-            let consumer = Rabbitmq::consumer(&channel, &event_name, "referral-member").await;
+        let event_name = "member_created";
+        let connection = Rabbitmq::connection().await;
+        let channel = Rabbitmq::channel(&connection).await;
+        let _queue = Rabbitmq::queue(&channel, &event_name, "member", "created").await;
+        let consumer = Rabbitmq::consumer(&channel, &event_name, "referral-member").await;
+        let mut consumer_stream = consumer.into_stream();
 
-            let mut consumer_stream = consumer.into_stream();
+        tokio::task::spawn(async move {
             while let Some(delivery) = consumer_stream.next().await {
                 if let Ok((delivery)) = delivery {
                     // Do something with the delivery data (The message payload)
