@@ -16,7 +16,7 @@ pub struct Model {
 
     pub hierarchy: i32,
     pub active: bool,
-    pub description: Option<String>,
+    pub description: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
     pub enabled: bool,
