@@ -16,13 +16,13 @@ interface KeycloakAdminRestService {
 
     @GET
     @Path("/{realm}/users")
-    suspend fun findUserByName(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestQuery username: String): Uni<Set<KeycloakUser>>
+    suspend fun findUserByName(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestQuery username: String): Set<KeycloakUser>
 
     @POST
     @Path("/{realm}/users")
-    suspend fun createUser(@HeaderParam("Authorization") token: String, @RestPath realm: String, user: KeycloakUser): Uni<Response>
+    suspend fun createUser(@HeaderParam("Authorization") token: String, @RestPath realm: String, user: KeycloakUser): Response
 
     @PUT
     @Path("/{realm}/users/{id}/reset-password")
-    suspend fun changePassword(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestPath id: UUID, credential: KeycloakCredential): Uni<Response>
+    suspend fun changePassword(@HeaderParam("Authorization") token: String, @RestPath realm: String, @RestPath id: UUID, credential: KeycloakCredential): Response
 }

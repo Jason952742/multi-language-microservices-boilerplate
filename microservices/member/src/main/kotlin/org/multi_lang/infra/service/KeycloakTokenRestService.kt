@@ -19,7 +19,7 @@ interface KeycloakTokenRestService {
         @FormParam("client_id") clientId: String,
         @FormParam("username") username: String,
         @FormParam("password") password: String,
-    ): Uni<KeycloakAccessToken>
+    ): KeycloakAccessToken
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -32,6 +32,6 @@ interface KeycloakTokenRestService {
         @FormParam("username") username: String,
         @FormParam("password") password: String,
         @FormParam("scope") scope: String,
-    ): Uni<KeycloakAccessToken>
+    ): KeycloakAccessToken
 
 }

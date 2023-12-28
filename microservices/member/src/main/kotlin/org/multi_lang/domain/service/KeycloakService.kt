@@ -7,7 +7,6 @@ import io.smallrye.jwt.auth.principal.JWTAuthContextInfo
 import io.smallrye.jwt.auth.principal.JWTCallerPrincipal
 import io.smallrye.jwt.auth.principal.ParseException
 import io.smallrye.mutiny.Uni
-import io.smallrye.mutiny.coroutines.awaitSuspending
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import org.multi_lang.infra.service.KeycloakAdminRestService
@@ -78,19 +77,14 @@ class KeycloakService {
         return jwt
     }
 
-    private suspend fun getAdminToken(): Uni<KeycloakAccessToken> = keycloakService.getAdminToken(
+    private suspend fun getAdminToken(): KeycloakAccessToken = keycloakService.getAdminToken(
         grantType = GrantType.password.toString(),
         clientId = "admin-cli",
         username = keycloakAdminUser,
         password = keycloakAdminPassword
-    ).onItem().ifNotNull().transform {
-        Uni.createFrom().item(it)
-    }.onFailure().transform { throwable ->
-        println("Received error: ${throwable.message}")
-        throwable
-    }.awaitSuspending()
+    )
 
-    suspend fun getUserToken(identifier: String, password: String): Uni<KeycloakAccessToken> = keycloakService.getUserToken(
+    suspend fun getUserToken(identifier: String, password: String): KeycloakAccessToken = keycloakService.getUserToken(
         realm = keycloakRealm,
         grantType = GrantType.password.toString(),
         clientId = keycloakClientId,
@@ -100,13 +94,13 @@ class KeycloakService {
         scope = "openid"
     )
 
-    suspend fun check(identifier: String): Uni<Set<KeycloakUser>> = getAdminToken().awaitSuspending().let {
-        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, identifier).awaitSuspending()
+    suspend fun check(identifier: String): Uni<Set<KeycloakUser>> = getAdminToken().let {
+        val userResult = keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, identifier)
         Uni.createFrom().item(userResult)
     }
 
-    suspend fun register(loginCreds: String, password: String): Uni<KeycloakAccessToken> = getAdminToken().awaitSuspending().let {
-        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, loginCreds).awaitSuspending().run {
+    suspend fun register(loginCreds: String, password: String): Uni<KeycloakAccessToken> = getAdminToken().let {
+        keycloakAdminService.findUserByName("Bearer ${it.accessToken}", keycloakRealm, loginCreds).run {
             if (this.isEmpty()) {
                 val user = KeycloakUser(
                     username = loginCreds,
@@ -116,9 +110,10 @@ class KeycloakService {
                         KeycloakCredential(type = "password", value = password, temporary = false)
                     )
                 )
-                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", keycloakRealm, user).awaitSuspending()
+                val result = keycloakAdminService.createUser("Bearer ${it.accessToken}", keycloakRealm, user)
                 if (result.status == 201) {
-                    getUserToken(loginCreds, password)
+                    val token = getUserToken(loginCreds, password)
+                    Uni.createFrom().item(token)
                 } else {
                     Uni.createFrom().failure(StatusException(Status.INTERNAL.withDescription("create user failed")))
                 }
@@ -128,9 +123,9 @@ class KeycloakService {
         }
     }
 
-    suspend fun changePassword(id: UUID, newPassword: String): Uni<String> = getAdminToken().awaitSuspending().let {
+    suspend fun changePassword(id: UUID, newPassword: String): Uni<String> = getAdminToken().let {
         val credential = KeycloakCredential(type = "password", value = newPassword, temporary = false)
-        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", keycloakRealm, id, credential).awaitSuspending()
+        val result = keycloakAdminService.changePassword("Bearer ${it.accessToken}", keycloakRealm, id, credential)
         if (result.status == 204) {
             Uni.createFrom().item(id.toString())
         } else {
@@ -138,12 +133,8 @@ class KeycloakService {
         }
     }
 
-    suspend fun login(identifier: String, password: String): Uni<KeycloakAccessToken> = getUserToken(identifier, password)
-        .onItem().ifNotNull().transform {
-            Uni.createFrom().item(it)
-        }.onFailure().transform { throwable ->
-            println("Received error: ${throwable.message}")
-            throwable
-        }.awaitSuspending()
+    suspend fun login(identifier: String, password: String): Uni<KeycloakAccessToken> = getUserToken(identifier, password).let {
+        Uni.createFrom().item(it)
+    }
 
 }

@@ -17,8 +17,8 @@ import org.multi_lang.domain.entity.enums.IdentityMold
 import org.multi_lang.application.grpc.assembler.KeyCloakTokenReply
 import org.multi_lang.application.grpc.assembler.ProcessReply
 import org.multi_lang.domain.entity.Member
-import org.multi_lang.infra.search.MemberSearcher
 import org.multi_lang.domain.service.AuthenticationService
+import org.multi_lang.infra.search.MemberSearcher
 import org.multi_lang.domain.service.KeycloakService
 import org.multi_lang.infra.service.dto.KeycloakAccessToken
 import org.shared.utils.MnemonicUtil
@@ -133,12 +133,6 @@ class KeycloakAuthGrpcService : KeycloakProtoService {
         it.refreshExpiresIn = refreshExpiresIn
         it.refreshToken = refreshToken
         it.tokenType = tokenType
-    }.build()
-
-    private fun KeycloakAccessToken.toReply(): KeycloakTokenResponse = KeycloakTokenResponse.newBuilder().also {
-        it.code = Status.OK.code.toString()
-        it.message = "Success"
-        it.data = this.toProto()
     }.build()
 
 }
