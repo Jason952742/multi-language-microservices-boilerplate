@@ -1,9 +1,9 @@
-use crate::domain::entity::{post, post::Entity as Post};
+use crate::domain::entities::{post, post::Entity as Post};
 use sea_orm::*;
 
-pub struct Query;
+pub struct PostQuery;
 
-impl Query {
+impl PostQuery {
     pub async fn find_post_by_id(db: &DbConn, id: i32) -> Result<Option<post::Model>, DbErr> {
         Post::find_by_id(id).one(db).await
     }

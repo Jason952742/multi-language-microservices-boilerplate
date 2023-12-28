@@ -1,6 +1,6 @@
 use tonic_health::pb::health_server::{Health, HealthServer};
-use crate::application::grpc::hello_service::hello_world::greeter_server::GreeterServer;
-use crate::application::grpc::hello_service::MyGreeter;
+use crate::application::grpc::hello_grpc::hello_world::greeter_server::GreeterServer;
+use crate::application::grpc::hello_grpc::MyGreeter;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");

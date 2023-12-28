@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use strum_macros;
+use strum_macros::{EnumIter, EnumString};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, strum_macros::Display)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize, EnumString, EnumIter, strum_macros::Display)]
 pub enum MemberType {
     Wood,
     Iron,
@@ -15,6 +16,12 @@ pub enum MemberType {
     Sphene,
 }
 
+impl Default for MemberType {
+    fn default() -> Self {
+        MemberType::Wood
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MemberCreatedEvent {
     pub user_id: Uuid,
@@ -24,7 +31,7 @@ pub struct MemberCreatedEvent {
     pub login_creds: String,
     pub level: i32,
     pub my_referrer_code: String,
-    pub referee_code: String
+    pub referee_code: String,
 }
 
 impl Into<Vec<u8>> for MemberCreatedEvent {

@@ -1,4 +1,4 @@
-pub mod hello_service;
-pub mod health_service;
-pub mod echo_service;
-pub mod post_service;
+pub mod hello_grpc;
+pub mod health_grpc;
+pub mod echo_grpc;
+pub mod post_grpc;

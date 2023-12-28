@@ -1,9 +1,9 @@
 use tonic::{Request, Response, Status};
 
-use crate::domain::entity::post;
+use crate::domain::entities::post;
 use sea_orm::{DatabaseConnection};
-use crate::infra::repository::mutation::Mutation;
-use crate::infra::repository::query::Query;
+use crate::infra::repositories::post_mutation::PostMutation;
+use crate::infra::repositories::post_query::PostQuery;
 
 
 pub mod post_mod {
@@ -39,7 +39,7 @@ impl Blogpost for MyServer {
 
         let mut response = PostList { post: Vec::new() };
 
-        let (posts, _) = Query::find_posts_in_page(conn, 1, posts_per_page)
+        let (posts, _) = PostQuery::find_posts_in_page(conn, 1, posts_per_page)
             .await
             .expect("Cannot find posts in page");
 
@@ -59,7 +59,7 @@ impl Blogpost for MyServer {
 
         let input = request.into_inner().into_model();
 
-        let inserted = Mutation::create_post(conn, input)
+        let inserted = PostMutation::create_post(conn, input)
             .await
             .expect("could not insert post");
 
@@ -74,7 +74,7 @@ impl Blogpost for MyServer {
         let conn = &self.connection;
         let input = request.into_inner().into_model();
 
-        match Mutation::update_post_by_id(conn, input.id, input).await {
+        match PostMutation::update_post_by_id(conn, input.id, input).await {
             Ok(_) => Ok(Response::new(ProcessStatus { success: true })),
             Err(_) => Ok(Response::new(ProcessStatus { success: false })),
         }
@@ -87,7 +87,7 @@ impl Blogpost for MyServer {
         let conn = &self.connection;
         let id = request.into_inner().id;
 
-        match Mutation::delete_post(conn, id).await {
+        match PostMutation::delete_post(conn, id).await {
             Ok(_) => Ok(Response::new(ProcessStatus { success: true })),
             Err(_) => Ok(Response::new(ProcessStatus { success: false })),
         }
@@ -97,7 +97,7 @@ impl Blogpost for MyServer {
         let conn = &self.connection;
         let id = request.into_inner().id;
 
-        if let Some(post) = Query::find_post_by_id(conn, id).await.ok().flatten() {
+        if let Some(post) = PostQuery::find_post_by_id(conn, id).await.ok().flatten() {
             Ok(Response::new(Post {
                 id,
                 title: post.title,

@@ -1,3 +1,5 @@
-pub mod entity;
-pub mod message;
-
+pub mod entities;
+pub mod messages;
+pub mod handlers;
+pub mod commands;
+mod services;
