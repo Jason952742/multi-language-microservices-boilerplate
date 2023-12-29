@@ -10,14 +10,14 @@ pub type Response = oneshot::Sender<Result<ReferralEvent, Status>>;
 #[derive(Debug)]
 pub enum ReferralCommand {
     Create { user_id: Uuid, event: MemberCreatedEvent, resp: Response },
-    Update { user_id: Uuid, member_type: MemberType, level: i32, resp: Response }
+    Update { user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String, resp: Response },
 }
 
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ReferralEvent {
     Created,
-    Updated
+    Updated,
 }
 
 

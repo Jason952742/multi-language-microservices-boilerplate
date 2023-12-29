@@ -17,8 +17,8 @@ impl ReferralActor {
                 let res = MemberService::create_referral(user_id, event).await;
                 let _ = resp.send(res);
             }
-            ReferralCommand::Update { user_id, member_type, level, resp } => {
-                let res = MemberService::update_referral(user_id, member_type, level).await;
+            ReferralCommand::Update { user_id, member_type, level, active, description, resp } => {
+                let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
                 let _ = resp.send(res);
             }
         }

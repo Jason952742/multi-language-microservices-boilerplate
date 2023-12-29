@@ -3,7 +3,7 @@ use futures_lite::StreamExt;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
-use crate::domain::commands::member_cmd::{ReferralCommand, ReferralEvent};
+use crate::domain::commands::member_cmd::{ReferralCommand};
 use crate::domain::handlers::{ReferralActor, run_referral_actor};
 use crate::domain::messages::MemberCreatedEvent;
 
@@ -32,7 +32,7 @@ impl ReferralSub {
 
         tokio::task::spawn(async move {
             while let Some(delivery) = consumer_stream.next().await {
-                if let Ok((delivery)) = delivery {
+                if let Ok(delivery) = delivery {
                     // Do something with the delivery data (The message payload)
                     let payload = MemberCreatedEvent::from(delivery.data.as_ref());
                     tracing::info!("Receive {:?} Event: {:?}", &event_name, &payload);
