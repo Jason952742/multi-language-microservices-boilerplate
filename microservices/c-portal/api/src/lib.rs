@@ -1,5 +1,3 @@
-mod flash;
-
 use axum::{
     extract::{Form, Path, Query, State},
     http::StatusCode,
@@ -7,18 +5,21 @@ use axum::{
     routing::{get, get_service, post},
     Router,
 };
-use axum_example_service::{
-    sea_orm::{Database, DatabaseConnection},
-    Mutation as MutationCore, Query as QueryCore,
-};
-use entity::post;
+use sea_orm::{Database, DatabaseConnection};
+use crate::infra::repositories::{Mutation as MutationCore, Query as QueryCore};
 use flash::{get_flash_cookie, post_response, PostResponse};
-use migration::{Migrator, MigratorTrait};
 use serde::{Deserialize, Serialize};
 use std::env;
+use sea_orm_migration::MigratorTrait;
 use tera::Tera;
 use tower_cookies::{CookieManagerLayer, Cookies};
 use tower_http::services::ServeDir;
+use crate::domain::entities::post;
+use crate::infra::migration::Migrator;
+
+mod flash;
+mod infra;
+mod domain;
 
 #[tokio::main]
 async fn start() -> anyhow::Result<()> {

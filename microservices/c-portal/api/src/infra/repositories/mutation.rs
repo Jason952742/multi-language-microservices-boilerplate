@@ -1,5 +1,5 @@
-use ::entity::{post, post::Entity as Post};
 use sea_orm::*;
+use crate::domain::entities::{post, post::Entity as Post};
 
 pub struct Mutation;
 

@@ -1,12 +1,15 @@
 [package]
-name = "sea-orm-axum-example"
-version = "0.1.0"
-authors = ["Yoshiera Huang <huangjasper@126.com>"]
+authors = ["jason <jason@jaasun.com>"]
 edition = "2021"
+license = "MIT"
+name = "c-portal"
 publish = false
+version = "0.1.0"
 
 [workspace]
-members = [".", "api", "service", "entity", "migration"]
+members = [".", "api", "shared"]
 
 [dependencies]
-axum-example-api = { path = "api" }
+api = { path = "api" }
+shared = { path = "shared" }
+
