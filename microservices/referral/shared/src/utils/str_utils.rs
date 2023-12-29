@@ -1,6 +1,10 @@
 use chrono::{NaiveDateTime};
 use uuid::{Uuid};
 
+pub fn to_uuid(str: &str) -> uuid::Uuid {
+    str.parse().unwrap()
+}
+
 pub fn opt_to_uuid(uuid_str: Option<String>) -> Uuid {
     Uuid::parse_str(&uuid_str.unwrap()).unwrap()
 }

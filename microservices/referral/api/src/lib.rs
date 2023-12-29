@@ -16,6 +16,8 @@ pub use application::grpc::hello_grpc::hello_world;
 pub use application::grpc::echo_grpc::pb;
 use application::events::subscribers::MemberSub;
 use shared::consul_api;
+use crate::application::grpc::member_grpc::MemberGrpc;
+use crate::application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
 
 mod application;
 mod infra;
@@ -61,6 +63,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
 
         let echo = EchoServer { addr: saddr };
         let echo_service = pb::echo_server::EchoServer::with_interceptor(echo, check_auth);
+        let member_grpc = ReferMemberServer::with_interceptor(MemberGrpc::new(), check_auth);
 
         // establish database connection
         let connection = PgPool::conn().await.clone();
@@ -74,6 +77,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
 
         let serve = Server::builder()
             .add_service(health_indicator)
+            .add_service(member_grpc)
             .add_service(echo_service)
             .add_optional_service(optional_service)
             .add_service(post_service)
