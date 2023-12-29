@@ -1,0 +1,12 @@
+[package]
+name = "sea-orm-axum-example"
+version = "0.1.0"
+authors = ["Yoshiera Huang <huangjasper@126.com>"]
+edition = "2021"
+publish = false
+
+[workspace]
+members = [".", "api", "service", "entity", "migration"]
+
+[dependencies]
+axum-example-api = { path = "api" }
