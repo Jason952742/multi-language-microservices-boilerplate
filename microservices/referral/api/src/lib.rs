@@ -14,7 +14,7 @@ use application::grpc::post_grpc::MyServer;
 use application::grpc::post_grpc::post_mod::blogpost_server::BlogpostServer;
 pub use application::grpc::hello_grpc::hello_world;
 pub use application::grpc::echo_grpc::pb;
-use application::events::subscribers::ReferralSub;
+use application::events::subscribers::MemberSub;
 use shared::consul_api;
 
 mod application;
@@ -91,7 +91,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    ReferralSub::start_subscribe().await?;
+    MemberSub::start_subscribe().await?;
 
     tokio::spawn(async move {
         cs.discover_service().await.expect("discover_service failed");

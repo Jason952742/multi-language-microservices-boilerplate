@@ -3,8 +3,8 @@ use futures_lite::StreamExt;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use shared::rabbitmq::Rabbitmq;
-use crate::domain::commands::member_cmd::{ReferralCommand};
-use crate::domain::handlers::{ReferralActor, run_referral_actor};
+use crate::domain::commands::member_cmd::{MemberCommand};
+use crate::domain::handlers::{MemberActor, run_member_actor};
 use crate::domain::messages::MemberCreatedEvent;
 
 #[derive(Clone)]
@@ -13,8 +13,8 @@ pub struct MemberSub;
 impl MemberSub {
     pub async fn start_subscribe() -> Result<(), Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel(32);
-        let actor = ReferralActor::new(rx);
-        tokio::spawn(run_referral_actor(actor));
+        let actor = MemberActor::new(rx);
+        tokio::spawn(run_member_actor(actor));
 
         Self::subscribe_member_created(tx.clone()).await.expect("TODO: panic message");
 
@@ -22,7 +22,7 @@ impl MemberSub {
     }
 
     /// Handle member created
-    pub async fn subscribe_member_created(tx: mpsc::Sender<ReferralCommand>) -> Result<(), lapin::Error> {
+    pub async fn subscribe_member_created(tx: mpsc::Sender<MemberCommand>) -> Result<(), lapin::Error> {
         let event_name = "member_created";
         let connection = Rabbitmq::connection().await;
         let channel = Rabbitmq::channel(&connection).await;
@@ -39,7 +39,7 @@ impl MemberSub {
                     let user_id = payload.clone().user_id.to_string();
 
                     let (resp_tx, resp_rx) = oneshot::channel();
-                    let command = ReferralCommand::Create { user_id: payload.user_id, event: payload, resp: resp_tx };
+                    let command = MemberCommand::Create { user_id: payload.user_id, event: payload, resp: resp_tx };
 
                     if tx.send(command).await.is_err() {
                         tracing::info!("{:?} - {:?} failed", &event_name, &user_id);

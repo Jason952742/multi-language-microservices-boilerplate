@@ -5,17 +5,17 @@ use tonic::Status;
 use uuid::Uuid;
 use crate::domain::messages::{MemberCreatedEvent, MemberType};
 
-pub type Response = oneshot::Sender<Result<ReferralEvent, Status>>;
+pub type Response = oneshot::Sender<Result<MemberEvent, Status>>;
 
 #[derive(Debug)]
-pub enum ReferralCommand {
+pub enum MemberCommand {
     Create { user_id: Uuid, event: MemberCreatedEvent, resp: Response },
     Update { user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String, resp: Response },
 }
 
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub enum ReferralEvent {
+pub enum MemberEvent {
     Created,
     Updated,
 }

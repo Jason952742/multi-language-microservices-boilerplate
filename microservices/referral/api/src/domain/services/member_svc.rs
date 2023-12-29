@@ -1,7 +1,7 @@
 use chrono::Local;
 use tonic::Status;
 use uuid::Uuid;
-use crate::domain::commands::member_cmd::ReferralEvent;
+use crate::domain::commands::member_cmd::MemberEvent;
 use crate::domain::entities::member;
 use crate::domain::messages::{MemberCreatedEvent, MemberType};
 use crate::infra::repositories::member_mutation::MemberMutation;
@@ -11,7 +11,7 @@ pub struct MemberService;
 
 impl MemberService {
     /// Create a new Member
-    pub async fn create_referral(user_id: Uuid, event: MemberCreatedEvent) -> Result<ReferralEvent, Status> {
+    pub async fn create_referral(user_id: Uuid, event: MemberCreatedEvent) -> Result<MemberEvent, Status> {
         match MemberQuery::check_member(user_id).await.unwrap() {
             true => Err(Status::already_exists("member already exists")),
             false => {
@@ -40,7 +40,7 @@ impl MemberService {
                         if let Some(r) = referrer {
                             MemberMutation::create_relationship(user_id, r.user_id).await.unwrap();
                         }
-                        Ok(ReferralEvent::Created)
+                        Ok(MemberEvent::Created)
                     },
                     Err(_) => Err(Status::internal("Failed to create"))
                 }
@@ -49,7 +49,7 @@ impl MemberService {
     }
 
     /// Update member profile
-    pub async fn update_referral(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<ReferralEvent, Status> {
+    pub async fn update_referral(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<MemberEvent, Status> {
         match MemberQuery::get_member_by_id(user_id).await {
             Ok(opt) => match opt {
                 None => Err(Status::not_found("member not found")),
@@ -63,7 +63,7 @@ impl MemberService {
                         version: m.version + 1,
                         ..m
                     }).await;
-                    Ok(ReferralEvent::Updated)
+                    Ok(MemberEvent::Updated)
                 }
             }
             Err(e) => Err(Status::internal(e.to_string()))
