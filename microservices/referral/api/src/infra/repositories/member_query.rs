@@ -49,6 +49,7 @@ impl MemberQuery {
             .next()
             .await.unwrap().unwrap()
             .get::<i64>("n").unwrap();
+
         Ok(count > 0)
     }
 }
