@@ -1,4 +1,3 @@
-
 use neo4rs::{query, Relation};
 use uuid::Uuid;
 use shared::neo4j::Neo4j;

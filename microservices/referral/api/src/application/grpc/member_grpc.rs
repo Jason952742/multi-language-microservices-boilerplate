@@ -2,7 +2,7 @@ use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListResponse, MemberResponse, ProcessStatusResponse, refer_member_server, UpdateMemberRequest, UserIdRequest};
+use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, UpdateMemberRequest, UserIdRequest};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::member;
 use crate::domain::handlers::{MemberActor, run_member_actor};
@@ -13,7 +13,7 @@ pub mod refer_member_proto {
     tonic::include_proto!("refer_member");
 }
 
-#[derive(Clone)]
+#[derive(Debug)]
 pub struct MemberGrpc {
     tx: mpsc::Sender<MemberCommand>,
 }
@@ -29,7 +29,9 @@ impl MemberGrpc {
 
 #[tonic::async_trait]
 impl refer_member_server::ReferMember for MemberGrpc {
-    async fn get_member_by_id(&self, request: Request<UserIdRequest>) -> Result<Response<MemberResponse>, Status> {
+
+    #[tracing::instrument]
+    async fn get_member_by_id(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get member by id request: {:?}", &request);
 
@@ -39,7 +41,8 @@ impl refer_member_server::ReferMember for MemberGrpc {
         }
     }
 
-    async fn get_my_referral(&self, request: Request<UserIdRequest>) -> Result<Response<MemberResponse>, Status> {
+    #[tracing::instrument]
+    async fn get_my_referral(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get my referral request: {:?}", &request);
 
@@ -49,7 +52,8 @@ impl refer_member_server::ReferMember for MemberGrpc {
         }
     }
 
-    async fn get_my_referees(&self, request: Request<UserIdRequest>) -> Result<Response<MemberListResponse>, Status> {
+    #[tracing::instrument]
+    async fn get_my_referees(&self, request: Request<UserIdRequest>) -> Result<Response<MemberListReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get my referees request: {:?}", &request);
 
@@ -57,7 +61,8 @@ impl refer_member_server::ReferMember for MemberGrpc {
         Ok(to_member_list_res(res))
     }
 
-    async fn update_member(&self, request: Request<UpdateMemberRequest>) -> Result<Response<ProcessStatusResponse>, Status> {
+    #[tracing::instrument]
+    async fn update_member(&self, request: Request<UpdateMemberRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("update member  request: {:?}", &request);
 
@@ -82,7 +87,8 @@ impl refer_member_server::ReferMember for MemberGrpc {
         }
     }
 
-    async fn bind_referral(&self, request: Request<BindReferralRequest>) -> Result<Response<ProcessStatusResponse>, Status> {
+    #[tracing::instrument]
+    async fn bind_referral(&self, request: Request<BindReferralRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("bind referral: {:?}", &request);
 
@@ -105,18 +111,18 @@ impl refer_member_server::ReferMember for MemberGrpc {
     }
 }
 
-fn to_process_res(process_id: String) -> Response<ProcessStatusResponse> {
-    Response::new(ProcessStatusResponse { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
+fn to_process_res(process_id: String) -> Response<ProcessStatusReply> {
+    Response::new(ProcessStatusReply { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
 }
 
-fn to_member_res(model: member::Model) -> Response<MemberResponse> {
-    let res = MemberResponse { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
+fn to_member_res(model: member::Model) -> Response<MemberReply> {
+    let res = MemberReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
     Response::new(res)
 }
 
-fn to_member_list_res(models: Vec<member::Model>) -> Response<MemberListResponse> {
+fn to_member_list_res(models: Vec<member::Model>) -> Response<MemberListReply> {
     let list = models.clone().into_iter().map(|x| x.into()).collect();
-    let res = MemberListResponse { code: parse_code(Code::Ok), message: "member list".to_string(), data: list };
+    let res = MemberListReply { code: parse_code(Code::Ok), message: "member list".to_string(), data: list };
     Response::new(res)
 }
 

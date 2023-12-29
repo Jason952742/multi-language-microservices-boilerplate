@@ -3,11 +3,11 @@ syntax = "proto2";
 package refer_member;
 
 service ReferMember {
-  rpc GetMemberById(UserIdRequest) returns (MemberResponse) {}
-  rpc GetMyReferral(UserIdRequest) returns (MemberResponse) {}
-  rpc GetMyReferees(UserIdRequest) returns (MemberListResponse) {}
-  rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusResponse) {}
-  rpc BindReferral(BindReferralRequest) returns (ProcessStatusResponse) {}
+  rpc GetMemberById(UserIdRequest) returns (MemberReply) {}
+  rpc GetMyReferral(UserIdRequest) returns (MemberReply) {}
+  rpc GetMyReferees(UserIdRequest) returns (MemberListReply) {}
+  rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusReply) {}
+  rpc BindReferral(BindReferralRequest) returns (ProcessStatusReply) {}
 }
 
 message UserIdRequest {
@@ -27,20 +27,20 @@ message BindReferralRequest {
   required string referralId = 2;
 }
 
-message ProcessStatusResponse {
+message ProcessStatusReply {
   required string code = 1;
   required string message = 2;
   required bool success = 3;
   required string processId = 4;
 }
 
-message MemberResponse {
+message MemberReply {
   required string code = 1;
   required string message = 2;
   optional Member data = 3;
 }
 
-message MemberListResponse {
+message MemberListReply {
   required string code = 1;
   required string message = 2;
   repeated Member data = 3;

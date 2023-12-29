@@ -11,13 +11,12 @@ use crate::infra::repositories::member_query::MemberDbQuery;
 pub struct MemberService;
 
 impl MemberService {
-    /// Create a new Member
     pub async fn create_referral(user_id: Uuid, event: MemberCreatedEvent) -> Result<MemberEvent, Status> {
-        match MemberDbQuery::check_member(user_id).await.unwrap() {
+        match MemberDbQuery::check_member(user_id).await.map_err(|e| StatusUtil::neo4j_error(e))? {
             true => Err(Status::already_exists("member already exists")),
             false => {
                 let referrer: Option<member::Model> = if event.referee_code != "system" {
-                    MemberDbQuery::get_member_by_my_referrer_code(&event.referee_code).await.unwrap()
+                    MemberDbQuery::get_member_by_my_referrer_code(&event.referee_code).await.map_err(|e| StatusUtil::neo4j_error(e))?
                 } else { None };
 
                 let form_data: member::Model = member::Model {
@@ -39,17 +38,17 @@ impl MemberService {
                 match MemberDbMutation::create_member(form_data).await {
                     Ok(_) => {
                         if let Some(r) = referrer {
-                            MemberDbMutation::create_relationship(user_id, r.user_id).await.unwrap();
+                            let _ = MemberDbMutation::create_relationship(user_id, r.user_id).await
+                                .map_err(|e| StatusUtil::neo4j_error(e));
                         }
                         Ok(MemberEvent::Created)
-                    },
+                    }
                     Err(_) => Err(Status::internal("Failed to create"))
                 }
             }
         }
     }
 
-    /// Update member profile
     pub async fn update_referral(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<MemberEvent, Status> {
         match MemberDbQuery::get_member_by_id(user_id).await {
             Ok(opt) => match opt {
@@ -72,7 +71,7 @@ impl MemberService {
     }
 
     pub async fn bind_referral(user_id: Uuid, referral_id: Uuid) -> Result<MemberEvent, Status> {
-        let res =  MemberDbMutation::create_relationship(user_id, referral_id).await.map_err(|e| StatusUtil::neo4j_error(e));
+        let res = MemberDbMutation::create_relationship(user_id, referral_id).await.map_err(|e| StatusUtil::neo4j_error(e));
         match res {
             Ok(_) => Ok(MemberEvent::Bound),
             Err(e) => Err(e)
