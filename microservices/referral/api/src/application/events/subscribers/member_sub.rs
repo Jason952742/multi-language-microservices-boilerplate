@@ -8,9 +8,9 @@ use crate::domain::handlers::{ReferralActor, run_referral_actor};
 use crate::domain::messages::MemberCreatedEvent;
 
 #[derive(Clone)]
-pub struct ReferralSub;
+pub struct MemberSub;
 
-impl ReferralSub {
+impl MemberSub {
     pub async fn start_subscribe() -> Result<(), Box<dyn std::error::Error>> {
         let (tx, rx) = mpsc::channel(32);
         let actor = ReferralActor::new(rx);

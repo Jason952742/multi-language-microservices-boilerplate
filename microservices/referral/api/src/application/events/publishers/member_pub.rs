@@ -1,9 +1,9 @@
 use shared::rabbitmq::Rabbitmq;
 
 #[derive(Debug)]
-pub struct ReferralPub;
+pub struct MemberPub;
 
-impl ReferralPub {
+impl MemberPub {
     pub async fn _publish() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn({
             async move {

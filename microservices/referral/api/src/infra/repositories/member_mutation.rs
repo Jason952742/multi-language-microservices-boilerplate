@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use neo4rs::{Error, query, Relation};
+use neo4rs::{query, Relation};
 use uuid::Uuid;
 use shared::neo4j::Neo4j;
 use crate::domain::entities::member;
@@ -68,7 +68,7 @@ impl MemberMutation {
         ).await.unwrap();
 
         match opt.next().await.unwrap() {
-            None => Err(Error::ConnectionError),
+            None => Err(neo4rs::Error::ConnectionError),
             Some(r) => {
                 let relation: Relation = r.get("r").unwrap();
                 Ok(relation)
