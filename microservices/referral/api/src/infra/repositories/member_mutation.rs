@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use neo4rs::{Error, query, Relation, Row};
+use neo4rs::{Error, query, Relation};
 use uuid::Uuid;
 use shared::neo4j::Neo4j;
 use crate::domain::entities::member;

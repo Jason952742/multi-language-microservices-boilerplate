@@ -52,6 +52,42 @@ impl MemberQuery {
 
         Ok(count > 0)
     }
+
+    pub async fn get_referral_member(user_id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
+        let graph = Neo4j::graph().await;
+
+        let mut result = graph.execute(
+            query("MATCH (a:Member {user_id: $user_id})-[:REFERRED_BY]->(r:Member) RETURN r")
+                .param("user_id", user_id.to_string())).await?;
+
+        if let Ok(Some(_row)) = result.next().await {
+            let node: Node = _row.get("r").unwrap();
+            Ok(Option::from(node_to_member(node)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn get_my_referees(user_id: Uuid) -> Result<Vec<member::Model>, neo4rs::Error> {
+        let graph = Neo4j::graph().await;
+
+        let mut result = graph.execute(
+            query("MATCH (a:Member)-[:REFERRED_BY]->(b:Member {user_id: $user_id}) RETURN a")
+                .param("user_id", user_id.to_string())).await?;
+
+        let mut nodes = Vec::new();
+
+        while let Ok(Some(_row)) = result.next().await {
+            let node: Node = _row.get("a").unwrap();
+            nodes.push(node);
+        }
+
+        println!("{:?}", nodes);
+
+        let referees = nodes.into_iter().map(|x| node_to_member(x)).collect();
+
+        Ok(referees)
+    }
 }
 
 fn node_to_member(node: Node) -> member::Model {
@@ -74,18 +110,25 @@ fn node_to_member(node: Node) -> member::Model {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let m = MemberQuery::get_member_by_id(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
+    // let m = MemberQuery::get_member_by_id(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
+    //
+    // println!("{:?}", m);
+    //
+    // let b = MemberQuery::check_member(Uuid::from_str("09cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
+    //
+    // println!("{:?}", b);
+    //
+    // let c = MemberQuery::get_member_by_my_referrer_code("6sZvOOyCQzSQft2vpk89UQ").await?;
+    //
+    // println!("{:?}", c);
+    //
+    // let r = MemberQuery::get_referral_member(Uuid::from_str("482b23eb-fdaf-498f-b4ac-ce39ecc6671d").unwrap()).await?;
+    //
+    // println!("{:?}", r);
 
-    println!("{:?}", m);
+    let rs = MemberQuery::get_my_referees(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
 
-    let b = MemberQuery::check_member(Uuid::from_str("09cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
-
-    println!("{:?}", b);
-
-    let c = MemberQuery::get_member_by_my_referrer_code("6sZvOOyCQzSQft2vpk89UQ").await?;
-
-    println!("{:?}", c);
-
+    println!("{:?}", rs);
 
     Ok(())
 }
