@@ -7,7 +7,7 @@ service ReferMember {
   rpc GetMyReferral(UserIdRequest) returns (MemberResponse) {}
   rpc GetMyReferees(UserIdRequest) returns (MemberListResponse) {}
   rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusResponse) {}
-  rpc UpdateReferral(UpdateReferralRequest) returns (ProcessStatusResponse) {}
+  rpc BindReferral(BindReferralRequest) returns (ProcessStatusResponse) {}
 }
 
 message UserIdRequest {
@@ -16,23 +16,22 @@ message UserIdRequest {
 
 message UpdateMemberRequest {
   required string userId = 1;
-  optional string memberType = 2;
-  optional int32 level = 3;
-  optional bool active = 4;
-  optional string description = 5;
+  required string memberType = 2;
+  required int32 level = 3;
+  required bool active = 4;
+  required string description = 5;
 }
 
-message UpdateReferralRequest {
+message BindReferralRequest {
   required string userId = 1;
-  required string oldReferralId = 2;
-  required string newReferralId = 3;
+  required string referralId = 2;
 }
 
 message ProcessStatusResponse {
   required string code = 1;
   required string message = 2;
   required bool success = 3;
-  optional string processId = 4;
+  required string processId = 4;
 }
 
 message MemberResponse {
@@ -48,7 +47,12 @@ message MemberListResponse {
 }
 
 message Member {
-  required int32 id = 1;
-  required string title = 2;
-  required string content = 3;
+  required string userId = 1;
+  required string userName = 2;
+  required string memberType = 3;
+  required int32 level = 4;
+  required int32 hierarchy = 5;
+  required bool active = 6;
+  required string description = 7;
+  required string createdAt = 8;
 }

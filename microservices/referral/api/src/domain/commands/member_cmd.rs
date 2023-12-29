@@ -11,6 +11,7 @@ pub type Response = oneshot::Sender<Result<MemberEvent, Status>>;
 pub enum MemberCommand {
     Create { user_id: Uuid, event: MemberCreatedEvent, resp: Response },
     Update { user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String, resp: Response },
+    Bind { user_id: Uuid, referral_id: Uuid, resp: Response }
 }
 
 
@@ -18,6 +19,7 @@ pub enum MemberCommand {
 pub enum MemberEvent {
     Created,
     Updated,
+    Bound,
 }
 
 

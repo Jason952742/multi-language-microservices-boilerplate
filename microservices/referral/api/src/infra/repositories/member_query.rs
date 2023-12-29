@@ -6,9 +6,9 @@ use shared::{convert_to_bool, convert_to_i32, opt_to_uuid, string_to_datetime};
 use crate::domain::entities::member;
 use crate::domain::messages::MemberType;
 
-pub struct MemberQuery;
+pub struct MemberDbQuery;
 
-impl MemberQuery {
+impl MemberDbQuery {
 
     pub async fn get_member_by_id(id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
         let graph = Neo4j::graph().await;
@@ -126,7 +126,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //
     // println!("{:?}", r);
 
-    let rs = MemberQuery::get_my_referees(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
+    let rs = MemberDbQuery::get_my_referees(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
 
     println!("{:?}", rs);
 

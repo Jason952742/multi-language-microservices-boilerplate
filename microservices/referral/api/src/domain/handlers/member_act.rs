@@ -21,6 +21,10 @@ impl MemberActor {
                 let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
                 let _ = resp.send(res);
             }
+            MemberCommand::Bind { user_id, referral_id, resp } => {
+                let res = MemberService::bind_referral(user_id, referral_id).await;
+                let _ = resp.send(res);
+            }
         }
     }
 }

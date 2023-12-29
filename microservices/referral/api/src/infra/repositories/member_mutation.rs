@@ -1,12 +1,12 @@
-use std::str::FromStr;
+
 use neo4rs::{query, Relation};
 use uuid::Uuid;
 use shared::neo4j::Neo4j;
 use crate::domain::entities::member;
 
-pub struct MemberMutation;
+pub struct MemberDbMutation;
 
-impl MemberMutation {
+impl MemberDbMutation {
     pub async fn create_member(form_data: member::Model) -> Result<member::Model, neo4rs::Error> {
         let graph = Neo4j::graph().await;
 
@@ -79,7 +79,9 @@ impl MemberMutation {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let r = MemberMutation::create_relationship(
+    use std::str::FromStr;
+
+    let r = MemberDbMutation::create_relationship(
         Uuid::from_str("e7c4536f-e27d-474c-97cb-9e18e8338d10").unwrap(),
         Uuid::from_str("70ef92d3-a856-412b-997d-6c27b827d8ff").unwrap(),
     ).await?;
