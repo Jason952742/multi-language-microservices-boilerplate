@@ -47,7 +47,7 @@ impl Mutation {
         post.delete(db).await
     }
 
-    pub async fn delete_all_posts(db: &DbConn) -> Result<DeleteResult, DbErr> {
+    pub async fn _delete_all_posts(db: &DbConn) -> Result<DeleteResult, DbErr> {
         Post::delete_many().exec(db).await
     }
 }

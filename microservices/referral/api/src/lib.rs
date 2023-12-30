@@ -68,6 +68,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
         // establish database connection
         let connection = PgPool::conn().await.clone();
         Migrator::up(&connection, None).await?;
+
         let hello_server = MyServer { connection };
         let post_service = BlogpostServer::new(hello_server);
 
