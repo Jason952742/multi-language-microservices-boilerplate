@@ -1,8 +1,10 @@
+use std::collections::HashMap;
 use async_trait::async_trait;
-use axum::extract::{FromRequest, Request};
+use axum::extract::{FromRequest, FromRequestParts, Path, Request};
 use axum::http::StatusCode;
-use axum::{Form, Router};
+use axum::{Form, RequestPartsExt, Router};
 use axum::extract::rejection::FormRejection;
+use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
 use axum::routing::MethodRouter;
 use sea_orm::DatabaseConnection;
@@ -72,5 +74,36 @@ impl IntoResponse for ServerError {
             ServerError::AxumFormRejection(_) => (StatusCode::BAD_REQUEST, self.to_string()),
         }
             .into_response()
+    }
+}
+
+#[derive(Debug)]
+pub enum Version {
+    V1,
+    V2,
+    V3,
+}
+
+#[async_trait]
+impl<S> FromRequestParts<S> for Version
+    where
+        S: Send + Sync,
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let params: Path<HashMap<String, String>> =
+            parts.extract().await.map_err(IntoResponse::into_response)?;
+
+        let version = params
+            .get("version")
+            .ok_or_else(|| (StatusCode::NOT_FOUND, "version param missing").into_response())?;
+
+        match version.as_str() {
+            "v1" => Ok(Version::V1),
+            "v2" => Ok(Version::V2),
+            "v3" => Ok(Version::V3),
+            _ => Err((StatusCode::NOT_FOUND, "unknown version").into_response()),
+        }
     }
 }

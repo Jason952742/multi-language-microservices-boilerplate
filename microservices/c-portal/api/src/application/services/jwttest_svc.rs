@@ -4,7 +4,7 @@ use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
 use serde_derive::Deserialize;
 use validator::Validate;
-use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm};
+use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm, Version};
 
 pub fn jwttest_routes() -> Router<AppState> {
     route(
@@ -15,7 +15,10 @@ pub fn jwttest_routes() -> Router<AppState> {
         post(JwtTestService::authorize),
     ).route(
         "/validate",
-        get(JwtTestService::handler),
+        get(JwtTestService::validate),
+    ).route(
+        "/:version/foo",
+        get(JwtTestService::version),
     )
 }
 
@@ -52,8 +55,12 @@ impl JwtTestService {
         ))
     }
 
-    async fn handler(_claims: Claims, ValidatedForm(input): ValidatedForm<NameInput>) -> Html<String> {
+    async fn validate(_claims: Claims, ValidatedForm(input): ValidatedForm<NameInput>) -> Html<String> {
         Html(format!("<h1>Hello, {}!</h1>", input.name))
+    }
+
+    async fn version(version: Version) {
+        println!("received request with version {version:?}");
     }
 }
 
