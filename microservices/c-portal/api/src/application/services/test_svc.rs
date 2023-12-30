@@ -6,25 +6,25 @@ use serde_derive::Deserialize;
 use validator::Validate;
 use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm, Version};
 
-pub fn jwttest_routes() -> Router<AppState> {
+pub fn test_routes() -> Router<AppState> {
     route(
         "/protected",
-        get(JwtTestService::protected),
+        get(TestService::protected),
     ).route(
         "/authorize",
-        post(JwtTestService::authorize),
+        post(TestService::authorize),
     ).route(
         "/validate",
-        get(JwtTestService::validate),
+        get(TestService::validate),
     ).route(
         "/:version/foo",
-        get(JwtTestService::version),
+        get(TestService::version),
     )
 }
 
-pub struct JwtTestService;
+pub struct TestService;
 
-impl JwtTestService {
+impl TestService {
     async fn authorize(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, AuthError> {
         // Check if the user sent the credentials
         if payload.client_id.is_empty() || payload.client_secret.is_empty() {

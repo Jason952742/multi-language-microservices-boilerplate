@@ -7,7 +7,7 @@ use shared::datasource::postgres::PgPool;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
 use crate::infra::migration::Migrator;
-use crate::application::services::{health_routes, jwttest_routes, post_routes};
+use crate::application::services::{health_routes, test_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::consul_api;
@@ -59,7 +59,7 @@ async fn start() -> anyhow::Result<()> {
     let app = Router::new()
         .merge(post_routes())
         .merge(health_routes())
-        .merge(jwttest_routes())
+        .merge(test_routes())
         .nest_service(
             "/static",
             get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
