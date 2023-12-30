@@ -6,6 +6,7 @@ use tera::Tera;
 
 pub mod migration;
 pub mod repositories;
+pub mod utils;
 
 #[derive(Clone)]
 pub struct AppState {
