@@ -16,3 +16,15 @@ Run mock test on the service logic crate:
 cd service
 cargo test --features mock
 ```
+
+## Auto Reload
+
+```sh
+cargo install cargo-watch systemfd
+```
+
+## Running
+
+```sh
+systemfd --no-pid -s http::50080 -- cargo watch -x run
+```

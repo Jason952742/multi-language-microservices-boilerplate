@@ -2,12 +2,15 @@ use axum::{http::StatusCode, routing::{get_service}, Router };
 use std::env;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
+use colored::Colorize;
+use tokio::net::TcpListener;
 use shared::datasource::postgres::PgPool;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
 use crate::infra::migration::Migrator;
 use crate::application::services::{post_routes};
 use crate::infra::AppState;
+use listenfd::ListenFd;
 
 mod flash;
 mod infra;
@@ -54,8 +57,17 @@ async fn start() -> anyhow::Result<()> {
         .with_state(state);
 
     // listen addr
-    let listener = tokio::net::TcpListener::bind(&server_url).await.unwrap();
-    axum::serve(listener, app).await?;
+    let mut listenfd = ListenFd::from_env();
+    let listener = match listenfd.take_tcp_listener(0).unwrap() {
+        // if we are given a tcp listener on listen fd 0, we use that one
+        Some(listener) => TcpListener::from_std(listener).unwrap(),
+        // otherwise fall back to local listening
+        None => TcpListener::bind(&server_url).await.unwrap(),
+    };
+
+    // run it
+    println!("listening on {}", &server_url.color("magenta"));
+    axum::serve(listener, app).await.unwrap();
 
     Ok(())
 }
