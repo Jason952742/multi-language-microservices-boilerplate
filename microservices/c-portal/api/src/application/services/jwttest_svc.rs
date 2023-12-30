@@ -1,8 +1,7 @@
 use axum::{Json, Router};
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
-use crate::infra::{AppState, route};
-use crate::infra::utils::{AuthBody, AuthError, AuthPayload, Claims, KEYS};
+use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route};
 
 pub fn jwttest_routes() -> Router<AppState> {
     route(
