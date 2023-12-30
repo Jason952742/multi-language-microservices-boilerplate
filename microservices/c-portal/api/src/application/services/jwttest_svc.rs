@@ -1,7 +1,10 @@
 use axum::{Json, Router};
+use axum::response::Html;
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
-use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route};
+use serde_derive::Deserialize;
+use validator::Validate;
+use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm};
 
 pub fn jwttest_routes() -> Router<AppState> {
     route(
@@ -10,6 +13,9 @@ pub fn jwttest_routes() -> Router<AppState> {
     ).route(
         "/authorize",
         post(JwtTestService::authorize),
+    ).route(
+        "/validate",
+        get(JwtTestService::handler),
     )
 }
 
@@ -45,4 +51,14 @@ impl JwtTestService {
             "Welcome to the protected area :)\nYour data:\n{claims}",
         ))
     }
+
+    async fn handler(_claims: Claims, ValidatedForm(input): ValidatedForm<NameInput>) -> Html<String> {
+        Html(format!("<h1>Hello, {}!</h1>", input.name))
+    }
+}
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct NameInput {
+    #[validate(length(min = 1, message = "Can not be empty"))]
+    pub name: String,
 }

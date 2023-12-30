@@ -86,6 +86,7 @@ lapin = "2.3.1"
 futures-lite = { version = "2.1.0" }
 jsonwebtoken = "8.3.0"
 validator = { version = "0.14.0", features = ["derive"] }
+thiserror = "1.0.52"
 
 [dev-dependencies]
 tokio = { version = "1.35.1", features = ["macros", "rt"] }

@@ -1,5 +1,4 @@
 use std::env;
-use std::fmt::Display;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
 use colored::Colorize;
@@ -12,9 +11,7 @@ use crate::application::services::{health_routes, jwttest_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::consul_api;
-use axum::{http::StatusCode, routing::{get_service}, Router, Json, RequestPartsExt};
-use axum::extract::FromRequestParts;
-use axum::response::{IntoResponse, Response};
+use axum::{http::StatusCode, routing::{get_service}, Router};
 
 mod flash;
 mod infra;
