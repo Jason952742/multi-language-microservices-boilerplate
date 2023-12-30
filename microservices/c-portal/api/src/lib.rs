@@ -1,4 +1,3 @@
-use axum::{http::StatusCode, routing::{get_service}, Router };
 use std::env;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
@@ -12,6 +11,11 @@ use crate::application::services::{health_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::consul_api;
+use axum::{
+    http::StatusCode,
+    routing::{get_service},
+    Router,
+};
 
 mod flash;
 mod infra;

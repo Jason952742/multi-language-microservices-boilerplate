@@ -88,10 +88,14 @@ pub enum Filter {
 
 #[derive(Debug, Deserialize, Serialize, EnumString, strum_macros::Display)]
 pub enum ServiceName {
-    #[strum(serialize = "mu_c_portal")]
+    MuAPortal,
+    MuBPortal,
     MuCPortal,
-    #[strum(serialize = "mu_referral")]
     MuReferral,
-    #[strum(serialize = "mu_member")]
     MuMember,
+    MuAccount,
+    MuPayment,
+    MuOrder,
+    MuChat,
+    MuEventSource,
 }
