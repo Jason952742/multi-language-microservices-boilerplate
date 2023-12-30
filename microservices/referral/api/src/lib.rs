@@ -17,6 +17,7 @@ pub use application::grpc::hello_grpc::hello_world;
 pub use application::grpc::echo_grpc::pb;
 use application::events::subscribers::MemberSub;
 use shared::consul_api;
+use crate::application::grpc::hello_grpc::MyExtension;
 use crate::application::grpc::member_grpc::MemberGrpc;
 use crate::application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
 
@@ -140,10 +141,6 @@ fn intercept(mut req: Request<()>) -> Result<Request<()>, Status> {
     });
 
     Ok(req)
-}
-
-struct MyExtension {
-    some_piece_of_data: String,
 }
 
 fn check_auth(req: Request<()>) -> Result<Request<()>, Status> {

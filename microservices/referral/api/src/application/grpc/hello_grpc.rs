@@ -2,10 +2,13 @@ use tonic::{Request, Response, Status};
 
 use hello_world::greeter_server::{Greeter};
 use hello_world::{HelloReply, HelloRequest};
-use crate::MyExtension;
 
 pub mod hello_world {
     tonic::include_proto!("helloworld");
+}
+
+pub struct MyExtension {
+    pub some_piece_of_data: String,
 }
 
 #[derive(Debug, Default)]
