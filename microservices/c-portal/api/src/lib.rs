@@ -1,5 +1,6 @@
 use axum::{http::StatusCode, routing::{get_service}, Router };
 use std::env;
+use axum::routing::get;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
 use colored::Colorize;
@@ -8,9 +9,10 @@ use shared::datasource::postgres::PgPool;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
 use crate::infra::migration::Migrator;
-use crate::application::services::{post_routes};
+use crate::application::services::{health_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
+use shared::consul_api;
 
 mod flash;
 mod infra;
@@ -35,6 +37,9 @@ async fn start() -> anyhow::Result<()> {
     let port = env::var("PORT").expect("PORT is not set");
     let server_url = format!("{host}:{port}");
 
+    // register consul service
+    consul_register(&host, port.parse().unwrap()).await;
+
     // establish database connection
     let conn = PgPool::conn().await.clone();
     Migrator::up(&conn, None).await?;
@@ -46,6 +51,7 @@ async fn start() -> anyhow::Result<()> {
 
     let app = Router::new()
         .merge(post_routes())
+        .merge(health_routes())
         .nest_service(
             "/static",
             get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
@@ -78,4 +84,14 @@ pub fn main() {
     if let Some(err) = result.err() {
         println!("Error: {err}");
     }
+}
+
+// register consul service
+async fn consul_register(host: &str, port: i32) {
+    let cs = consul_api::Consul::new(consul_api::ConsulOption::default()).unwrap();
+    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuCPortal, host, port, false);
+    cs.register(&reg).await.unwrap();
+    tokio::spawn(async move {
+        // cs.discover_service().await.expect("discover_service failed");
+    });
 }

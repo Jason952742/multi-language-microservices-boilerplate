@@ -26,5 +26,5 @@ cargo install cargo-watch systemfd
 ## Running
 
 ```sh
-systemfd --no-pid -s http::50080 -- cargo watch -x run
+systemfd --no-pid -s http::50083 -- cargo watch -x run
 ```
