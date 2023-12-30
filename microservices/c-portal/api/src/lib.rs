@@ -80,7 +80,7 @@ async fn start() -> anyhow::Result<()> {
     };
 
     // run it
-    println!("listening on {}", &server_url.color("magenta"));
+    tracing::info!("listening on {}", &server_url.color("magenta"));
     axum::serve(listener, app).await.unwrap();
 
     Ok(())

@@ -2,7 +2,7 @@ use axum::{Json, Router};
 use axum::response::Html;
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use validator::Validate;
 use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm, Version};
 
@@ -59,8 +59,10 @@ impl TestService {
         Html(format!("<h1>Hello, {}!</h1>", input.name))
     }
 
-    async fn version(version: Version) {
+    async fn version(version: Version) -> Result<Json<User>, AuthError> {
         println!("received request with version {version:?}");
+        let user = User::default();
+        Ok(Json(user))
     }
 }
 
@@ -68,4 +70,16 @@ impl TestService {
 pub struct NameInput {
     #[validate(length(min = 1, message = "Can not be empty"))]
     pub name: String,
+}
+
+#[derive(Deserialize)]
+pub struct UserParams {
+    name: String,
+}
+
+#[derive(Default, Serialize, Deserialize, Clone)]
+pub struct User {
+    id: u64,
+    name: String,
+    created_at: chrono::NaiveDateTime,
 }
