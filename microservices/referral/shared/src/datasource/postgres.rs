@@ -38,10 +38,12 @@ async fn get_connection(database_url: String) -> DatabaseConnection {
         .idle_timeout(Duration::from_secs(8))
         .max_lifetime(Duration::from_secs(8))
         .sqlx_logging(false) // open/close sql log
-        .sqlx_logging_level(log::LevelFilter::Error); // default Info
+        .sqlx_logging_level(log::LevelFilter::Info); // default Info
     // .set_schema_search_path("public".into());
     // let connection = Database::connect(&database_url)
+
     let connection = Database::connect(opt).await.expect("Database connection failed");
     println!("{}", "Database connection!".color("magenta"));
+
     connection
 }
