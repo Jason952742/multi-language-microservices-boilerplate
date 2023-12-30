@@ -2,6 +2,7 @@
 #![deny(clippy::all)]
 
 use std::env;
+use colored::Colorize;
 use tokio::sync::mpsc;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use shared::datasource::postgres::PgPool;
@@ -72,7 +73,7 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
         let hello_server = MyServer { connection };
         let post_service = BlogpostServer::new(hello_server);
 
-        println!("HealthServer + GreeterServer listening on {}", addr);
+        println!("HealthServer + GreeterServer listening on {}", addr.color("magenta"));
 
         tracing::info!(message = "Starting server.", %addr);
 
