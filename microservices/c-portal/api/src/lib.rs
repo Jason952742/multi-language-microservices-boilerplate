@@ -4,6 +4,7 @@ use axum::{
     Router,
 };
 use std::env;
+use axum::routing::MethodRouter;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
 use shared::datasource::postgres::PgPool;
@@ -20,53 +21,63 @@ mod application;
 
 #[tokio::main]
 async fn start() -> anyhow::Result<()> {
+    // set log level
     env::set_var("RUST_LOG", "debug");
     tracing_subscriber::fmt::init();
-
+    // load evn
     dotenvy::dotenv().ok();
-
     // establish database connection
     let connection = PgPool::conn().await.clone();
     Migrator::up(&connection, None).await?;
-
-    let host = env::var("HOST").expect("HOST is not set in .env file");
-    let port = env::var("PORT").expect("PORT is not set in .env file");
+    // get host addr
+    let host = env::var("HOST").expect("HOST is not set");
+    let port = env::var("PORT").expect("PORT is not set");
     let server_url = format!("{host}:{port}");
-
     // establish database connection
     let conn = PgPool::conn().await.clone();
     Migrator::up(&conn, None).await?;
 
+    // create app state
     let templates = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"))
         .expect("Tera initialization failed");
-
-    let state = AppState { templates, conn };
+    let state: AppState = AppState { templates, conn };
 
     let app = Router::new()
-        .route("/", get(PostService::list_posts).post(PostService::create_post))
-        .route("/:id", get(PostService::edit_post).post(PostService::update_post))
-        .route("/new", get(PostService::new_post))
-        .route("/delete/:id", post(PostService::delete_post))
+        .merge(post_foo()).merge(post_id()).merge(post_new()).merge(post_delete())
         .nest_service(
             "/static",
-            get_service(ServeDir::new(concat!(
-                env!("CARGO_MANIFEST_DIR"),
-                "/static"
-            )))
-            .handle_error(|error| async move {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    format!("Unhandled internal error: {error}"),
-                )
-            }),
+            get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
+                .handle_error(|error| async move {
+                    (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled internal error: {error}"))
+                }),
         )
         .layer(CookieManagerLayer::new())
         .with_state(state);
 
+    // listen addr
     let listener = tokio::net::TcpListener::bind(&server_url).await.unwrap();
     axum::serve(listener, app).await?;
-
     Ok(())
+}
+
+fn post_foo() -> Router<AppState> {
+    route("/", get(PostService::list_posts).post(PostService::create_post))
+}
+
+fn post_id() -> Router<AppState> {
+    route("/:id", get(PostService::edit_post).post(PostService::update_post))
+}
+
+fn post_new() -> Router<AppState> {
+    route("/new", get(PostService::new_post))
+}
+
+fn post_delete() -> Router<AppState> {
+    route("/delete/:id", post(PostService::delete_post))
+}
+
+fn route(path: &str, method_router: MethodRouter<AppState>) -> Router<AppState> {
+    Router::new().route(path, method_router)
 }
 
 pub fn main() {
