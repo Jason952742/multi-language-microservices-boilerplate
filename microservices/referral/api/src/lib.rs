@@ -117,7 +117,7 @@ pub async fn register(cs: &consul_api::Consul, addr: &str) {
     let addrs: Vec<&str> = addr.split(":").collect();
     let port: i32 = addrs[1].parse().unwrap();
 
-    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuReferral, "127.0.0.1", port);
+    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuReferral, "127.0.0.1", port, true);
     cs.register(&reg).await.unwrap();
 }
 

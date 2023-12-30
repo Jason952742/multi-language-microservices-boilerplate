@@ -39,8 +39,6 @@ pub struct Check {
 
 impl Registration {
     pub fn new(name: ServiceName, id: &str, tags: Vec<&str>, addr: &str, port: i32, is_grpc: bool) -> Self {
-        println!("{:?}", Some(format!("host.docker.internal:{}/health", port)));
-
         Self {
             name: name.to_string(),
             id: id.to_string(),
@@ -48,8 +46,8 @@ impl Registration {
             address: addr.to_string(),
             port,
             check: Check {
-                http: if (!is_grpc) { Some(format!("http://host.docker.internal:{}/health", port)) } else {None},
-                grpc: if (is_grpc) { Some(format!("host.docker.internal:{}", port)) } else {None},
+                http: if !is_grpc { Some(format!("http://host.docker.internal:{}/health", port)) } else { None },
+                grpc: if is_grpc { Some(format!("host.docker.internal:{}", port)) } else { None },
                 interval: "10s".to_string(),
                 timeout: "5s".to_string(),
             },
@@ -57,7 +55,7 @@ impl Registration {
     }
 
     pub fn simple_with_tags(name: ServiceName, tags: Vec<&str>, addr: &str, port: i32, is_grpc: bool) -> Self {
-        let id: &str = &format!("{}-{}", name, port);
+        let id: &str = &format!("{:?}-{}", name, port);
         Self::new(name, id, tags, addr, port, is_grpc)
     }
 

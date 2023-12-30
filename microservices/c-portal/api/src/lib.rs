@@ -1,6 +1,5 @@
 use axum::{http::StatusCode, routing::{get_service}, Router };
 use std::env;
-use axum::routing::get;
 use sea_orm_migration::MigratorTrait;
 use tera::Tera;
 use colored::Colorize;

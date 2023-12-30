@@ -31,13 +31,14 @@ pub struct Registration {
 
 #[derive(Default, Deserialize, Serialize, Debug)]
 pub struct Check {
-    pub grpc: String,
+    pub http: Option<String>,
+    pub grpc: Option<String>,
     pub interval: String,
     pub timeout: String,
 }
 
 impl Registration {
-    pub fn new(name: ServiceName, id: &str, tags: Vec<&str>, addr: &str, port: i32) -> Self {
+    pub fn new(name: ServiceName, id: &str, tags: Vec<&str>, addr: &str, port: i32, is_grpc: bool) -> Self {
         Self {
             name: name.to_string(),
             id: id.to_string(),
@@ -45,20 +46,21 @@ impl Registration {
             address: addr.to_string(),
             port,
             check: Check {
-                grpc: format!("host.docker.internal:{}", port),
+                http: if !is_grpc { Some(format!("http://host.docker.internal:{}/health", port)) } else { None },
+                grpc: if is_grpc { Some(format!("host.docker.internal:{}", port)) } else { None },
                 interval: "10s".to_string(),
                 timeout: "5s".to_string(),
             },
         }
     }
 
-    pub fn simple_with_tags(name: ServiceName, tags: Vec<&str>, addr: &str, port: i32) -> Self {
-        let id: &str = &format!("{}-{}", name, port);
-        Self::new(name, id, tags, addr, port)
+    pub fn simple_with_tags(name: ServiceName, tags: Vec<&str>, addr: &str, port: i32, is_grpc: bool) -> Self {
+        let id: &str = &format!("{:?}-{}", name, port);
+        Self::new(name, id, tags, addr, port, is_grpc)
     }
 
-    pub fn simple(name: ServiceName, addr: &str, port: i32) -> Self {
-        Self::simple_with_tags(name, vec![], addr, port)
+    pub fn simple(name: ServiceName, addr: &str, port: i32, is_grpc: bool) -> Self {
+        Self::simple_with_tags(name, vec![], addr, port, is_grpc)
     }
 }
 
@@ -86,6 +88,8 @@ pub enum Filter {
 
 #[derive(Debug, Deserialize, Serialize, EnumString, strum_macros::Display)]
 pub enum ServiceName {
+    #[strum(serialize = "mu_c_portal")]
+    MuCPortal,
     #[strum(serialize = "mu_referral")]
     MuReferral,
     #[strum(serialize = "mu_member")]
