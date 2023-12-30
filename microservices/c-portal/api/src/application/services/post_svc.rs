@@ -1,17 +1,34 @@
 use axum::extract::{Path, Query, State};
-use axum::Form;
+use axum::{Form, Router};
 use axum::http::StatusCode;
 use axum::response::Html;
+use axum::routing::{get, post};
 use tower_cookies::Cookies;
 
 use crate::domain::entities::post;
-use crate::domain::{AppState, FlashData, Params};
 use crate::flash::{get_flash_cookie, post_response, PostResponse};
+use crate::infra::{AppState, FlashData, Params, route};
+
+pub fn post_routes() -> Router<AppState> {
+    route(
+        "/",
+        get(PostService::list_posts).post(PostService::create_post),
+    ).route(
+        "/:id",
+        get(PostService::edit_post).post(PostService::update_post),
+    ).route(
+        "/new",
+        get(PostService::new_post),
+    ).route(
+        "/delete/:id",
+        post(PostService::delete_post),
+    )
+}
 
 pub struct PostService;
 
 impl PostService {
-    pub(crate) async fn list_posts(state: State<AppState>, Query(params): Query<Params>, cookies: Cookies) -> Result<Html<String>, (StatusCode, &'static str)> {
+    pub async fn list_posts(state: State<AppState>, Query(params): Query<Params>, cookies: Cookies) -> Result<Html<String>, (StatusCode, &'static str)> {
         let page = params.page.unwrap_or(1);
         let posts_per_page = params.posts_per_page.unwrap_or(5);
 
