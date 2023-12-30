@@ -22,7 +22,15 @@ mod application;
 async fn start() -> anyhow::Result<()> {
     // set log level
     env::set_var("RUST_LOG", "debug");
-    tracing_subscriber::fmt::init();
+
+    // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
+    // will be written to stdout.
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_thread_names(true)
+        .with_thread_ids(true)
+        .with_test_writer()
+        .init();
 
     // load evn
     dotenvy::dotenv().ok();
@@ -91,6 +99,6 @@ async fn consul_register(host: &str, port: i32) {
     let reg = consul_api::Registration::simple(consul_api::ServiceName::MuCPortal, host, port, false);
     cs.register(&reg).await.unwrap();
     tokio::spawn(async move {
-        // cs.discover_service().await.expect("discover_service failed");
+        cs.discover_service().await.expect("discover_service failed");
     });
 }
