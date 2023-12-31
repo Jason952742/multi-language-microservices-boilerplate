@@ -2,11 +2,13 @@ pub mod jwt_util;
 pub mod request_util;
 pub mod response_util;
 pub mod errors_util;
+pub mod path_utils;
 
 pub use jwt_util::*;
 pub use request_util::*;
 pub use response_util::*;
 pub use errors_util::*;
+pub use path_utils::*;
 
 use axum::Router;
 use axum::routing::MethodRouter;

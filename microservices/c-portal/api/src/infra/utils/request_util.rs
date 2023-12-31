@@ -2,40 +2,16 @@ use std::collections::HashMap;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, FromRequestParts, Path, Request};
 use axum::http::StatusCode;
-use axum::{Form, RequestPartsExt, Router};
-use axum::extract::rejection::FormRejection;
+use axum::{Form, RequestPartsExt};
+use axum::extract::path::ErrorKind;
+use axum::extract::rejection::{FormRejection, PathRejection};
 use axum::http::request::Parts;
 use axum::response::{IntoResponse, Response};
-use axum::routing::MethodRouter;
-use sea_orm::DatabaseConnection;
 use serde::de::DeserializeOwned;
-use serde_derive::{Deserialize, Serialize};
-use tera::Tera;
-use thiserror::Error;
 use validator::Validate;
+use thiserror::Error;
 
-#[derive(Clone)]
-pub struct AppState {
-    pub templates: Tera,
-    pub conn: DatabaseConnection,
-}
-
-#[derive(Deserialize)]
-pub struct Params {
-    pub page: Option<u64>,
-    pub posts_per_page: Option<u64>,
-}
-
-#[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct FlashData {
-    pub kind: String,
-    pub message: String,
-}
-
-pub fn route(path: &str, method_router: MethodRouter<AppState>) -> Router<AppState> {
-    Router::new().route(path, method_router)
-}
-
+/// Form Validate
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedForm<T>(pub T);
 
