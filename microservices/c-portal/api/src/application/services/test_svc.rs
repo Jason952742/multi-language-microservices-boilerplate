@@ -4,7 +4,7 @@ use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
 use serde_derive::{Deserialize, Serialize};
 use validator::Validate;
-use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, Path, route, ValidatedForm, Version};
+use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm, ValidatedPath, Version};
 
 pub fn test_routes() -> Router<AppState> {
     route(
@@ -68,7 +68,7 @@ impl TestService {
         Ok(Json(user))
     }
 
-    async fn pathcustomize(Path(params): Path<Params>) -> impl IntoResponse {
+    async fn pathcustomize(ValidatedPath(params): ValidatedPath<Params>) -> impl IntoResponse {
         Json(params)
     }
 }
