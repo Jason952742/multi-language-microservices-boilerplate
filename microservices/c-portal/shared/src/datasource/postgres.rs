@@ -29,6 +29,12 @@ impl PgPool {
     }
 }
 
+// The default connection limit for a Postgres server is 100 connections, minus 3 for superusers.
+// Since we're using the default superuser we don't have to worry about this too much,
+// although we should leave some connections available for manual access.
+//
+// If you're deploying your application with multiple replicas, then the total
+// across all replicas should not exceed the Postgres connection limit.
 async fn get_connection(database_url: String) -> DatabaseConnection {
     let mut opt = ConnectOptions::new(database_url);
     opt.max_connections(100)
