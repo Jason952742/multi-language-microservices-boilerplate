@@ -38,17 +38,7 @@ pub async fn start(config: Config, conn: DatabaseConnection) -> anyhow::Result<(
 
     let state: AppState = AppState { templates, conn };
 
-    let app = Router::new()
-        .merge(post_routes())
-        .merge(health_routes())
-        .merge(test_routes())
-        .nest_service(
-            "/static",
-            get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
-                .handle_error(|error| async move {
-                    (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled internal error: {error}"))
-                }),
-        )
+    let app = api_router()
         .layer(CookieManagerLayer::new())
         .with_state(state);
 
@@ -68,4 +58,20 @@ pub async fn start(config: Config, conn: DatabaseConnection) -> anyhow::Result<(
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
+}
+
+/// App Router
+///
+fn api_router() -> Router<AppState> {
+    Router::new()
+        .merge(post_routes())
+        .merge(health_routes())
+        .merge(test_routes())
+        .nest_service(
+            "/static",
+            get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
+                .handle_error(|error| async move {
+                    (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled internal error: {error}"))
+                }),
+        )
 }
