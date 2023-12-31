@@ -1,10 +1,10 @@
 use axum::{Json, Router};
-use axum::response::Html;
+use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
 use serde_derive::{Deserialize, Serialize};
 use validator::Validate;
-use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, route, ValidatedForm, Version};
+use crate::infra::{AppState, AuthBody, AuthError, AuthPayload, Claims, KEYS, Path, route, ValidatedForm, Version};
 
 pub fn test_routes() -> Router<AppState> {
     route(
@@ -19,6 +19,9 @@ pub fn test_routes() -> Router<AppState> {
     ).route(
         "/:version/foo",
         get(TestService::version),
+    ).route(
+        "/users/:user_id/teams/:team_id",
+        get(TestService::pathcustomize),
     )
 }
 
@@ -64,6 +67,16 @@ impl TestService {
         let user = User::default();
         Ok(Json(user))
     }
+
+    async fn pathcustomize(Path(params): Path<Params>) -> impl IntoResponse {
+        Json(params)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct Params {
+    user_id: u32,
+    team_id: u32,
 }
 
 #[derive(Debug, Deserialize, Validate)]
