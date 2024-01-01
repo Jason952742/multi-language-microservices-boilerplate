@@ -3,11 +3,11 @@ use std::env;
 use tokio::sync::OnceCell;
 
 #[derive(Debug)]
-pub struct Dragonfly;
+pub struct DragonflyPool;
 
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
 
-impl Dragonfly {
+impl DragonflyPool {
     pub async fn client(db: i32) -> &'static Client {
         CLIENT
             .get_or_init(|| async {
@@ -57,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use redis::AsyncCommands;
     // use std::collections::HashMap;
 
-    let client = Dragonfly::client(15).await;
+    let client = DragonflyPool::client(15).await;
     let mut con = client.get_async_connection().await?;
 
     let _ = con.set("hello", "world").await?;

@@ -4,11 +4,11 @@ use tokio::sync::OnceCell;
 use tracing::info;
 
 #[derive(Debug)]
-pub struct Rabbitmq;
+pub struct RabbitPool;
 
 static CLIENT: OnceCell<Connection> = OnceCell::const_new();
 
-impl Rabbitmq {
+impl RabbitPool {
 
     pub async fn connection() -> &'static Connection {
         CLIENT
@@ -68,10 +68,10 @@ async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
     use std::time::Duration;
     use lapin::message::DeliveryResult;
 
-    let connection = Rabbitmq::connection().await;
-    let channel = Rabbitmq::channel(&connection).await;
-    let _queue = Rabbitmq::queue(&channel, "queue_test", "wo", "mc").await;
-    let consumer = Rabbitmq::consumer(&channel, "queue_test", "tag_foo").await;
+    let connection = RabbitPool::connection().await;
+    let channel = RabbitPool::channel(&connection).await;
+    let _queue = RabbitPool::queue(&channel, "queue_test", "wo", "mc").await;
+    let consumer = RabbitPool::consumer(&channel, "queue_test", "tag_foo").await;
 
     consumer.set_delegate(move |delivery: DeliveryResult| async move {
         let delivery = match delivery {
@@ -96,7 +96,7 @@ async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
 
 
     for _ in 0..10 {
-        let _ = Rabbitmq::send(&channel, "", "queue_test", b"Hello world!").await;
+        let _ = RabbitPool::send(&channel, "", "queue_test", b"Hello world!").await;
     }
 
     // std::future::pending::<()>().await;

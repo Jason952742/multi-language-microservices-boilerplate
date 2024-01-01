@@ -12,7 +12,7 @@ pub enum NatsMessage {
 }
 
 #[derive(Debug)]
-pub struct Nats;
+pub struct NatsPool;
 
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
 static JETSTREAM: OnceCell<Context> = OnceCell::const_new();
@@ -20,7 +20,7 @@ static JETSTREAM: OnceCell<Context> = OnceCell::const_new();
 static ACCOUNT_INIT: OnceCell<PullConsumer> = OnceCell::const_new();
 static REFERRAL_INIT: OnceCell<PullConsumer> = OnceCell::const_new();
 
-impl Nats {
+impl NatsPool {
     pub async fn client() -> &'static Client {
         CLIENT
             .get_or_init(|| async {
