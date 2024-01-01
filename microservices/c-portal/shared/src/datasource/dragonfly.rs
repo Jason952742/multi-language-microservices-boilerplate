@@ -1,6 +1,8 @@
 use redis::Client;
 use std::env;
+use colored::Colorize;
 use tokio::sync::OnceCell;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct DragonflyPool;
@@ -16,7 +18,8 @@ impl DragonflyPool {
                 let port = env::var("REDIS_PORT").expect("REDIS_PORT must be set");
                 let requirepass = env::var("REDIS_PASSWORD").expect("REDIS_PASSWORD must be set");
                 let redis_url = format!("redis://:{requirepass}@{host}:{port}/{db}");
-                let client = Client::open(redis_url).unwrap();
+                let client = Client::open(redis_url).expect("Dragonfly connection failed");
+                info!("{}", "DRAGONFLY CONNECTED".color("magenta"));
                 client
             })
             .await
@@ -26,7 +29,6 @@ impl DragonflyPool {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
     use serde::{Deserialize, Serialize};
     use serde_json::json;
 

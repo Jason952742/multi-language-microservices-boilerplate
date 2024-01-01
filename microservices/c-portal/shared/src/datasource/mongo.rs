@@ -3,11 +3,13 @@ use mongodb::{bson, Client, Collection};
 use mongodb::options::{ClientOptions, FindOptions, UpdateOptions};
 use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
+use colored::Colorize;
 use futures::stream::TryStreamExt;
 use futures::{stream, TryStream};
 use mongodb::bson::oid::ObjectId;
 use serde::de::DeserializeOwned;
 use tokio_stream::StreamExt;
+use tracing::info;
 
 #[derive(Debug)]
 pub struct MongoPool;
@@ -19,8 +21,8 @@ impl MongoPool {
         CONN.get_or_init(|| async {
             let mut options = ClientOptions::parse("mongodb://localhost:27017").await.expect("mongodb option error");
             options.app_name = Some("MultiLang".to_string());
-
-            let client = Client::with_options(options).expect("mongodb connection failed");
+            let client = Client::with_options(options).expect("Mongodb connection failed");
+            info!("{}", "MONGO CONNECTED".color("magenta"));
             client
         }).await
     }
@@ -206,7 +208,7 @@ struct Book {
     #[serde(rename = "_id")]
     id: ObjectId,
     title: String,
-    author: String
+    author: String,
 }
 
 impl Into<Bson> for Book {

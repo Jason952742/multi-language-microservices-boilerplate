@@ -1,5 +1,6 @@
 use std::env;
 use lapin::{options::*, publisher_confirm::Confirmation, types::FieldTable, BasicProperties, Connection, ConnectionProperties, Channel, Queue, Consumer};
+use colored::Colorize;
 use tokio::sync::OnceCell;
 use tracing::info;
 
@@ -21,8 +22,8 @@ impl RabbitPool {
                     .with_executor(tokio_executor_trait::Tokio::current())
                     .with_reactor(tokio_reactor_trait::Tokio);
                 let connection = Connection::connect(&uri, options)
-                    .await.expect("Connection failed");
-                info!("RABBITMQ CONNECTED");
+                    .await.expect("Rabbitmq connection failed");
+                info!("{}", "RABBITMQ CONNECTED".color("magenta"));
                 connection
             })
             .await
@@ -60,11 +61,6 @@ impl RabbitPool {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Ok(())
-}
-
-#[tokio::test]
-async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
     use std::time::Duration;
     use lapin::message::DeliveryResult;
 

@@ -38,6 +38,7 @@ redis = { version = "0.24.0", features = ["tokio-comp", "connection-manager"] }
 neo4rs = { version = "0.6.2" }
 async-nats = { version = "0.33.0" }
 scylla = { version = "0.9.1", features = ["ssl", "cloud"] }
+influxdb = { version = "0.7.1", features = ["derive"] }
 sea-orm = { version = "0.12.10", features = [
     "debug-print",
     "runtime-tokio-rustls",

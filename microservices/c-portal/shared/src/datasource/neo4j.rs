@@ -1,6 +1,8 @@
 use std::env;
 use neo4rs::{ConfigBuilder, Graph};
 use tokio::sync::OnceCell;
+use tracing::info;
+use colored::Colorize;
 
 #[derive(Debug)]
 pub struct Neo4jPool;
@@ -25,7 +27,8 @@ impl Neo4jPool {
                     .max_connections(10)
                     .build()
                     .unwrap();
-                let graph = Graph::connect(config).await.unwrap();
+                let graph = Graph::connect(config).await.expect("Neo4J connection failed");
+                info!("{}", "Neo4j CONNECTED".color("magenta"));
                 graph
             })
             .await
