@@ -1,53 +1,46 @@
-use sea_orm::*;
-use crate::domain::entities::{post, post::Entity as Post};
+use shared::mongo::MongoPool;
+use shared::{mongodb};
+use shared::mongodb::bson::oid::ObjectId;
+use shared::mongodb::{Client, Collection};
+use crate::domain::entities::post;
 
-pub struct Mutation;
+pub struct PostOrmMutation;
 
-impl Mutation {
+impl PostOrmMutation {
+    fn get_coll(client: &Client) -> Collection<post::Model> {
+        client.database("multi_lang").collection::<post::Model>("post")
+    }
+
     pub async fn create_post(
-        db: &DbConn,
+        client: &Client,
         form_data: post::Model,
-    ) -> Result<post::ActiveModel, DbErr> {
-        post::ActiveModel {
-            title: Set(form_data.title.to_owned()),
-            text: Set(form_data.text.to_owned()),
-            ..Default::default()
-        }
-        .save(db)
-        .await
+    ) -> Result<ObjectId, mongodb::error::Error> {
+        let collection = Self::get_coll(client);
+
+        let created_id = MongoPool::create_item(collection, form_data).await?;
+        Ok(created_id)
     }
 
     pub async fn update_post_by_id(
-        db: &DbConn,
-        id: i32,
+        client: &Client,
+        id: ObjectId,
         form_data: post::Model,
-    ) -> Result<post::Model, DbErr> {
-        let post: post::ActiveModel = Post::find_by_id(id)
-            .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
-            .map(Into::into)?;
+    ) -> Result<(), mongodb::error::Error> {
+        let collection = Self::get_coll(client);
 
-        post::ActiveModel {
-            id: post.id,
-            title: Set(form_data.title.to_owned()),
-            text: Set(form_data.text.to_owned()),
-        }
-        .update(db)
-        .await
+        MongoPool::update_item(collection, id, form_data).await?;
+
+        Ok(())
     }
 
-    pub async fn delete_post(db: &DbConn, id: i32) -> Result<DeleteResult, DbErr> {
-        let post: post::ActiveModel = Post::find_by_id(id)
-            .one(db)
-            .await?
-            .ok_or(DbErr::Custom("Cannot find post.".to_owned()))
-            .map(Into::into)?;
+    pub async fn delete_post(
+        client: &Client,
+        id: ObjectId,
+    ) -> Result<(), mongodb::error::Error> {
+        let collection = Self::get_coll(client);
 
-        post.delete(db).await
-    }
+        MongoPool::delete_item(collection.clone(), id).await?;
 
-    pub async fn _delete_all_posts(db: &DbConn) -> Result<DeleteResult, DbErr> {
-        Post::delete_many().exec(db).await
+        Ok(())
     }
 }

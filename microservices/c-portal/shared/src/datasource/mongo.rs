@@ -25,13 +25,13 @@ impl MongoPool {
         }).await
     }
 
-    async fn create_item<T: Serialize>(collection: Collection<T>, item: T) -> Result<ObjectId, mongodb::error::Error> {
+    pub async fn create_item<T: Serialize>(collection: Collection<T>, item: T) -> Result<ObjectId, mongodb::error::Error> {
         let result = collection.insert_one(item, None).await?;
         let inserted_id = result.inserted_id.as_object_id().unwrap().clone();
         Ok(inserted_id)
     }
 
-    async fn find_item_by_id<T>(collection: Collection<T>, id: ObjectId) -> Result<Option<T>, mongodb::error::Error>
+    pub async fn find_item_by_id<T>(collection: Collection<T>, id: ObjectId) -> Result<Option<T>, mongodb::error::Error>
         where
             T: DeserializeOwned + Unpin + Send + Sync,
     {
@@ -40,16 +40,38 @@ impl MongoPool {
         Ok(item)
     }
 
-    async fn find_items<T>(collection: Collection<T>, filter: Document, find_options: Option<FindOptions>) -> Result<Vec<T>, mongodb::error::Error>
+    async fn find_items<T>(
+        collection: Collection<T>,
+        filter: Document,
+        find_options:
+        Option<FindOptions>,
+        page: u32,
+        per_page: u32,
+    ) -> Result<(u32, Vec<T>), mongodb::error::Error>
         where
             T: DeserializeOwned + Unpin,
     {
-        let cursor = collection.find(filter, find_options).await?;
+        // Statistics on the total number of documents that satisfy the query conditions
+        let total_items = collection.count_documents(filter.clone(), None).await?;
+
+        // Counting the number of skipped documents
+        let skip = (page - 1) * per_page;
+
+        // Setting the number of skipped documents to FindOptions
+        let mut options = find_options.unwrap_or(FindOptions::default());
+        options.skip = Some(skip as i64 as u64);
+
+        // perform a search
+        let cursor = collection.find(filter, options).await?;
         let items: Vec<T> = cursor.try_collect().await?;
-        Ok(items)
+
+        // Calculate the total number of pages
+        let total_pages = (total_items as f32 / per_page as f32).ceil() as u32;
+
+        Ok((total_pages, items))
     }
 
-    async fn update_item<T>(collection: Collection<T>, id: ObjectId, new_item: T) -> Result<(), mongodb::error::Error>
+    pub async fn update_item<T>(collection: Collection<T>, id: ObjectId, new_item: T) -> Result<(), mongodb::error::Error>
         where
             T: Serialize + Into<Bson>,
     {
@@ -61,7 +83,7 @@ impl MongoPool {
         Ok(())
     }
 
-    async fn delete_item<T: Serialize>(collection: Collection<T>, id: ObjectId) -> Result<(), mongodb::error::Error> {
+    pub async fn delete_item<T: Serialize>(collection: Collection<T>, id: ObjectId) -> Result<(), mongodb::error::Error> {
         let filter = doc! { "_id": id };
         collection.delete_one(filter, None).await?;
         Ok(())
@@ -134,7 +156,7 @@ async fn main() -> Result<(), mongodb::error::Error> {
 
     let filter = doc! { "author": "John"};
     let find_options = None;
-    let found_items = find_books(collection.clone(), filter, find_options).await?;
+    let found_items = find_books(collection.clone(), filter, find_options, 1, 20).await?;
     println!("Found Items: {:?}", found_items);
 
     MongoPool::delete_item(collection.clone(), book.id).await?;
@@ -149,8 +171,21 @@ async fn find_books(
     collection: Collection<Book>,
     filter: Document,
     find_options: Option<FindOptions>,
-) -> Result<Vec<Book>, mongodb::error::Error> {
-    let cursor = collection.find(filter, find_options).await?;
+    page: u32,
+    per_page: u32,
+) -> Result<(u32, Vec<Book>), mongodb::error::Error> {
+    // Statistics on the total number of documents that satisfy the query conditions
+    let total_items = collection.count_documents(filter.clone(), None).await?;
+
+    // Counting the number of skipped documents
+    let skip = (page - 1) * per_page;
+
+    // Setting the number of skipped documents to FindOptions
+    let mut options = find_options.unwrap_or(FindOptions::default());
+    options.skip = Some(skip as i64 as u64);
+
+    // perform a search
+    let cursor = collection.find(filter, options).await?;
     let book_stream = stream::try_unfold(cursor, |mut cursor| async move {
         match StreamExt::try_next(&mut cursor).await {
             Ok(Some(item)) => Ok(Some((item, cursor))),
@@ -158,8 +193,12 @@ async fn find_books(
             Err(err) => Err(err),
         }
     });
-    let books: Result<Vec<Book>, mongodb::error::Error> = book_stream.try_collect().await;
-    books
+    let books: Vec<Book> = book_stream.try_collect().await?;
+
+    // Calculate the total number of pages
+    let total_pages = (total_items as f32 / per_page as f32).ceil() as u32;
+
+    Ok((total_pages, books))
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

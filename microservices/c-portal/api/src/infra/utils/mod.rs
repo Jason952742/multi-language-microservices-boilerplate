@@ -12,20 +12,20 @@ pub use path_utils::*;
 
 use axum::Router;
 use axum::routing::MethodRouter;
-use sea_orm::DatabaseConnection;
 use serde_derive::{Deserialize, Serialize};
 use tera::Tera;
+use shared::mongodb::Client;
 
 #[derive(Clone)]
 pub struct AppState {
     pub templates: Tera,
-    pub conn: DatabaseConnection,
+    pub conn: Client,
 }
 
 #[derive(Deserialize)]
 pub struct Params {
-    pub page: Option<u64>,
-    pub posts_per_page: Option<u64>,
+    pub page: Option<u32>,
+    pub posts_per_page: Option<u32>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

@@ -12,5 +12,5 @@ pub use config::*;
 
 pub use sea_orm;
 pub use sea_orm_migration;
-pub use lapin::*;
-pub use sea_orm::ActiveModelBehavior;
+pub use lapin;
+pub use mongodb;

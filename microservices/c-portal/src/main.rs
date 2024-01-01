@@ -8,8 +8,8 @@
 
 use std::env;
 use clap::Parser;
-use shared::postgres::PgPool;
 use shared::{Config, consul_api};
+use shared::mongo::MongoPool;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -26,12 +26,12 @@ async fn main() -> anyhow::Result<()> {
 
     // We create a single connection pool for SQLx that's shared across the whole application.
     // This saves us from opening a new connection for every API call, which is wasteful.
-    let connection = PgPool::conn().await.clone();
+    let client = MongoPool::conn().await.clone();
 
     // register consul service
     consul_register(&config.host, &config.port).await;
 
-    let result = api::start(config, connection).await;
+    let result = api::start(config, client).await;
 
     if let Some(err) = result.err() {
         println!("Error: {err}");

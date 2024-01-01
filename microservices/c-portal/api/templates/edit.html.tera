@@ -3,7 +3,7 @@
   <h4>Edit Post</h4>
   <div class="twelve columns">
     <div class="ten columns">
-      <form action="/{{ post.id }}" method="post">
+      <form action="/{{ post._id["$oid"] }}" method="post">
         <div class="twelve columns">
           <input
             type="text"
@@ -38,7 +38,7 @@
       </form>
     </div>
     <div class="two columns">
-      <form action="/delete/{{ post.id }}" method="post">
+      <form action="/delete/{{ post._id["$oid"] }}" method="post">
         <div class="two columns">
           <input id="delete-button" type="submit" value="delete post" />
         </div>

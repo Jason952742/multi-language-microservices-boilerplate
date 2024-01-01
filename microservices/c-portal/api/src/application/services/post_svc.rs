@@ -4,10 +4,13 @@ use axum::http::StatusCode;
 use axum::response::Html;
 use axum::routing::{get, post};
 use tower_cookies::Cookies;
+use shared::mongodb::bson::doc;
+use shared::to_object_id;
 
 use crate::domain::entities::post;
 use crate::flash::{get_flash_cookie, post_response, PostResponse};
 use crate::infra::{AppState, FlashData, Params, route};
+use crate::infra::repositories::{PostOrmMutation, PostOrmQuery};
 
 pub fn post_routes() -> Router<AppState> {
     route(
@@ -32,7 +35,9 @@ impl PostService {
         let page = params.page.unwrap_or(1);
         let posts_per_page = params.posts_per_page.unwrap_or(5);
 
-        let (posts, num_pages) = crate::infra::repositories::query::Query::find_posts_in_page(&state.conn, page, posts_per_page)
+        let filter = doc! { };
+        let find_options = None;
+        let (num_pages, posts) = PostOrmQuery::find_posts_in_page(&state.conn, filter, find_options, page, posts_per_page)
             .await
             .expect("Cannot find posts in page");
 
@@ -67,7 +72,7 @@ impl PostService {
     pub async fn create_post(state: State<AppState>, mut cookies: Cookies, form: Form<post::Model>) -> Result<PostResponse, (StatusCode, &'static str)> {
         let form = form.0;
 
-        crate::infra::repositories::mutation::Mutation::create_post(&state.conn, form)
+        PostOrmMutation::create_post(&state.conn, form)
             .await
             .expect("could not insert post");
 
@@ -79,8 +84,10 @@ impl PostService {
         Ok(post_response(&mut cookies, data))
     }
 
-    pub async fn edit_post(state: State<AppState>, Path(id): Path<i32>) -> Result<Html<String>, (StatusCode, &'static str)> {
-        let post: post::Model = crate::infra::repositories::query::Query::find_post_by_id(&state.conn, id)
+    pub async fn edit_post(state: State<AppState>, Path(id): Path<String>) -> Result<Html<String>, (StatusCode, &'static str)> {
+        let id = to_object_id(id.clone()).unwrap();
+
+        let post: post::Model = PostOrmQuery::find_post_by_id(&state.conn, id)
             .await
             .expect("could not find post")
             .unwrap_or_else(|| panic!("could not find post with id {id}"));
@@ -96,10 +103,12 @@ impl PostService {
         Ok(Html(body))
     }
 
-    pub async fn update_post(state: State<AppState>, Path(id): Path<i32>, mut cookies: Cookies, form: Form<post::Model>) -> Result<PostResponse, (StatusCode, String)> {
+    pub async fn update_post(state: State<AppState>, Path(id): Path<String>, mut cookies: Cookies, form: Form<post::Model>) -> Result<PostResponse, (StatusCode, String)> {
         let form = form.0;
+        // let id = to_object_id(id.clone()).unwrap();
+        let id = to_object_id(id.clone()).unwrap();
 
-        crate::infra::repositories::mutation::Mutation::update_post_by_id(&state.conn, id, form)
+        PostOrmMutation::update_post_by_id(&state.conn, id, form)
             .await
             .expect("could not edit post");
 
@@ -111,8 +120,10 @@ impl PostService {
         Ok(post_response(&mut cookies, data))
     }
 
-    pub async fn delete_post(state: State<AppState>, Path(id): Path<i32>, mut cookies: Cookies) -> Result<PostResponse, (StatusCode, &'static str)> {
-        crate::infra::repositories::mutation::Mutation::delete_post(&state.conn, id)
+    pub async fn delete_post(state: State<AppState>, Path(id): Path<String>, mut cookies: Cookies) -> Result<PostResponse, (StatusCode, &'static str)> {
+        let id = to_object_id(id.clone()).unwrap();
+
+        PostOrmMutation::delete_post(&state.conn, id)
             .await
             .expect("could not delete post");
 

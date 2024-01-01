@@ -9,16 +9,14 @@ use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::{Config};
 use axum::{http::StatusCode, routing::{get_service}, Router};
-use sea_orm::DatabaseConnection;
-use sea_orm_migration::MigratorTrait;
-use crate::infra::migration::Migrator;
+use shared::mongodb::Client;
 
 mod flash;
 mod infra;
 mod domain;
 mod application;
 
-pub async fn start(config: Config, conn: DatabaseConnection) -> anyhow::Result<()> {
+pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
     // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
     // will be written to stdout.
     tracing_subscriber::fmt()
@@ -31,10 +29,6 @@ pub async fn start(config: Config, conn: DatabaseConnection) -> anyhow::Result<(
     // create app state
     let templates = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"))
         .expect("Tera initialization failed");
-
-    // This embeds database migrations in the application binary so we can ensure the database
-    // is migrated correctly on startup
-    Migrator::up(&conn, None).await?;
 
     let state: AppState = AppState { templates, conn };
 
