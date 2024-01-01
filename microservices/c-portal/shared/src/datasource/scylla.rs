@@ -14,7 +14,14 @@ impl ScyllaPool {
             .get_or_init(|| async {
                 dotenvy::dotenv().ok();
                 let uri = env::var("SCYLLA_URI").expect("SCYLLA_URI must be set");
-                let session: Session = SessionBuilder::new().known_node(uri).build().await.expect("Scylladb connection failed");
+                let user = env::var("SCYLLA_USER").expect("SCYLLA_USER must be set");
+                let password = env::var("SCYLLA_PASSWORD").expect("SCYLLA_PASSWORD must be set");
+
+                let session: Session = SessionBuilder::new()
+                    .known_node(uri)
+                    .user(user, password)
+                    .build()
+                    .await.expect("Scylladb connection failed");
                 info!("{}", "SCYLLA CONNECTED".color("magenta"));
                 session
             })

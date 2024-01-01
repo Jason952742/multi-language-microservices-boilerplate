@@ -86,6 +86,7 @@ services:
       SCYLLA_PASSWORD: ${SCYLLA_PASSWORD}
     volumes:
       - ./scylla/data/:/var/lib/scylla
+      - ./scylla/scylla.yaml:/etc/scylla/scylla.yaml
 
   influxdb:
     container_name: influxdb
