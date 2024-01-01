@@ -22,6 +22,7 @@ chrono = "0.4.31"
 uuid = "1.6.1"
 dotenvy = "0.15.7"
 colored = "2.1.0"
+time = { version = "0.3.31", features = ["large-dates", "local-offset"] }
 
 serde = { version = "1.0.193", features = ["derive"] }
 serde_derive = { version = "1.0.193" }
@@ -63,6 +64,7 @@ futures-lite = "2.1.0"
 async-global-executor = "^2.4.1"
 futures = "0.3.30"
 jsonwebtoken = "7.2.0"
+
 
 # The `clap` gives us a much nicer way to define configuration parameters for our application.
 clap = { version = "4.4.12", features = ["derive"] }
