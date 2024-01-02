@@ -12,7 +12,7 @@ use crate::domain::messages::MemberCreatedEvent;
 pub struct MemberSub;
 
 impl MemberSub {
-    pub async fn start_subscribe() -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn start_subscribe() -> anyhow::Result<()> {
         let (tx, rx) = mpsc::channel(32);
         let actor = MemberActor::new(rx);
         tokio::spawn(run_member_actor(actor));

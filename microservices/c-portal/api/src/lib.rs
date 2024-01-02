@@ -7,7 +7,7 @@ use tower_http::services::ServeDir;
 use crate::application::rest::{health_routes, test_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
-use shared::{Config};
+use shared::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
 use shared::mongodb::Client;
 
@@ -16,6 +16,8 @@ mod infra;
 mod domain;
 mod application;
 
+/// API entry
+///
 pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
     // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
     // will be written to stdout.
@@ -48,7 +50,7 @@ pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
     };
 
     // run it
-    tracing::info!("listening on {}", &server_url.color("magenta"));
+    tracing::info!("C-PortalServer listening on {}", &server_url.color("magenta"));
     axum::serve(listener, app).await.unwrap();
 
     Ok(())
