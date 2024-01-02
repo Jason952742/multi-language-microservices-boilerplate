@@ -2,7 +2,8 @@ use futures::TryStreamExt;
 use futures_lite::StreamExt;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
-use shared::rabbitmq::Rabbitmq;
+use shared::lapin;
+use shared::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
 use crate::domain::handlers::{MemberActor, run_member_actor};
 use crate::domain::messages::MemberCreatedEvent;
@@ -24,10 +25,10 @@ impl MemberSub {
     /// Handle member created
     pub async fn subscribe_member_created(tx: mpsc::Sender<MemberCommand>) -> Result<(), lapin::Error> {
         let event_name = "member_created";
-        let connection = Rabbitmq::connection().await;
-        let channel = Rabbitmq::channel(&connection).await;
-        let _queue = Rabbitmq::queue(&channel, &event_name, "member", "created").await;
-        let consumer = Rabbitmq::consumer(&channel, &event_name, "referral-member").await;
+        let connection = RabbitPool::connection().await;
+        let channel = RabbitPool::channel(&connection).await;
+        let _queue = RabbitPool::queue(&channel, &event_name, "member", "created").await;
+        let consumer = RabbitPool::consumer(&channel, &event_name, "referral-member").await;
         let mut consumer_stream = consumer.into_stream();
 
         tokio::task::spawn(async move {

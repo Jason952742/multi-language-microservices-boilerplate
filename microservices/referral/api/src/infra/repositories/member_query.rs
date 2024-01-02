@@ -1,7 +1,7 @@
 use std::str::FromStr;
-use neo4rs::{Node, query};
+use shared::neo4rs::{self, Node, query};
 use uuid::Uuid;
-use shared::neo4j::Neo4j;
+use shared::neo4j::Neo4jPool;
 use shared::{convert_to_bool, convert_to_i32, opt_to_uuid, string_to_datetime};
 use crate::domain::entities::member;
 use crate::domain::messages::MemberType;
@@ -11,7 +11,7 @@ pub struct MemberDbQuery;
 impl MemberDbQuery {
 
     pub async fn get_member_by_id(id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
             query("MATCH (member: Member {user_id: $id}) RETURN member").param("id", id.to_string()))
@@ -26,7 +26,7 @@ impl MemberDbQuery {
     }
 
     pub async fn get_member_by_my_referrer_code(code: &str) -> Result<Option<member::Model>, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
             query("MATCH (member: Member {my_referrer_code: $code}) RETURN member").param("code", code))
@@ -41,7 +41,7 @@ impl MemberDbQuery {
     }
 
     pub async fn check_member(id: Uuid) -> Result<bool, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let count = graph
             .execute(query("MATCH (n:Member {user_id: $id}) RETURN COUNT(n) AS n").param("id", id.to_string()))
@@ -54,7 +54,7 @@ impl MemberDbQuery {
     }
 
     pub async fn get_referral_member(user_id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
             query("MATCH (a:Member {user_id: $user_id})-[:REFERRED_BY]->(r:Member) RETURN r")
@@ -69,7 +69,7 @@ impl MemberDbQuery {
     }
 
     pub async fn get_my_referees(user_id: Uuid) -> Result<Vec<member::Model>, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
             query("MATCH (a:Member)-[:REFERRED_BY]->(b:Member {user_id: $user_id}) RETURN a")

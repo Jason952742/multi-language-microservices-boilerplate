@@ -1,13 +1,13 @@
-use neo4rs::{query, Relation};
+use shared::neo4rs::{self, query, Relation};
 use uuid::Uuid;
-use shared::neo4j::Neo4j;
+use shared::neo4j::Neo4jPool;
 use crate::domain::entities::member;
 
 pub struct MemberDbMutation;
 
 impl MemberDbMutation {
     pub async fn create_member(form_data: member::Model) -> Result<member::Model, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let _ = graph.run(
             query("CREATE (m:Member { user_id: $user_id, user_name: $user_name, member_type: $member_type, member_id: $member_id, login_creds: $login_creds, level: $level, my_referrer_code: $my_referrer_code, referee_code: $referee_code, hierarchy: $hierarchy, active: $active, description: $description, created_at: $created_at, updated_at: $updated_at, enabled: $enabled, version: $version, deleted: $deleted }) RETURN m")
@@ -35,7 +35,7 @@ impl MemberDbMutation {
     }
 
     pub async fn update_member(form_data: member::Model) -> Result<member::Model, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let _ = graph.execute(
             query("MATCH (m:Member {user_id: user_id}) SET m.member_type = $member_type, m.level = $level,  m.active = $active, m.description = $description, m.updated_at = $updated_at, m.enabled = $enabled, m.version = $version, m.deleted = $deleted RETURN m")
@@ -56,7 +56,7 @@ impl MemberDbMutation {
     }
 
     pub async fn create_relationship(referee_id: Uuid, referrer_id: Uuid) -> Result<Relation, neo4rs::Error> {
-        let graph = Neo4j::graph().await;
+        let graph = Neo4jPool::graph().await;
 
         let mut opt = graph.execute(
             query("MATCH (m1:Member { user_id: $referee_id }) MATCH (m2:Member { user_id: $referrer_id }) CREATE (m1)-[r:REFERRED_BY]->(m2) RETURN r")

@@ -62,7 +62,7 @@ impl GrpcStatusTool {
         )
     }
 
-    pub fn neo4j_error(err: neo4rs::Error) -> Status {
+    pub fn neo4j_error(err: Error) -> Status {
         match err {
             Error::IOError { .. } => Status::data_loss("neo4j io error"),
             Error::UrlParseError(_) => Status::invalid_argument("neo4j url parse error"),

@@ -1,7 +1,7 @@
 use std::env;
 use chrono::{DateTime, Utc};
 use colored::Colorize;
-use influxdb::{Client, InfluxDbWriteable, ReadQuery, Timestamp};
+use influxdb::{Client, InfluxDbWriteable};
 use tokio::sync::OnceCell;
 use tracing::info;
 
@@ -29,6 +29,8 @@ impl InfluxPool {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use influxdb::{InfluxDbWriteable, ReadQuery, Timestamp};
+
     let client = InfluxPool::connection().await;
     // Let's write some data into a measurement called `weather`
     let weather_readings = vec![

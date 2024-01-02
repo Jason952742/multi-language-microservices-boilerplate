@@ -65,10 +65,6 @@ tower-cookies = "0.10.0"
 tower-http = { version = "0.5.0", features = ["fs"] }
 tera = "1.19.1"
 
-redis = { version = "0.24.0", features = ["tokio-comp", "connection-manager"] }
-neo4rs = { version = "0.6.2" }
-async-nats = { version = "0.33.0" }
-scylla = { version = "0.9.1", features = ["ssl", "cloud"] }
 sea-orm = { version = "0.12.10", features = [
     "debug-print",
     "runtime-tokio-rustls",
@@ -84,7 +80,6 @@ sea-orm-migration = { version = "0.12.10", features = [
 ] }
 
 reqwest = { version = "0.11.23", features = ["json"] }
-lapin = "2.3.1"
 futures-lite = { version = "2.1.0" }
 
 [dev-dependencies]

@@ -1,7 +1,7 @@
 use chrono::Local;
 use tonic::Status;
 use uuid::Uuid;
-use shared::StatusUtil;
+use shared::GrpcStatusTool;
 use crate::domain::commands::member_cmd::MemberEvent;
 use crate::domain::entities::member;
 use crate::domain::messages::{MemberCreatedEvent, MemberType};
@@ -12,11 +12,11 @@ pub struct MemberService;
 
 impl MemberService {
     pub async fn create_referral(user_id: Uuid, event: MemberCreatedEvent) -> Result<MemberEvent, Status> {
-        match MemberDbQuery::check_member(user_id).await.map_err(|e| StatusUtil::neo4j_error(e))? {
+        match MemberDbQuery::check_member(user_id).await.map_err(|e| GrpcStatusTool::neo4j_error(e))? {
             true => Err(Status::already_exists("member already exists")),
             false => {
                 let referrer: Option<member::Model> = if event.referee_code != "system" {
-                    MemberDbQuery::get_member_by_my_referrer_code(&event.referee_code).await.map_err(|e| StatusUtil::neo4j_error(e))?
+                    MemberDbQuery::get_member_by_my_referrer_code(&event.referee_code).await.map_err(|e| GrpcStatusTool::neo4j_error(e))?
                 } else { None };
 
                 let form_data: member::Model = member::Model {
@@ -39,7 +39,7 @@ impl MemberService {
                     Ok(_) => {
                         if let Some(r) = referrer {
                             let _ = MemberDbMutation::create_relationship(user_id, r.user_id).await
-                                .map_err(|e| StatusUtil::neo4j_error(e));
+                                .map_err(|e| GrpcStatusTool::neo4j_error(e));
                         }
                         Ok(MemberEvent::Created)
                     }
@@ -71,7 +71,7 @@ impl MemberService {
     }
 
     pub async fn bind_referral(user_id: Uuid, referral_id: Uuid) -> Result<MemberEvent, Status> {
-        let res = MemberDbMutation::create_relationship(user_id, referral_id).await.map_err(|e| StatusUtil::neo4j_error(e));
+        let res = MemberDbMutation::create_relationship(user_id, referral_id).await.map_err(|e| GrpcStatusTool::neo4j_error(e));
         match res {
             Ok(_) => Ok(MemberEvent::Bound),
             Err(e) => Err(e)

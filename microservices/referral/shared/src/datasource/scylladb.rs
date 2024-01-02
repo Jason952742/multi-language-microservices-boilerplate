@@ -1,15 +1,9 @@
 use std::env;
-use anyhow::anyhow;
-use chrono::NaiveDate;
-use scylla::{FromRow, FromUserType, impl_from_cql_value_from_method, IntoTypedRows, SerializeCql, Session, SessionBuilder};
+use scylla::{Session, SessionBuilder};
 use tokio::sync::OnceCell;
 use tracing::info;
 use colored::Colorize;
-use futures::TryStreamExt;
-use scylla::cql_to_rust::FromRowError;
 use scylla::transport::errors::QueryError;
-use scylla::cql_to_rust::{FromCqlVal, FromCqlValError};
-use scylla::frame::response::result::CqlValue;
 
 pub struct ScyllaPool;
 
@@ -58,7 +52,7 @@ impl ScyllaPool {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    use scylla::{IntoTypedRows, FromRow};
+    use scylla::{FromRow, FromUserType, impl_from_cql_value_from_method, IntoTypedRows, SerializeCql, Session, SessionBuilder};
 
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
@@ -231,6 +225,10 @@ async fn value_list() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn custom_deserialization() -> Result<(), Box<dyn std::error::Error>> {
+    use scylla::cql_to_rust::{FromCqlVal, FromCqlValError};
+    use scylla::frame::response::result::CqlValue;
+    use scylla::{impl_from_cql_value_from_method};
+
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
     let table = ScyllaPool::init_table(session, &keyspace, "tc", "pk int PRIMARY KEY, v text").await?;
@@ -280,6 +278,8 @@ async fn custom_deserialization() -> Result<(), Box<dyn std::error::Error>> {
 
 #[tokio::test]
 async fn get_test() -> Result<(), Box<dyn std::error::Error>> {
+    use anyhow::anyhow;
+
     tracing_subscriber::fmt::init();
     let session = ScyllaPool::connection().await;
 
