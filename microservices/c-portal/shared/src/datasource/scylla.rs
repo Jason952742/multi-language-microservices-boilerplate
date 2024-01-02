@@ -1,13 +1,15 @@
 use std::env;
 use anyhow::anyhow;
 use chrono::NaiveDate;
-use scylla::{FromRow, FromUserType, IntoTypedRows, SerializeCql, Session, SessionBuilder};
+use scylla::{FromRow, FromUserType, impl_from_cql_value_from_method, IntoTypedRows, SerializeCql, Session, SessionBuilder};
 use tokio::sync::OnceCell;
 use tracing::info;
 use colored::Colorize;
 use futures::TryStreamExt;
 use scylla::cql_to_rust::FromRowError;
 use scylla::transport::errors::QueryError;
+use scylla::cql_to_rust::{FromCqlVal, FromCqlValError};
+use scylla::frame::response::result::CqlValue;
 
 pub struct ScyllaPool;
 
@@ -228,7 +230,57 @@ async fn value_list() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
+async fn custom_deserialization() -> Result<(), Box<dyn std::error::Error>> {
+    let session = ScyllaPool::connection().await;
+    let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
+    let table = ScyllaPool::init_table(session, &keyspace, "tc", "pk int PRIMARY KEY, v text").await?;
+
+    session.query("INSERT INTO ks.tc (pk, v) VALUES (?, ?)", (1, "asdf")).await?;
+
+    // You can implement FromCqlVal for your own types
+    #[derive(PartialEq, Eq, Debug)]
+    struct MyType(String);
+
+    impl FromCqlVal<CqlValue> for MyType {
+        fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
+            Ok(Self(
+                cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?,
+            ))
+        }
+    }
+
+    let (v,) = session.query("SELECT v FROM ks.tc WHERE pk = 1", ()).await?.single_row_typed::<(MyType,)>()?;
+    assert_eq!(v, MyType("asdf".to_owned()));
+
+    // If you defined an extension trait for CqlValue then you can use
+    // the `impl_from_cql_value_from_method` macro to turn it into
+    // a FromCqlValue impl
+    #[derive(PartialEq, Eq, Debug)]
+    struct MyOtherType(String);
+
+    trait CqlValueExt {
+        fn into_my_other_type(self) -> Option<MyOtherType>;
+    }
+
+    impl CqlValueExt for CqlValue {
+        fn into_my_other_type(self) -> Option<MyOtherType> {
+            Some(MyOtherType(self.into_string()?))
+        }
+    }
+
+    impl_from_cql_value_from_method!(MyOtherType, into_my_other_type);
+
+    let (v,) = session.query("SELECT v FROM ks.tc WHERE pk = 1", ()).await?.single_row_typed::<(MyOtherType,)>()?;
+    assert_eq!(v, MyOtherType("asdf".to_owned()));
+
+    println!("Ok.");
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn get_test() -> Result<(), Box<dyn std::error::Error>> {
+    tracing_subscriber::fmt::init();
     let session = ScyllaPool::connection().await;
 
     ScyllaPool::init_keyspace(session, "ks", 1).await?;
@@ -385,14 +437,6 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
             println!("Read a timestamp as raw millis: {:?}", read_time);
         }
     }
-
-    Ok(())
-}
-
-#[tokio::test]
-async fn macro_test() -> Result<(), Box<dyn std::error::Error>> {
-
-
 
     Ok(())
 }
