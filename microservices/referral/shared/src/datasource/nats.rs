@@ -3,16 +3,18 @@ use async_nats::jetstream::Context;
 use async_nats::{jetstream, Client};
 use std::env;
 use strum_macros;
+use colored::Colorize;
 use tokio::sync::OnceCell;
+use tracing::info;
 
 #[derive(Debug, strum_macros::Display)]
 pub enum NatsMessage {
     AccountInit,
-    ReferralInit
+    ReferralInit,
 }
 
 #[derive(Debug)]
-pub struct Nats;
+pub struct NatsPool;
 
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
 static JETSTREAM: OnceCell<Context> = OnceCell::const_new();
@@ -20,15 +22,16 @@ static JETSTREAM: OnceCell<Context> = OnceCell::const_new();
 static ACCOUNT_INIT: OnceCell<PullConsumer> = OnceCell::const_new();
 static REFERRAL_INIT: OnceCell<PullConsumer> = OnceCell::const_new();
 
-impl Nats {
+impl NatsPool {
     pub async fn client() -> &'static Client {
         CLIENT
             .get_or_init(|| async {
                 dotenvy::dotenv().ok();
                 let host = env::var("NATS_HOST").expect("NATS_HOST must be set");
                 let nats_url = format!("nats://{host}:4222");
-                let nats_client = async_nats::connect(nats_url).await;
-                nats_client.expect("nats connect failed")
+                let nats_client = async_nats::connect(nats_url).await.expect("Nats connection failed");
+                info!("{}", "NATS CONNECTED".color("magenta"));
+                nats_client
             })
             .await
     }

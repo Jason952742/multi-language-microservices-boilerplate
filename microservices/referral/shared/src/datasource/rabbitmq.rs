@@ -1,14 +1,15 @@
 use std::env;
 use lapin::{options::*, publisher_confirm::Confirmation, types::FieldTable, BasicProperties, Connection, ConnectionProperties, Channel, Queue, Consumer};
+use colored::Colorize;
 use tokio::sync::OnceCell;
 use tracing::info;
 
 #[derive(Debug)]
-pub struct Rabbitmq;
+pub struct RabbitPool;
 
 static CLIENT: OnceCell<Connection> = OnceCell::const_new();
 
-impl Rabbitmq {
+impl RabbitPool {
 
     pub async fn connection() -> &'static Connection {
         CLIENT
@@ -21,8 +22,8 @@ impl Rabbitmq {
                     .with_executor(tokio_executor_trait::Tokio::current())
                     .with_reactor(tokio_reactor_trait::Tokio);
                 let connection = Connection::connect(&uri, options)
-                    .await.expect("Connection failed");
-                info!("RABBITMQ CONNECTED");
+                    .await.expect("Rabbitmq connection failed");
+                info!("{}", "RABBITMQ CONNECTED".color("magenta"));
                 connection
             })
             .await
@@ -60,18 +61,13 @@ impl Rabbitmq {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Ok(())
-}
-
-#[tokio::test]
-async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
     use std::time::Duration;
     use lapin::message::DeliveryResult;
 
-    let connection = Rabbitmq::connection().await;
-    let channel = Rabbitmq::channel(&connection).await;
-    let _queue = Rabbitmq::queue(&channel, "queue_test", "wo", "mc").await;
-    let consumer = Rabbitmq::consumer(&channel, "queue_test", "tag_foo").await;
+    let connection = RabbitPool::connection().await;
+    let channel = RabbitPool::channel(&connection).await;
+    let _queue = RabbitPool::queue(&channel, "queue_test", "wo", "mc").await;
+    let consumer = RabbitPool::consumer(&channel, "queue_test", "tag_foo").await;
 
     consumer.set_delegate(move |delivery: DeliveryResult| async move {
         let delivery = match delivery {
@@ -96,7 +92,7 @@ async fn tokio_test() -> Result<(), Box<dyn std::error::Error>> {
 
 
     for _ in 0..10 {
-        let _ = Rabbitmq::send(&channel, "", "queue_test", b"Hello world!").await;
+        let _ = RabbitPool::send(&channel, "", "queue_test", b"Hello world!").await;
     }
 
     // std::future::pending::<()>().await;

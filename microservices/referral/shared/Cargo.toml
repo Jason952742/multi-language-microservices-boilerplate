@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-tokio = {version = "1.35.1", features = ["full"]}
+tokio = { version = "1.35.1", features = ["full"] }
 tokio-executor-trait = "2.1.1"
 tokio-reactor-trait = "1.1.0"
+tokio-stream = { version = "0.1.14", features = ["net"] }
 
 tonic = { version = "0.10.2", features = ["gzip"] }
 tonic-web = { version = "0.10.2", optional = true }
@@ -21,6 +22,7 @@ chrono = "0.4.31"
 uuid = "1.6.1"
 dotenvy = "0.15.7"
 colored = "2.1.0"
+time = { version = "0.3.31", features = ["large-dates", "local-offset"] }
 
 serde = { version = "1.0.193", features = ["derive"] }
 serde_derive = { version = "1.0.193" }
@@ -34,9 +36,9 @@ tracing = { version = "0.1.40" }
 tracing-subscriber = { version = "0.3.18", default-features = false, features = ["fmt", "ansi", "env-filter", "tracing-log"] }
 
 redis = { version = "0.24.0", features = ["tokio-comp", "connection-manager"] }
-neo4rs = { version = "0.6.2" }
+neo4rs = { version = "0.7.1" }
 async-nats = { version = "0.33.0" }
-scylla = { version = "0.9.1", features = ["ssl", "cloud"] }
+scylla = { version = "0.11.1", features = ["ssl", "cloud", "chrono", "time"] }
 sea-orm = { version = "0.12.10", features = [
     "debug-print",
     "runtime-tokio-rustls",
@@ -50,12 +52,20 @@ sea-orm-migration = { version = "0.12.10", features = [
     "sqlx-postgres",
     "sqlx-mysql"
 ] }
+mongodb = { version = "2.8.0", default-features = false, features = ["tokio-runtime", "bson-uuid-0_8", "bson-chrono-0_4"] }
+bson = { version = "2.8.1", features = ["serde_with", "chrono-0_4"] }
+lapin = "2.3.1"
+influxdb = { version = "0.7.1", features = ["derive"] }
 
 reqwest = { version = "0.11.23", features = ["json"] }
 lazy_static = "1.4.0"
 async-trait = "0.1.75"
-lapin = "2.3.1"
 futures-lite = "2.1.0"
 async-global-executor = "^2.4.1"
 futures = "0.3.30"
 jsonwebtoken = "7.2.0"
+anyhow = "1.0.78"
+
+
+# The `clap` gives us a much nicer way to define configuration parameters for our application.
+clap = { version = "4.4.12", features = ["derive"] }

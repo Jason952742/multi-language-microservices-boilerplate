@@ -3,7 +3,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use std::env;
 use std::time::Duration;
 use tokio::sync::OnceCell;
-use tracing::log;
+use tracing::{info, log};
 
 #[derive(Debug)]
 pub struct PgPool;
@@ -29,6 +29,12 @@ impl PgPool {
     }
 }
 
+// The default connection limit for a Postgres server is 100 connections, minus 3 for superusers.
+// Since we're using the default superuser we don't have to worry about this too much,
+// although we should leave some connections available for manual access.
+//
+// If you're deploying your application with multiple replicas, then the total
+// across all replicas should not exceed the Postgres connection limit.
 async fn get_connection(database_url: String) -> DatabaseConnection {
     let mut opt = ConnectOptions::new(database_url);
     opt.max_connections(100)
@@ -40,10 +46,7 @@ async fn get_connection(database_url: String) -> DatabaseConnection {
         .sqlx_logging(false) // open/close sql log
         .sqlx_logging_level(log::LevelFilter::Info); // default Info
     // .set_schema_search_path("public".into());
-    // let connection = Database::connect(&database_url)
-
-    let connection = Database::connect(opt).await.expect("Database connection failed");
-    println!("{}", "Database connection!".color("magenta"));
-
+    let connection = Database::connect(opt).await.expect("Postgres connection failed");
+    info!("{}", "POSTGRES CONNECTED!".color("magenta"));
     connection
 }

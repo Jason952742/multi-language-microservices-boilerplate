@@ -6,9 +6,9 @@ use tonic::{Code, Status};
 use tonic_types::{ErrorDetails, StatusExt};
 use uuid::Uuid;
 
-pub struct StatusUtil;
+pub struct GrpcStatusTool;
 
-impl StatusUtil {
+impl GrpcStatusTool {
     pub fn invalid(e: &str) -> Status {
         Status::with_error_details_and_metadata(
             Code::InvalidArgument,

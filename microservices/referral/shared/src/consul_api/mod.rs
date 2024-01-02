@@ -145,6 +145,7 @@ mod tests {
             vec!["axum", "tokio", "grpc", "tonic"],
             "127.0.0.1",
             12345,
+            true
         );
         let r = cs.register(&registration).await;
         assert!(r.is_ok());

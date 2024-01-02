@@ -1,13 +1,15 @@
 use std::env;
 use neo4rs::{ConfigBuilder, Graph};
 use tokio::sync::OnceCell;
+use tracing::info;
+use colored::Colorize;
 
 #[derive(Debug)]
-pub struct Neo4j;
+pub struct Neo4jPool;
 
 static CLIENT: OnceCell<Graph> = OnceCell::const_new();
 
-impl Neo4j {
+impl Neo4jPool {
     pub async fn graph() -> &'static Graph {
         CLIENT
             .get_or_init(|| async {
@@ -25,7 +27,8 @@ impl Neo4j {
                     .max_connections(10)
                     .build()
                     .unwrap();
-                let graph = Graph::connect(config).await.unwrap();
+                let graph = Graph::connect(config).await.expect("Neo4J connection failed");
+                info!("{}", "Neo4j CONNECTED".color("magenta"));
                 graph
             })
             .await
@@ -37,7 +40,7 @@ impl Neo4j {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use neo4rs::{query};
 
-    let graph = Neo4j::graph().await;
+    let graph = Neo4jPool::graph().await;
     {
         let id = uuid::Uuid::new_v4().to_string();
 
@@ -59,7 +62,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let count = count.clone();
 
             let handle = tokio::spawn(async move {
-                let graph = Neo4j::graph().await;
+                let graph = Neo4jPool::graph().await;
                 let mut result = graph
                     .execute(query("MATCH (p:Person {id: $id}) RETURN p").param("id", id))
                     .await.expect("Failed to execute");
