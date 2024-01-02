@@ -66,20 +66,6 @@ tower-cookies = "0.10.0"
 tower-http = { version = "0.5.0", features = ["fs", "trace"] }
 tera = "1.19.1"
 
-sea-orm = { version = "0.12.10", features = [
-    "debug-print",
-    "runtime-tokio-rustls",
-    "sqlx-mysql",
-    "sqlx-postgres",
-    "sqlx-sqlite",
-] }
-sea-orm-migration = { version = "0.12.10", features = [
-    # Enable following runtime and db backend features if you want to run migration via CLI
-    "runtime-tokio-rustls",
-    "sqlx-postgres",
-    "sqlx-mysql"
-] }
-
 reqwest = { version = "0.11.23", features = ["json"] }
 futures-lite = { version = "2.1.0" }
 jsonwebtoken = "8.3.0"
