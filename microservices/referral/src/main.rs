@@ -9,7 +9,7 @@
 use std::env;
 use clap::Parser;
 use shared::{Config, consul_api};
-use shared::postgres::PgPool;
+use shared::neo4j::Neo4jPool;
 
 #[tokio::main]
 async  fn main() -> anyhow::Result<()> {
@@ -33,7 +33,7 @@ async  fn main() -> anyhow::Result<()> {
 
     // We create a single connection pool for SQLx that's shared across the whole application.
     // This saves us from opening a new connection for every API call, which is wasteful.
-    let client = PgPool::conn().await.clone();
+    let client = Neo4jPool::graph().await.clone();
 
     // register consul service
     consul_register(&config.host, &config.port).await;
