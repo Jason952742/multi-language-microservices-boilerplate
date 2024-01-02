@@ -1,33 +1,61 @@
 syntax = "proto2";
 
-package Post;
+package member;
 
-service Blogpost {
-  rpc GetPosts(PostPerPage) returns (PostList) {}
-  rpc AddPost(Post) returns (PostId) {}
-  rpc UpdatePost(Post) returns (ProcessStatus) {}
-  rpc DeletePost(PostId) returns (ProcessStatus) {}
-  rpc GetPostById(PostId) returns (Post) {}
+service MemberService {
+  rpc GetMembers(PerPage) returns (MemberListReply) {}
+  rpc AddMember(Member) returns (MemberReply) {}
+  rpc UpdatePost(UpdateMemberRequest) returns (ProcessStatusReply) {}
+  rpc DeletePost(IdRequest) returns (ProcessStatusReply) {}
+  rpc GetPostById(IdRequest) returns (MemberReply) {}
 }
 
-message PostPerPage {
+message IdRequest {
+  required string id = 1;
+}
+
+message UpdateMemberRequest {
+  required string userId = 1;
+  required string memberType = 2;
+  required int32 level = 3;
+  required bool active = 4;
+  required string description = 5;
+}
+
+message PerPage {
   required uint64 per_page = 1;
 }
 
-message ProcessStatus {
-  required bool success = 1;
+message ProcessStatusReply {
+  required string code = 1;
+  required string message = 2;
+  required bool success = 3;
+  required string processId = 4;
 }
 
-message PostId {
-  required int32 id = 1;
+message MemberReply {
+  required string code = 1;
+  required string message = 2;
+  optional Member data = 3;
 }
 
-message Post {
-  required int32 id = 1;
-  required string title = 2;
-  required string content = 3;
+message Member {
+  required string userId = 1;
+  required string userName = 2;
+  required string memberType = 3;
+  required int32 level = 4;
+  required int32 hierarchy = 5;
+  required bool active = 6;
+  required string description = 7;
+  required string createdAt = 8;
 }
 
-message PostList {
-  repeated Post post = 1;
+message MemberListReply {
+  required string code = 1;
+  required string message = 2;
+  repeated Member data = 3;
+}
+
+message MemberList {
+  repeated Member member = 1;
 }
