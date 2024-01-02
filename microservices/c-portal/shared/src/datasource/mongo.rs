@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use tokio::sync::OnceCell;
 use colored::Colorize;
 use futures::stream::TryStreamExt;
-use futures::{stream, TryStream};
+use futures::{stream};
 use mongodb::bson::oid::ObjectId;
 use serde::de::DeserializeOwned;
 use tokio_stream::StreamExt;
@@ -42,7 +42,7 @@ impl MongoPool {
         Ok(item)
     }
 
-    async fn find_items<T>(
+    async fn _find_items<T>(
         collection: Collection<T>,
         filter: Document,
         find_options:
@@ -94,8 +94,8 @@ impl MongoPool {
 
 #[tokio::test]
 async fn main() -> Result<(), mongodb::error::Error> {
-    use futures::stream::TryStreamExt;
     use mongodb::{bson::doc, options::FindOptions};
+    use futures::{stream, TryStream};
 
     // Define a type that models our data.
     let client = MongoPool::conn().await;
@@ -158,7 +158,7 @@ async fn main() -> Result<(), mongodb::error::Error> {
 
     let filter = doc! { "author": "John"};
     let find_options = None;
-    let found_items = find_books(collection.clone(), filter, find_options, 1, 20).await?;
+    let found_items = _find_books(collection.clone(), filter, find_options, 1, 20).await?;
     println!("Found Items: {:?}", found_items);
 
     MongoPool::delete_item(collection.clone(), book.id).await?;
@@ -169,7 +169,7 @@ async fn main() -> Result<(), mongodb::error::Error> {
     Ok(())
 }
 
-async fn find_books(
+async fn _find_books(
     collection: Collection<Book>,
     filter: Document,
     find_options: Option<FindOptions>,
