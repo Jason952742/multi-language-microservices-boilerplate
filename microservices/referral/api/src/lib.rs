@@ -9,7 +9,7 @@ use application::events::subscribers::MemberSub;
 use shared::Config;
 use application::grpc::member_grpc::MemberGrpc;
 use application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
-use shared::neo4rs::Graph;
+use shared::neo4j::Neo4jPool;
 
 mod application;
 mod infra;
@@ -17,17 +17,19 @@ mod domain;
 
 /// API entry
 ///
-pub async fn start(config: Config, _graph: Graph) -> anyhow::Result<()> {
+pub async fn start(config: &Config) -> anyhow::Result<()> {
+    // database initialization
+    let _graph = Neo4jPool::graph().await;
 
+    // RabbitMQ event subscribe
     MemberSub::start_subscribe().await?;
 
-    let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
-
+    // Grpc Service
     let health_indicator = HealthIndicator::new().await;
     let member_grpc = ReferMemberServer::with_interceptor(MemberGrpc::new(), check_auth);
 
+    let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
     tracing::info!("ReferralGrpcServer listening on {}", &addr.to_string().color("magenta"));
-
     Server::builder()
         .trace_fn(|_| tracing::info_span!("Referral"))
         .add_service(health_indicator)

@@ -9,7 +9,7 @@ use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
-use shared::mongodb::Client;
+use shared::mongo::MongoPool;
 
 mod flash;
 mod infra;
@@ -18,10 +18,9 @@ mod application;
 
 /// API entry
 ///
-pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
-    // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
-    // will be written to stdout.
-
+pub async fn start(config: Config) -> anyhow::Result<()> {
+    // database initialization
+    let conn = MongoPool::conn().await.clone();
 
     // create app state
     let templates = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"))
@@ -33,10 +32,9 @@ pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
         .layer(CookieManagerLayer::new())
         .with_state(state);
 
-    let server_url = format!("{}:{}", config.host, config.port);
-
     // listen addr
     let mut listenfd = ListenFd::from_env();
+    let server_url = format!("{}:{}", config.host, config.port);
     let listener = match listenfd.take_tcp_listener(0).unwrap() {
         // if we are given a tcp listener on listen fd 0, we use that one
         Some(listener) => TcpListener::from_std(listener).unwrap(),

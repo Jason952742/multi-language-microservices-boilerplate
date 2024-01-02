@@ -8,11 +8,12 @@
 
 use std::env;
 use clap::Parser;
+use tracing::info;
+use colored::Colorize;
 use shared::{Config, consul_api};
-use shared::neo4j::Neo4jPool;
 
 #[tokio::main]
-async  fn main() -> anyhow::Result<()> {
+async fn main() -> anyhow::Result<()> {
     // set log level
     env::set_var("RUST_LOG", "debug");
 
@@ -31,14 +32,10 @@ async  fn main() -> anyhow::Result<()> {
     // This will exit with a help message if something is wrong.
     let config = Config::parse();
 
-    // We create a single connection pool for SQLx that's shared across the whole application.
-    // This saves us from opening a new connection for every API call, which is wasteful.
-    let client = Neo4jPool::graph().await.clone();
-
     // register consul service
     consul_register(&config.host, &config.port).await;
 
-    let result = api::start(config, client).await;
+    let result = api::start(&config).await;
 
     if let Some(err) = result.err() {
         println!("Error: {err}");
@@ -52,6 +49,7 @@ async fn consul_register(host: &str, port: &i32) {
     let cs = consul_api::Consul::new(consul_api::ConsulOption::default()).unwrap();
     let reg = consul_api::Registration::simple(consul_api::ServiceName::MuReferral, host, *port, true);
     cs.register(&reg).await.unwrap();
+    info!("{} Successfully Registered", consul_api::ServiceName::MuReferral.to_string().color("cyan"));
     tokio::spawn(async move {
         cs.discover_service().await.expect("discover_service failed");
     });
