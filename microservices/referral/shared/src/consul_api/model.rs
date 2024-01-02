@@ -97,5 +97,5 @@ pub enum ServiceName {
     MuPayment,
     MuOrder,
     MuChat,
-    MuEventSource,
+    MuEventFlow,
 }

@@ -75,7 +75,11 @@ impl Consul {
             interval.tick().await;
 
             // Execute discover task when the timer is triggered
-            let services = vec![ServiceName::MuReferral, ServiceName::MuMember];
+            let services = vec![
+                ServiceName::MuReferral,
+                ServiceName::MuMember,
+                ServiceName::MuEventFlow,
+            ];
 
             for service in services.iter() {
                 let filter = Filter::Service(service.to_string());

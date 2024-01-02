@@ -1,0 +1,20 @@
+# output
+target
+Cargo.lock
+
+# ide
+*.sublime*
+.vscode
+.idea/*
+*/.idea/*
+
+# misc
+.DS_Store
+*.pem
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
