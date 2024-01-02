@@ -58,11 +58,12 @@ listenfd = { version = "1.0.1" }
 httparse = "1.8.0"
 httpdate = "1.0.3"
 rustls-pemfile = { version = "1.0.4", optional = true }
-axum = "0.7.3"
-anyhow = "1.0.77"
+axum = { version = "0.7.3", features = ["macros"] }
+axum-extra = { version = "0.9.1", features = ["typed-header"] }
+anyhow = "1.0.78"
 tower = "0.4.13"
 tower-cookies = "0.10.0"
-tower-http = { version = "0.5.0", features = ["fs"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace"] }
 tera = "1.19.1"
 
 sea-orm = { version = "0.12.10", features = [
@@ -81,6 +82,11 @@ sea-orm-migration = { version = "0.12.10", features = [
 
 reqwest = { version = "0.11.23", features = ["json"] }
 futures-lite = { version = "2.1.0" }
+jsonwebtoken = "8.3.0"
+validator = { version = "0.14.0", features = ["derive"] }
+thiserror = "1.0.52"
+mime = "0.3.17"
+bcrypt = "0.15.0"
 
 [dev-dependencies]
 tokio = { version = "1.35.1", features = ["macros", "rt"] }

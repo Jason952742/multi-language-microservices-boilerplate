@@ -21,12 +21,7 @@ mod application;
 pub async fn start(config: Config, conn: Client) -> anyhow::Result<()> {
     // all spans/events with a level higher than TRACE (e.g, info, warn, etc.)
     // will be written to stdout.
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
-        .with_thread_names(true)
-        .with_thread_ids(true)
-        .with_test_writer()
-        .init();
+
 
     // create app state
     let templates = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"))

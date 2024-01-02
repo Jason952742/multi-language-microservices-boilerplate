@@ -22,8 +22,7 @@ impl InfluxPool {
                 let client = Client::new(uri, bucket).with_token(token);
                 info!("{}", "INFLUX CONNECTED".color("magenta"));
                 client
-            })
-            .await
+            }).await
     }
 }
 

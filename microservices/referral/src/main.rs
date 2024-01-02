@@ -16,6 +16,13 @@ async  fn main() -> anyhow::Result<()> {
     // set log level
     env::set_var("RUST_LOG", "debug");
 
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .with_thread_names(true)
+        .with_thread_ids(true)
+        .with_test_writer()
+        .init();
+
     // This returns an error if the `.env` file doesn't exist, but that's not what we want
     // since we're not going to use a `.env` file if we deploy this application.
     dotenv::dotenv().ok();

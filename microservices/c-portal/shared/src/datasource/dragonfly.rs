@@ -21,8 +21,7 @@ impl DragonflyPool {
                 let client = Client::open(redis_url).expect("Dragonfly connection failed");
                 info!("{}", "DRAGONFLY CONNECTED".color("magenta"));
                 client
-            })
-            .await
+            }).await
     }
 }
 

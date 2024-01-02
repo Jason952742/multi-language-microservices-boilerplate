@@ -1,6 +1,4 @@
-![screenshot](Screenshot.png)
-
-# Axum with SeaORM example app
+# C Portal API
 
 1. Modify the `DATABASE_URL` var in `.env` to point to your chosen database
 

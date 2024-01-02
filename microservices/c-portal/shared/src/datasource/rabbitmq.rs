@@ -25,8 +25,7 @@ impl RabbitPool {
                     .await.expect("Rabbitmq connection failed");
                 info!("{}", "RABBITMQ CONNECTED".color("magenta"));
                 connection
-            })
-            .await
+            }).await
     }
 
     pub async fn channel(conn: &Connection) -> Channel {
