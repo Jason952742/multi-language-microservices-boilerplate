@@ -4,7 +4,7 @@ use colored::Colorize;
 use tokio::net::TcpListener;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
-use crate::application::services::{health_routes, test_routes, post_routes};
+use crate::application::rest::{health_routes, test_routes, post_routes};
 use crate::infra::AppState;
 use listenfd::ListenFd;
 use shared::{Config};
