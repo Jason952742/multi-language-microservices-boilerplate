@@ -61,7 +61,7 @@ httpdate = "1.0.3"
 rustls-pemfile = { version = "1.0.4", optional = true }
 axum = { version = "0.7.3", features = ["macros"] }
 axum-extra = { version = "0.9.1", features = ["typed-header"] }
-anyhow = "1.0.77"
+anyhow = "1.0.78"
 tower = "0.4.13"
 tower-cookies = "0.10.0"
 tower-http = { version = "0.5.0", features = ["fs", "trace"] }

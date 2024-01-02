@@ -1,9 +1,13 @@
 use std::env;
+use anyhow::anyhow;
 use chrono::NaiveDate;
-use scylla::{Session, SessionBuilder};
+use scylla::{FromRow, FromUserType, IntoTypedRows, SerializeCql, Session, SessionBuilder};
 use tokio::sync::OnceCell;
 use tracing::info;
 use colored::Colorize;
+use futures::TryStreamExt;
+use scylla::cql_to_rust::FromRowError;
+use scylla::transport::errors::QueryError;
 
 pub struct ScyllaPool;
 
@@ -28,6 +32,25 @@ impl ScyllaPool {
             })
             .await
     }
+
+    pub async fn init_keyspace(session: &Session, keyspace: &str, factor: u16) -> Result<String, QueryError> {
+        let query = format!("CREATE KEYSPACE IF NOT EXISTS {} WITH REPLICATION = {{'class' : 'NetworkTopologyStrategy', 'replication_factor' : {}}}", keyspace, factor);
+        let _ = session.query(query, &[]).await?;
+        Ok(keyspace.to_string())
+    }
+
+    pub async fn init_table(session: &Session, keyspace: &str, table: &str, column: &str) -> Result<String, QueryError> {
+        let q = format!("CREATE TABLE IF NOT EXISTS {}.{} ({})", keyspace, table, column);
+        let _ = session.query(q, &[]).await?;
+        Ok(table.to_string())
+    }
+
+    pub async fn init_type(session: &Session, keyspace: &str, type_name: &str, fields: &str) -> Result<String, QueryError> {
+        let q = format!("CREATE TYPE IF NOT EXISTS {}.{} ({})", keyspace, type_name, fields);
+        let _ = session.query(q, &[]).await?;
+        Ok(type_name.to_string())
+    }
+
 }
 
 
@@ -36,26 +59,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use scylla::{IntoTypedRows, FromRow};
 
     let session = ScyllaPool::connection().await;
-
-    session.query("CREATE KEYSPACE IF NOT EXISTS ks WITH REPLICATION = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 1}", &[]).await?;
-
-    session.query("CREATE TABLE IF NOT EXISTS ks.t (a int, b int, c text, primary key (a, b))", &[]).await?;
+    let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
+    ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text, primary key (a, b)").await?;
 
     session.query("INSERT INTO ks.t (a, b, c) VALUES (?, ?, ?)", (3, 4, "def")).await?;
     session.query("INSERT INTO ks.t (a, b, c) VALUES (1, 2, 'abc')", &[]).await?;
 
-    let prepared = session.prepare("INSERT INTO ks.t (a, b, c) VALUES (?, 7, ?)").await?;
-    session.execute(&prepared, (42_i32, "I'm prepared!")).await?;
-    session.execute(&prepared, (43_i32, "I'm prepared 2!")).await?;
-    session.execute(&prepared, (44_i32, "I'm prepared 3!")).await?;
+    // let prepared = session.prepare("INSERT INTO ks.t (a, b, c) VALUES (?, 7, ?)").await?;
+    // session.execute(&prepared, (42_i32, "I'm prepared!")).await?;
+    // session.execute(&prepared, (43_i32, "I'm prepared 2!")).await?;
+    // session.execute(&prepared, (44_i32, "I'm prepared 3!")).await?;
 
     // Rows can be parsed as tuples
-    if let Some(rows) = session.query("SELECT a, b, c FROM ks.t", &[]).await?.rows {
-        for row in rows.into_typed::<(i32, i32, String)>() {
-            let (a, b, c) = row?;
-            println!("a, b, c: {}, {}, {}", a, b, c);
-        }
-    }
+    // if let Some(rows) = session.query("SELECT a, b, c FROM ks.t", &[]).await?.rows {
+    //     for row in rows.into_typed::<(i32, i32, String)>() {
+    //         let (a, b, c) = row?;
+    //         println!("a, b, c: {}, {}, {}", a, b, c);
+    //     }
+    // }
 
     // Or as custom structs that derive FromRow
     #[derive(Debug, FromRow)]
@@ -73,17 +94,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // Or simply as untyped rows
-    if let Some(rows) = session.query("SELECT a, b, c FROM ks.t", &[]).await?.rows {
-        for row in rows {
-            let a = row.columns[0].as_ref().unwrap().as_int().unwrap();
-            let b = row.columns[1].as_ref().unwrap().as_int().unwrap();
-            let c = row.columns[2].as_ref().unwrap().as_text().unwrap();
-            println!("a, b, c: {}, {}, {}", a, b, c);
+    // if let Some(rows) = session.query("SELECT a, b, c FROM ks.t", &[]).await?.rows {
+    //     for row in rows {
+    //         let a = row.columns[0].as_ref().unwrap().as_int().unwrap();
+    //         let b = row.columns[1].as_ref().unwrap().as_int().unwrap();
+    //         let c = row.columns[2].as_ref().unwrap().as_text().unwrap();
+    //         println!("a, b, c: {}, {}, {}", a, b, c);
+    //
+    //         // Alternatively each row can be parsed individually
+    //         // let (a2, b2, c2) = row.into_typed::<(i32, i32, String)>() ?;
+    //     }
+    // }
 
-            // Alternatively each row can be parsed individually
-            // let (a2, b2, c2) = row.into_typed::<(i32, i32, String)>() ?;
+    ScyllaPool::init_type(session, &keyspace, "my_type", "int_val int, text_val text").await?;
+    ScyllaPool::init_table(session, &keyspace, "udt_tab", "k int, my my_type, primary key (k)").await?;
+
+    // Define custom struct that matches User Defined Type created earlier
+    // wrapping field in Option will gracefully handle null field values
+    #[derive(Debug, FromUserType, SerializeCql)]
+    struct MyType {
+        int_val: i32,
+        text_val: Option<String>,
+    }
+
+    let to_insert = MyType { int_val: 17, text_val: Some("Some string".to_string()) };
+
+    // It can be inserted like a normal value
+    session.query("INSERT INTO ks.udt_tab (k, my) VALUES (5, ?)", (to_insert,)).await?;
+
+    // And read like any normal value
+    if let Some(rows) = session.query("SELECT my FROM ks.udt_tab", &[]).await?.rows {
+        for row in rows.into_typed::<(MyType,)>() {
+            let (my_type_value,): (MyType,) = row?;
+            println!("{:?}", my_type_value)
         }
     }
+
 
     let metrics = session.get_metrics();
     println!("Queries requested: {}", metrics.get_queries_num());
@@ -103,6 +149,107 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[tokio::test]
+async fn select_paging() -> Result<(), Box<dyn std::error::Error>> {
+    use futures::stream::StreamExt;
+    use scylla::{query::Query};
+
+    let session = ScyllaPool::connection().await;
+    let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
+    let table = ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text, primary key (a, b)").await?;
+
+    for i in 0..16_i32 {
+        session.query(format!("INSERT INTO {}.{} (a, b, c) VALUES (?, ?, 'abc')", &keyspace, &table), (i, 2 * i)).await?;
+    }
+
+    // Iterate through select result with paging
+    let mut rows_stream = session.query_iter("SELECT a, b, c FROM ks.t", &[]).await?.into_typed::<(i32, i32, String)>();
+
+    while let Some(next_row_res) = rows_stream.next().await {
+        let (a, b, c) = next_row_res?;
+        println!("a, b, c: {}, {}, {}", a, b, c);
+    }
+
+    let paged_query = Query::new("SELECT a, b, c FROM ks.t").with_page_size(6);
+
+    let res1 = session.query(paged_query.clone(), &[]).await?;
+    println!("Paging state: {:#?} ({} rows)", res1.paging_state, res1.rows.unwrap().len());
+
+    let res2 = session.query_paged(paged_query.clone(), &[], res1.paging_state).await?;
+    println!("Paging state: {:#?} ({} rows)", res2.paging_state, res2.rows.unwrap().len());
+
+    let res3 = session.query_paged(paged_query.clone(), &[], res2.paging_state).await?;
+    println!("Paging state: {:#?} ({} rows)", res3.paging_state, res3.rows.unwrap().len());
+
+    let paged_prepared = session.prepare(Query::new("SELECT a, b, c FROM ks.t").with_page_size(7)).await?;
+
+    let res4 = session.execute(&paged_prepared, &[]).await?;
+    println!("Paging state from the prepared statement execution: {:#?} ({} rows)", res4.paging_state, res4.rows.unwrap().len());
+    let res5 = session.execute_paged(&paged_prepared, &[], res4.paging_state).await?;
+    println!("Paging state from the second prepared statement execution: {:#?} ({} rows)", res5.paging_state, res5.rows.unwrap().len());
+    let res6 = session.execute_paged(&paged_prepared, &[], res5.paging_state).await?;
+    println!("Paging state from the third prepared statement execution: {:#?} ({} rows)", res6.paging_state, res6.rows.unwrap().len());
+
+    println!("Ok.");
+    Ok(())
+}
+
+#[tokio::test]
+async fn value_list() -> Result<(), Box<dyn std::error::Error>> {
+    let session = ScyllaPool::connection().await;
+    let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
+    let table = ScyllaPool::init_table(session, &keyspace, "my_type", "k int, my text, primary key (k)").await;
+
+    #[derive(scylla::SerializeRow)]
+    struct MyType<'a> {
+        k: i32,
+        my: Option<&'a str>,
+    }
+
+    let to_insert = MyType { k: 17, my: Some("Some str") };
+
+    session.query("INSERT INTO ks.my_type (k, my) VALUES (?, ?)", to_insert).await.unwrap();
+
+    // You can also use type generics:
+    #[derive(scylla::SerializeRow)]
+    struct MyTypeWithGenerics<S: scylla::serialize::value::SerializeCql> {
+        k: i32,
+        my: Option<S>,
+    }
+
+    let to_insert_2 = MyTypeWithGenerics { k: 18, my: Some("Some string".to_owned()) };
+
+    session.query("INSERT INTO ks.my_type (k, my) VALUES (?, ?)", to_insert_2).await.unwrap();
+
+    let q = session.query("SELECT * FROM ks.my_type", &[]).await.unwrap();
+
+    println!("Q: {:?}", q.rows);
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn get_test() -> Result<(), Box<dyn std::error::Error>> {
+    let session = ScyllaPool::connection().await;
+
+    ScyllaPool::init_keyspace(session, "ks", 1).await?;
+    ScyllaPool::init_table(session, "ks", "hello", "pk int, ck int, value text, primary key (pk, ck)").await?;
+
+    session.query("INSERT INTO ks.hello (pk, ck, value) VALUES (?, ?, ?)", (3, 4, "def")).await?;
+    session.query("INSERT INTO ks.hello (pk, ck, value) VALUES (1, 2, 'abc')", &[]).await?;
+
+    let query_result = session.query("SELECT pk, ck, value FROM ks.hello", &[]).await?;
+    let (ck_idx, _) = query_result.get_column_spec("ck").ok_or_else(|| anyhow!("No ck column found"))?;
+    let (value_idx, _) = query_result.get_column_spec("value").ok_or_else(|| anyhow!("No value column found"))?;
+    println!("ck           |  value");
+    println!("---------------------");
+    for row in query_result.rows.ok_or_else(|| anyhow!("no rows found"))? {
+        println!("{:?} | {:?}", row.columns[ck_idx], row.columns[value_idx]);
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
 async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
     use chrono::{DateTime, NaiveDate, NaiveTime, Utc};
     use scylla::frame::response::result::CqlValue;
@@ -110,12 +257,11 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
     use scylla::transport::session::{IntoTypedRows};
 
     let session = ScyllaPool::connection().await;
-
-    session.query("CREATE KEYSPACE IF NOT EXISTS ks WITH REPLICATION = {'class' : 'NetworkTopologyStrategy', 'replication_factor' : 1}", &[]).await?;
+    ScyllaPool::init_keyspace(session, "ks", 1).await?;
 
     // Date
     // Date is a year, month and day in the range -5877641-06-23 to -5877641-06-23
-    session.query("CREATE TABLE IF NOT EXISTS ks.dates (d date primary key)", &[]).await?;
+    ScyllaPool::init_table(session, "ks", "dates", "d date primary key").await?;
     // If 'chrono' feature is enabled, dates in the range -262145-1-1 to 262143-12-31 can be represented using
     // chrono::NaiveDate
     let chrono_date = NaiveDate::from_ymd_opt(2020, 2, 20).unwrap();
@@ -162,7 +308,7 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
 
     // Time
     // Time is represented as nanosecond count since midnight in range 0..=86399999999999
-    session.query("CREATE TABLE IF NOT EXISTS ks.times (t time primary key)", &[]).await?;
+    ScyllaPool::init_table(session, "ks", "times", "t time primary key").await?;
 
     // Time can be represented using 3 different types, chrono::NaiveTime, time::Time and CqlTime. All types support full value range
 
@@ -201,7 +347,7 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
 
     // Timestamp
     // Timestamp is represented as milliseconds since unix epoch - 1970-01-01. Negative values are also possible
-    session.query("CREATE TABLE IF NOT EXISTS ks.timestamps (t timestamp primary key)", &[]).await?;
+    ScyllaPool::init_table(session, "ks", "timestamps", "t timestamp primary key").await?;
 
     // Timestamp can also be represented using 3 different types,
     // chrono::DateTime<chrono::Utc>, time::OffsetDateTime and CqlTimestamp.
@@ -239,6 +385,14 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
             println!("Read a timestamp as raw millis: {:?}", read_time);
         }
     }
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn macro_test() -> Result<(), Box<dyn std::error::Error>> {
+
+
 
     Ok(())
 }
