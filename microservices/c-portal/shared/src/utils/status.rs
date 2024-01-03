@@ -54,12 +54,15 @@ impl GrpcStatusTool {
     }
 
     pub fn db_error(e: DbErr) -> Status {
-        Status::with_error_details_and_metadata(
-            Code::FailedPrecondition,
-            "Database Error",
-            ErrorDetails::with_bad_request_violation("error", e.to_string()),
-            MetadataMap::new(),
-        )
+        match e {
+            DbErr::RecordNotFound(x) => Status::not_found(format!("db record {} not found", x)),
+            _ => Status::with_error_details_and_metadata(
+                Code::FailedPrecondition,
+                "Database Error",
+                ErrorDetails::with_bad_request_violation("error", e.to_string()),
+                MetadataMap::new(),
+            )
+        }
     }
 
     pub fn neo4j_error(err: Error) -> Status {
