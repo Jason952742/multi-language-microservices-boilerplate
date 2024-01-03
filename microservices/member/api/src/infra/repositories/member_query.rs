@@ -13,7 +13,7 @@ impl MemberOrmQuery {
         member::Entity::find_by_id(id).one(db).await
     }
 
-    pub async fn get_member_by_user_id(user_id: Uuid) -> Result<Option<member::Model>, DbErr> {
+    pub async fn _get_member_by_user_id(user_id: Uuid) -> Result<Option<member::Model>, DbErr> {
         let db: &DbConn = PgPool::conn().await;
         member::Entity::find()
             .filter(member::Column::UserId.eq(user_id))

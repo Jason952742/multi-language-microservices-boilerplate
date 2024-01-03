@@ -122,7 +122,7 @@ impl member_server::Member for MemberGrpc {
         let request = request.into_inner();
         tracing::info!("get members: {:?}", &request);
 
-        match MemberQuery::get_member_by_user_id(to_uuid(&request.id)).await? {
+        match MemberQuery::get_member_by_id(to_uuid(&request.id)).await? {
             None => Err(Status::not_found(request.id)),
             Some(m) => Ok(to_member_reply(m))
         }

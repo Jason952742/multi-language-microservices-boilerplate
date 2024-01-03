@@ -14,8 +14,13 @@ impl MemberQuery {
             .map_err(|e| GrpcStatusTool::db_error(e))
     }
 
-    pub async fn get_member_by_user_id(user_id: Uuid) -> Result<Option<member::Model>, Status> {
-        MemberOrmQuery::get_member_by_user_id(user_id).await
+    pub async fn _get_member_by_user_id(user_id: Uuid) -> Result<Option<member::Model>, Status> {
+        MemberOrmQuery::_get_member_by_user_id(user_id).await
+            .map_err(|e| GrpcStatusTool::db_error(e))
+    }
+
+    pub async fn get_member_by_id(id: Uuid) -> Result<Option<member::Model>, Status> {
+        MemberOrmQuery::get_member_by_id(id).await
             .map_err(|e| GrpcStatusTool::db_error(e))
     }
 
