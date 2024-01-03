@@ -13,16 +13,16 @@ impl MemberActor {
 
     async fn handle_message(&mut self, command: MemberCommand) {
         match command {
-            MemberCommand::Create { user_id, event, resp } => {
-                let res = MemberService::create_referral(user_id, event).await;
+            MemberCommand::Create { user_id, user_name, resp } => {
+                let res = MemberService::create_member(user_id, user_name).await;
                 let _ = resp.send(res);
             }
             MemberCommand::Update { user_id, member_type, level, active, description, resp } => {
-                let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
+                let res = MemberService::update_member(user_id, member_type, level, active, description).await;
                 let _ = resp.send(res);
             }
-            MemberCommand::Bind { user_id, referral_id, resp } => {
-                let res = MemberService::bind_referral(user_id, referral_id).await;
+            MemberCommand::Disable { user_id, resp } => {
+                let res = MemberService::disabled_member(user_id).await;
                 let _ = resp.send(res);
             }
         }

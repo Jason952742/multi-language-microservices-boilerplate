@@ -6,13 +6,11 @@ use colored::Colorize;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use infra::migration::{Migrator, MigratorTrait};
 use application::grpc::health_grpc::HealthIndicator;
-use application::grpc::post_grpc::MyServer;
-use application::grpc::post_grpc::post_mod::blogpost_server::BlogpostServer;
 use application::events::subscribers::MemberSub;
 use shared::Config;
 use application::grpc::member_grpc::MemberGrpc;
-use application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
 use shared::postgres::PgPool;
+use crate::application::grpc::member_grpc::member_proto::member_server::MemberServer;
 
 mod application;
 mod infra;
@@ -32,8 +30,7 @@ pub async fn start(config: Config) -> anyhow::Result<()> {
 
     // Grpc Service
     let health_indicator = HealthIndicator::new().await;
-    let member_grpc = ReferMemberServer::with_interceptor(MemberGrpc::new(), check_auth);
-    let post_grpc = BlogpostServer::new(MyServer { connection: connection.clone() });
+    let member_grpc = MemberServer::with_interceptor(MemberGrpc::new(), check_auth);
 
     let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
     tracing::info!("MemberGrpcServer listening on {}", &addr.to_string().color("magenta"));
@@ -41,7 +38,6 @@ pub async fn start(config: Config) -> anyhow::Result<()> {
         .trace_fn(|_| tracing::info_span!("Member"))
         .add_service(health_indicator)
         .add_service(member_grpc)
-        .add_service(post_grpc)
         .serve(addr)
         .await?;
 

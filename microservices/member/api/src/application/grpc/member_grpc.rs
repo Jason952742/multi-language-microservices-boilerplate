@@ -1,16 +1,18 @@
 use std::str::FromStr;
+use rust_decimal::prelude::ToPrimitive;
+use sea_orm::ActiveEnum;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, UpdateMemberRequest, UserIdRequest};
+use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, IdRequest, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
+use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::member;
 use crate::domain::handlers::{MemberActor, run_member_actor};
-use crate::domain::messages::MemberType;
 use crate::domain::queries::member_qry::MemberQuery;
 
-pub mod refer_member_proto {
-    tonic::include_proto!("refer_member");
+pub mod member_proto {
+    tonic::include_proto!("member");
 }
 
 #[derive(Debug)]
@@ -28,43 +30,56 @@ impl MemberGrpc {
 }
 
 #[tonic::async_trait]
-impl refer_member_server::ReferMember for MemberGrpc {
-
+impl member_server::Member for MemberGrpc {
     #[tracing::instrument]
-    async fn get_member_by_id(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
+    async fn add_member(&self, request: Request<AddMemberRequest>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get member by id request: {:?}", &request);
+        tracing::info!("add member: {:?}", &request);
 
-        match MemberQuery::get_member_by_id(to_uuid(&request.id)).await? {
-            None => Err(Status::not_found(request.id)),
-            Some(m) => Ok(to_member_res(m))
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = MemberCommand::Create {
+            user_id: to_uuid(&request.user_id),
+            user_name: request.user_name,
+            resp: resp_tx,
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
+        }
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                MemberEvent::Created { member } => Ok(to_member_reply(member)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
         }
     }
 
     #[tracing::instrument]
-    async fn get_my_referral(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
+    async fn disable_member(&self, request: Request<IdRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get my referral request: {:?}", &request);
+        tracing::info!("disable member: {:?}", &request);
 
-        match MemberQuery::get_my_referral(to_uuid(&request.id)).await? {
-            None => Err(Status::not_found(request.id)),
-            Some(m) => Ok(to_member_res(m))
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = MemberCommand::Disable {
+            user_id: to_uuid(&request.id),
+            resp: resp_tx,
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
         }
-    }
-
-    #[tracing::instrument]
-    async fn get_my_referees(&self, request: Request<UserIdRequest>) -> Result<Response<MemberListReply>, Status> {
-        let request = request.into_inner();
-        tracing::info!("get my referees request: {:?}", &request);
-
-        let res = MemberQuery::get_my_referees(to_uuid(&request.id)).await?;
-        Ok(to_member_list_res(res))
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                MemberEvent::Disabled => Ok(to_process_reply(request.id)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
+        }
     }
 
     #[tracing::instrument]
     async fn update_member(&self, request: Request<UpdateMemberRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("update member  request: {:?}", &request);
+        tracing::info!("update member: {:?}", &request);
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Update {
@@ -73,14 +88,14 @@ impl refer_member_server::ReferMember for MemberGrpc {
             level: request.level,
             active: request.active,
             description: request.description,
-            resp: resp_tx
+            resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
             eprintln!("connection task shutdown");
         }
         match resp_rx.await.unwrap() {
             Ok(event) => match event {
-                MemberEvent::Updated => Ok(to_process_res(request.user_id.to_string())),
+                MemberEvent::Updated => Ok(to_process_reply(request.user_id)),
                 _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
             },
             Err(e) => Err(e),
@@ -88,52 +103,56 @@ impl refer_member_server::ReferMember for MemberGrpc {
     }
 
     #[tracing::instrument]
-    async fn bind_referral(&self, request: Request<BindReferralRequest>) -> Result<Response<ProcessStatusReply>, Status> {
+    async fn get_members(&self, request: Request<ListRequest>) -> Result<Response<MemberListReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("bind referral: {:?}", &request);
+        tracing::info!("get member: {:?}", &request);
 
-        let (resp_tx, resp_rx) = oneshot::channel();
-        let command = MemberCommand::Bind {
-            user_id: to_uuid(&request.user_id),
-            referral_id: to_uuid(&request.referral_id),
-            resp: resp_tx
-        };
-        if self.tx.send(command).await.is_err() {
-            eprintln!("connection task shutdown");
-        }
-        match resp_rx.await.unwrap() {
-            Ok(event) => match event {
-                MemberEvent::Bound => Ok(to_process_res(request.user_id.to_string())),
-                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
-            },
-            Err(e) => Err(e),
+        let res = MemberQuery::get_members(
+            request.page, request.per_page,
+            request.status.map(|x| MemberStatus::from_str(&x).unwrap()),
+            request.member_type.map(|x| MemberType::from_str(&x).unwrap()),
+            request.level,
+        ).await?;
+        Ok(to_member_list_reply(res.0, res.1))
+    }
+
+    #[tracing::instrument]
+    async fn get_member_by_user_id(&self, request: Request<IdRequest>) -> Result<Response<MemberReply>, Status> {
+        let request = request.into_inner();
+        tracing::info!("get members: {:?}", &request);
+
+        match MemberQuery::get_member_by_user_id(to_uuid(&request.id)).await? {
+            None => Err(Status::not_found(request.id)),
+            Some(m) => Ok(to_member_reply(m))
         }
     }
 }
 
-fn to_process_res(process_id: String) -> Response<ProcessStatusReply> {
+fn to_process_reply(process_id: String) -> Response<ProcessStatusReply> {
     Response::new(ProcessStatusReply { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
 }
 
-fn to_member_res(model: member::Model) -> Response<MemberReply> {
-    let res = MemberReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
-    Response::new(res)
+fn to_member_reply(model: member::Model) -> Response<MemberReply> {
+    let r = MemberReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
+    Response::new(r)
 }
 
-fn to_member_list_res(models: Vec<member::Model>) -> Response<MemberListReply> {
+fn to_member_list_reply(models: Vec<member::Model>, num_pages: u64) -> Response<MemberListReply> {
     let list = models.clone().into_iter().map(|x| x.into()).collect();
-    let res = MemberListReply { code: parse_code(Code::Ok), message: "member list".to_string(), data: list };
-    Response::new(res)
+    let r = MemberListReply { code: parse_code(Code::Ok), message: "member list".to_string(), data: list, num_pages };
+    Response::new(r)
 }
 
-impl Into<Member> for member::Model {
-    fn into(self) -> Member {
-        Member {
+impl Into<MemberInfo> for member::Model {
+    fn into(self) -> MemberInfo {
+        MemberInfo {
             user_id: self.user_id.to_string(),
             user_name: self.user_name,
-            member_type: self.member_type.to_string(),
+            status: self.status.to_value(),
+            member_type: self.member_type.to_value(),
+            credit_score: self.credit_score.to_i32().unwrap(),
+            point: self.point,
             level: self.level,
-            hierarchy: self.hierarchy,
             active: self.active,
             description: self.description,
             created_at: self.created_at.to_string(),
