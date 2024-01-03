@@ -15,7 +15,7 @@ pub struct Model {
     pub status: MemberStatus,
     pub member_type: MemberType,
     pub credit_score: Decimal,
-    pub point: u64,
+    pub point: i32,
     pub level: i32,
     pub active: bool,
     pub description: String,

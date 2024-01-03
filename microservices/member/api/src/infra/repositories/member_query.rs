@@ -7,6 +7,12 @@ use crate::domain::entities::enums::{MemberStatus, MemberType};
 pub struct MemberOrmQuery;
 
 impl MemberOrmQuery {
+
+    pub async fn get_member_by_id(id: Uuid) -> Result<Option<member::Model>, DbErr> {
+        let db: &DbConn = PgPool::conn().await;
+        member::Entity::find_by_id(id).one(db).await
+    }
+
     pub async fn get_member_by_user_id(user_id: Uuid) -> Result<Option<member::Model>, DbErr> {
         let db: &DbConn = PgPool::conn().await;
         member::Entity::find()

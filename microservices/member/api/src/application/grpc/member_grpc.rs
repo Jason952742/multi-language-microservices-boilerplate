@@ -4,7 +4,7 @@ use sea_orm::ActiveEnum;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, IdRequest, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest};
+use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, MemberId, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::member;
@@ -31,13 +31,14 @@ impl MemberGrpc {
 
 #[tonic::async_trait]
 impl member_server::Member for MemberGrpc {
-    #[tracing::instrument]
-    async fn add_member(&self, request: Request<AddMemberRequest>) -> Result<Response<MemberReply>, Status> {
+    // #[tracing::instrument]
+    async fn add_member(&self, request: Request<AddMemberRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("add member: {:?}", &request);
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Create {
+            id: to_uuid(&request.id),
             user_id: to_uuid(&request.user_id),
             user_name: request.user_name,
             resp: resp_tx,
@@ -47,21 +48,21 @@ impl member_server::Member for MemberGrpc {
         }
         match resp_rx.await.unwrap() {
             Ok(event) => match event {
-                MemberEvent::Created { member } => Ok(to_member_reply(member)),
+                MemberEvent::Created { id } => Ok(to_process_reply(id.to_string())),
                 _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
             },
             Err(e) => Err(e),
         }
     }
 
-    #[tracing::instrument]
-    async fn disable_member(&self, request: Request<IdRequest>) -> Result<Response<ProcessStatusReply>, Status> {
+    // #[tracing::instrument]
+    async fn disable_member(&self, request: Request<MemberId>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("disable member: {:?}", &request);
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Disable {
-            user_id: to_uuid(&request.id),
+            id: to_uuid(&request.id),
             resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
@@ -76,14 +77,14 @@ impl member_server::Member for MemberGrpc {
         }
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn update_member(&self, request: Request<UpdateMemberRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("update member: {:?}", &request);
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Update {
-            user_id: to_uuid(&request.user_id),
+            id: to_uuid(&request.id),
             member_type: MemberType::from_str(&request.member_type).unwrap(),
             level: request.level,
             active: request.active,
@@ -95,14 +96,14 @@ impl member_server::Member for MemberGrpc {
         }
         match resp_rx.await.unwrap() {
             Ok(event) => match event {
-                MemberEvent::Updated => Ok(to_process_reply(request.user_id)),
+                MemberEvent::Updated => Ok(to_process_reply(request.id)),
                 _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
             },
             Err(e) => Err(e),
         }
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn get_members(&self, request: Request<ListRequest>) -> Result<Response<MemberListReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get member: {:?}", &request);
@@ -117,7 +118,7 @@ impl member_server::Member for MemberGrpc {
     }
 
     #[tracing::instrument]
-    async fn get_member_by_user_id(&self, request: Request<IdRequest>) -> Result<Response<MemberReply>, Status> {
+    async fn get_member_by_user_id(&self, request: Request<MemberId>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get members: {:?}", &request);
 
@@ -146,6 +147,7 @@ fn to_member_list_reply(models: Vec<member::Model>, num_pages: u64) -> Response<
 impl Into<MemberInfo> for member::Model {
     fn into(self) -> MemberInfo {
         MemberInfo {
+            id: self.id.to_string(),
             user_id: self.user_id.to_string(),
             user_name: self.user_name,
             status: self.status.to_value(),

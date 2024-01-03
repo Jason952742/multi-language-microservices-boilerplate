@@ -2,6 +2,7 @@ use futures::TryStreamExt;
 use futures_lite::StreamExt;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
+use uuid::Uuid;
 use shared::lapin;
 use shared::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
@@ -40,7 +41,7 @@ impl MemberSub {
                     let user_id = payload.clone().user_id.to_string();
 
                     let (resp_tx, resp_rx) = oneshot::channel();
-                    let command = MemberCommand::Create { user_id: payload.user_id, user_name: payload.user_name, resp: resp_tx };
+                    let command = MemberCommand::Create { id: Uuid::new_v4(), user_id: payload.user_id, user_name: payload.user_name, resp: resp_tx };
 
                     if tx.send(command).await.is_err() {
                         tracing::info!("{:?} - {:?} failed", &event_name, &user_id);

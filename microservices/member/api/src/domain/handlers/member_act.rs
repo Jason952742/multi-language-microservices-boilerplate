@@ -13,16 +13,16 @@ impl MemberActor {
 
     async fn handle_message(&mut self, command: MemberCommand) {
         match command {
-            MemberCommand::Create { user_id, user_name, resp } => {
-                let res = MemberService::create_member(user_id, user_name).await;
+            MemberCommand::Create { id, user_id, user_name, resp } => {
+                let res = MemberService::create_member(id, user_id, user_name).await;
                 let _ = resp.send(res);
             }
-            MemberCommand::Update { user_id, member_type, level, active, description, resp } => {
-                let res = MemberService::update_member(user_id, member_type, level, active, description).await;
+            MemberCommand::Update { id, member_type, level, active, description, resp } => {
+                let res = MemberService::update_member(id, member_type, level, active, description).await;
                 let _ = resp.send(res);
             }
-            MemberCommand::Disable { user_id, resp } => {
-                let res = MemberService::disabled_member(user_id).await;
+            MemberCommand::Disable { id, resp } => {
+                let res = MemberService::disabled_member(id).await;
                 let _ = resp.send(res);
             }
         }

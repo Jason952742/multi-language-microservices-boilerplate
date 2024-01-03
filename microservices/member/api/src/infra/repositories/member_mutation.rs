@@ -8,9 +8,10 @@ use crate::domain::entities::member;
 pub struct MemberOrmMutation;
 
 impl MemberOrmMutation {
-    pub async fn create_member(form_data: member::Model) -> Result<member::Model, DbErr> {
+    pub async fn create_member(form_data: member::Model) -> Result<Uuid, DbErr> {
         let db: &DbConn = PgPool::conn().await;
-        create(form_data).insert(db).await
+        let inserted = create(form_data.clone()).insert(db).await.expect("model save failed");
+        Ok(inserted.id)
     }
 
     pub async fn update_member(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<member::Model, DbErr> {
@@ -55,12 +56,11 @@ fn create(model: member::Model) -> member::ActiveModel {
     member::ActiveModel { enabled: Set(true), created_at: Set(Local::now().naive_local()), updated_at: Set(Local::now().naive_local()), ..active_model }
 }
 
-async fn update(user_id: Uuid) -> Result<member::ActiveModel, DbErr> {
+async fn update(id: Uuid) -> Result<member::ActiveModel, DbErr> {
     let db: &DbConn = PgPool::conn().await;
-    let active_model: member::ActiveModel = member::Entity::find()
-        .filter(member::Column::UserId.eq(user_id.to_owned()))
+    let active_model: member::ActiveModel = member::Entity::find_by_id(id)
         .one(db).await?
-        .ok_or(DbErr::RecordNotFound(format!("Cannot find user {:?}.", user_id)))
+        .ok_or(DbErr::RecordNotFound(format!("Cannot find user {:?}.", id)))
         .map(Into::into)?;
 
     Ok(member::ActiveModel { version: Set(active_model.version.unwrap() + 1), updated_at: Set(Local::now().naive_local()), ..active_model })
