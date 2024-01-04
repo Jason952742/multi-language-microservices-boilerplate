@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use serde_derive::{Deserialize, Serialize};
 use strum_macros::{EnumIter, EnumString, Display};
 
@@ -64,4 +65,26 @@ pub enum TransferType {
     #[default]
     In,
     Out,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize, Display)]
+pub enum TransactionStatus {
+    #[default]
+    Apply,
+    Pending,
+    Completed,
+    Failure,
+    Handled,
+    Canceled,
+    Ignored,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize, Display)]
+pub enum TransactionType {
+    #[default]
+    None,
+    UserCreate,
+    AccountDeposit,
+    AccountWithdraw,
+    MemberSubscription,
 }

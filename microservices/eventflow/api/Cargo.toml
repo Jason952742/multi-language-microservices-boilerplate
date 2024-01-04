@@ -74,6 +74,8 @@ thiserror = "1.0.52"
 mime = "0.3.17"
 bcrypt = "0.15.0"
 
+scylla = { version = "0.11.1", features = ["ssl", "cloud", "chrono", "time"] }
+
 cqrs-es = "0.4.10"
 postgres-es = "0.4.10"
 sqlx = { version = "0.7", features = [ "postgres" , "runtime-tokio-rustls", "json"] }

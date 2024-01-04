@@ -1,2 +1,2 @@
-pub mod member_mutation;
-pub mod member_query;
+pub mod transaction_mutation;
+pub mod transaction_query;

@@ -4,10 +4,10 @@ use uuid::Uuid;
 use shared::GrpcStatusTool;
 use crate::domain::commands::eventflow_cmd::EventflowEvent;
 use crate::domain::entities::enums::MemberType;
-use crate::domain::entities::member;
+use crate::domain::entities::transaction;
 use crate::domain::messages::{MemberCreated};
-use crate::infra::repositories::member_mutation::MemberDbMutation;
-use crate::infra::repositories::member_query::MemberDbQuery;
+use crate::infra::repositories::transaction_mutation::TransactionDbMutation;
+use crate::infra::repositories::transaction_query::TransactionDbQuery;
 
 pub struct MemberService;
 

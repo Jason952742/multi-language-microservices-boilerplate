@@ -1,4 +1,3 @@
-use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
