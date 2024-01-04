@@ -1,5 +1,5 @@
 use serde_derive::{Deserialize, Serialize};
-use strum_macros::EnumString;
+use strum_macros::{EnumIter, EnumString, Display};
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, Deserialize, Serialize)]
 pub enum MemberStatus {
@@ -11,7 +11,7 @@ pub enum MemberStatus {
     Deleted, // Soft deletes
 }
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize, Display)]
 pub enum MemberType {
     #[default]
     Wood,
@@ -57,4 +57,11 @@ pub enum CurrencyType {
     XRP,
     FIL,
     DOT,
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize)]
+pub enum TransferType {
+    #[default]
+    In,
+    Out,
 }

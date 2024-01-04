@@ -11,7 +11,9 @@ pub struct Model {
     pub id: Uuid,
     #[sea_orm(indexed, unique)]
     pub user_id: Uuid,
+    #[sea_orm(indexed, unique)]
     pub user_name: String,
+    
     pub status: MemberStatus,
     pub member_type: MemberType,
     pub credit_score: Decimal,

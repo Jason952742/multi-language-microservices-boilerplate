@@ -3,15 +3,16 @@ use tonic::Status;
 use uuid::Uuid;
 use shared::GrpcStatusTool;
 use crate::domain::commands::eventflow_cmd::EventflowEvent;
+use crate::domain::entities::enums::MemberType;
 use crate::domain::entities::member;
-use crate::domain::messages::{MemberCreatedEvent, MemberType};
+use crate::domain::messages::{MemberCreated};
 use crate::infra::repositories::member_mutation::MemberDbMutation;
 use crate::infra::repositories::member_query::MemberDbQuery;
 
 pub struct MemberService;
 
 impl MemberService {
-    pub async fn create_referral(user_id: Uuid, event: MemberCreatedEvent) -> Result<EventflowEvent, Status> {
+    pub async fn create_referral(user_id: Uuid, event: MemberCreated) -> Result<EventflowEvent, Status> {
         // match MemberDbQuery::check_member(user_id).await.map_err(|e| GrpcStatusTool::neo4j_error(e))? {
         //     true => Err(Status::already_exists("member already exists")),
         //     false => {

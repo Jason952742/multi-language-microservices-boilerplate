@@ -3,8 +3,8 @@ use shared::neo4rs::{self, Node, query};
 use uuid::Uuid;
 use shared::neo4j::Neo4jPool;
 use shared::{convert_to_bool, convert_to_i32, opt_to_uuid, string_to_datetime};
+use crate::domain::entities::enums::MemberType;
 use crate::domain::entities::member;
-use crate::domain::messages::MemberType;
 
 pub struct MemberDbQuery;
 

@@ -1,7 +1,7 @@
 use chrono::NaiveDateTime;
 use uuid::Uuid;
 use serde::{Deserialize, Serialize};
-use crate::domain::messages::MemberType;
+use crate::domain::entities::enums::MemberType;
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Model {
