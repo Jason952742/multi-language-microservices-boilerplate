@@ -46,8 +46,7 @@ message MemberSubscriptionRequest {
 message MemberSubscriptionReply {
   required string code = 1;
   required string message = 2;
-  repeated PaymentInfo payment = 3;
-  required int32 duration = 4;
+  required int32 duration = 3;
 }
 
 message PaymentInfo {

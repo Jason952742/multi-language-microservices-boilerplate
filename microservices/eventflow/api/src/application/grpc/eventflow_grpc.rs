@@ -3,8 +3,8 @@ use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
 use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest};
-use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
-use crate::domain::handlers::{MemberActor, run_member_actor};
+use crate::domain::commands::eventflow_cmd::{EventflowCommand, EventflowEvent};
+use crate::domain::handlers::{EventflowActor, run_eventflow_actor};
 
 pub mod eventflow_proto {
     tonic::include_proto!("eventflow");
@@ -12,14 +12,14 @@ pub mod eventflow_proto {
 
 #[derive(Debug)]
 pub struct EventflowGrpc {
-    tx: mpsc::Sender<MemberCommand>,
+    tx: mpsc::Sender<EventflowCommand>,
 }
 
 impl EventflowGrpc {
     pub fn new() -> Self {
         let (tx, rx) = mpsc::channel(32);
-        let actor = MemberActor::new(rx);
-        tokio::spawn(run_member_actor(actor));
+        let actor = EventflowActor::new(rx);
+        tokio::spawn(run_eventflow_actor(actor));
         Self { tx }
     }
 }
