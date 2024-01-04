@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::sync::Arc;
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use cqrs_es::AggregateError;
 use cqrs_es::persist::ViewRepository;
 use postgres_es::{default_postgress_pool, PostgresCqrs, PostgresViewRepository};
 use crate::infra::framework::bank_fw::cqrs_framework;
 use crate::domain::aggregates::bank_ar::BankAccount;
 use crate::domain::commands::bank_cmd::BankAccountCommand;
+use crate::domain::events::bank_evt::BankAccountError;
 use crate::domain::queries::bank_qry::BankAccountView;
 
 // Serves as our query endpoint to respond with the materialized `BankAccountView`
@@ -28,19 +28,14 @@ pub async fn command_handler(
     cqrs: Arc<PostgresCqrs<BankAccount>>,
     command: BankAccountCommand,
     metadata: HashMap<String, String>
-) -> Response {
+) -> Result<(), AggregateError<BankAccountError>> {
 
     println!("Command: {:?}", command);
     println!("Metadata: {:?}", metadata);
 
 
-    match cqrs.execute_with_metadata(&account_id, command, metadata).await {
-        Ok(_) => StatusCode::NO_CONTENT.into_response(),
-        Err(err) => {
-            println!("Error: {:#?}\n", err);
-            (StatusCode::BAD_REQUEST, err.to_string()).into_response()
-        }
-    }
+    let result =  cqrs.execute_with_metadata(&account_id, command, metadata).await;
+    result
 }
 
 #[tokio::test]
@@ -69,7 +64,7 @@ async fn create_account() -> Result<(), Box<dyn std::error::Error>> {
     metadata.insert(String::from("key2"), String::from("value2"));
     metadata.insert(String::from("key3"), String::from("value3"));
 
-    command_handler(account_id, cqrs, command, metadata).await;
+    let r = command_handler(account_id, cqrs, command, metadata).await;
 
     Ok(())
 }
@@ -86,7 +81,7 @@ async fn despoit() -> Result<(), Box<dyn std::error::Error>> {
     metadata.insert(String::from("key2"), String::from("value2"));
     metadata.insert(String::from("key3"), String::from("value3"));
 
-    command_handler(account_id, cqrs, command, metadata).await;
+    let r = command_handler(account_id, cqrs, command, metadata).await;
 
     Ok(())
 }
@@ -103,7 +98,7 @@ async fn withdraw() -> Result<(), Box<dyn std::error::Error>> {
     metadata.insert(String::from("key2"), String::from("value2"));
     metadata.insert(String::from("key3"), String::from("value3"));
 
-    command_handler(account_id, cqrs, command, metadata).await;
+    let r = command_handler(account_id, cqrs, command, metadata).await;
 
     Ok(())
 }

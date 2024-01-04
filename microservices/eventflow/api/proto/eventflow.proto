@@ -1,0 +1,106 @@
+syntax = "proto2";
+
+package eventflow;
+
+service Eventflow {
+  rpc GetTransactionById(TransactionId) returns (TransactionReply) {}
+  rpc GetTransactions(ListRequest) returns (TransactionListReply) {}
+  rpc UserCreate(UserCreateRequest) returns (UserCreatedReply) {}
+  rpc AccountDeposit(AccountTransaction) returns (AccountTransactionReply) {}
+  rpc AccountWithdraw(AccountTransaction) returns (AccountTransactionReply) {}
+  rpc MemberSubscription(MemberSubscriptionRequest) returns (MemberSubscriptionReply) {}
+}
+
+message TransactionId {
+  required string id = 1;
+}
+
+message ListRequest {
+  required uint64 page = 1;
+  required uint64 perPage = 2;
+  optional string status = 3;
+  optional string transactionType = 4;
+  optional string userId = 5;
+}
+
+message AccountTransaction {
+  required string userId = 1;
+  required string accountId = 2;
+  required PaymentInfo payment = 3;
+}
+
+message AccountTransactionReply {
+  required string code = 1;
+  required string message = 2;
+  required string AccountTransaction = 3;
+  required double balance = 4;
+}
+
+message MemberSubscriptionRequest {
+  required string userId = 1;
+  required string memberId = 2;
+  repeated PaymentInfo payment = 3;
+  optional int32 duration = 4;
+}
+
+message MemberSubscriptionReply {
+  required string code = 1;
+  required string message = 2;
+  repeated PaymentInfo payment = 3;
+  required int32 duration = 4;
+}
+
+message PaymentInfo {
+  required string currencyType = 1;
+  required string paymentType = 2;
+  required double amount = 3;
+  required string paidAt = 4;
+  optional string receipt = 5;
+  optional string equipmentId = 6;
+}
+
+message UserCreateRequest {
+  required string userId = 1;
+  required string userName = 2;
+}
+
+message UserCreatedReply {
+  required string code = 1;
+  required string message = 2;
+  required UserInfo data = 3;
+}
+
+message UserInfo {
+  required string userId = 1;
+  required string userName = 2;
+  required string memberId = 3;
+  required string memberType = 4;
+  required string subscriptionEndDate = 5;
+  required string accountId = 6;
+  required double accountBalance = 7;
+  required string referCode = 8;
+  required string createdAt = 9;
+}
+
+message TransactionReply {
+  required string code = 1;
+  required string message = 2;
+  optional TransactionInfo data = 3;
+}
+
+message TransactionListReply {
+  required string code = 1;
+  required string message = 2;
+  repeated TransactionInfo data = 3;
+}
+
+message TransactionInfo {
+  required string id = 1;
+  required string userId = 2;
+  required string status = 3;
+  required string transactionType = 4;
+  required string value = 5;
+  optional string rollbackId = 6;
+  required string description = 7;
+  required string createdAt = 8;
+}
