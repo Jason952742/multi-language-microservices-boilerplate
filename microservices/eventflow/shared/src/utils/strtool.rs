@@ -1,6 +1,8 @@
 use chrono::{NaiveDateTime};
 use neo4rs::DeError;
 use uuid::{Uuid};
+use base64::{Engine};
+use base64::engine::general_purpose;
 
 pub fn to_uuid(str: &str) -> Uuid {
     str.parse().unwrap()
@@ -24,4 +26,28 @@ pub fn string_opt_to_datetime_opt(opt: &Option<String>) -> Option<NaiveDateTime>
 
 pub fn string_to_datetime(s: Result<String, DeError>) -> NaiveDateTime {
     NaiveDateTime::parse_from_str(&s.unwrap(), "%Y-%m-%d %H:%M:%S%.f").unwrap()
+}
+
+pub fn uuid_to_base64(id: Uuid) -> String {
+    let orig = id.as_bytes();
+    general_purpose::URL_SAFE_NO_PAD.encode(orig)
+}
+
+pub fn base64_to_uuid(encoded: String) -> Result<Uuid, base64::DecodeError> {
+    let decoded = general_purpose::URL_SAFE_NO_PAD.decode(encoded)?;
+    Ok(Uuid::from_slice(&*decoded).unwrap())
+}
+
+#[tokio::test]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let id = Uuid::new_v4();
+    let encoded = uuid_to_base64(id);
+
+    println!("{}", encoded);
+
+    let old_id = base64_to_uuid(encoded)?;
+
+    assert_eq!(old_id, id);
+
+    Ok(())
 }

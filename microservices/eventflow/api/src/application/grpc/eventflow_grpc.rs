@@ -1,11 +1,13 @@
 use std::str::FromStr;
+use rust_decimal::prelude::ToPrimitive;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest};
-use crate::domain::commands::eventflow_cmd::{EventflowCommand};
+use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
+use crate::domain::commands::eventflow_cmd::{EventflowCommand, EventflowEvent};
 use crate::domain::entities::enums::TransactionType;
 use crate::domain::entities::transaction;
+use crate::domain::entities::valobj::User;
 use crate::domain::handlers::{EventflowActor, run_eventflow_actor};
 use crate::domain::queries::transaction_qry::TransactionQuery;
 
@@ -53,14 +55,28 @@ impl eventflow_server::Eventflow for EventflowGrpc {
        Ok(to_transaction_list_reply(res))
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn user_create(&self, request: Request<UserCreateRequest>) -> Result<Response<UserCreatedReply>, Status> {
         let request = request.into_inner();
         tracing::info!("user create: {:?}", &request);
 
-        // let res = MemberQuery::get_my_referees(to_uuid(&request.id)).await?;
-        // Ok(to_member_list_res(res))
-        todo!()
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = EventflowCommand::CreateUser {
+            user_id: to_uuid(&request.user_id),
+            user_name: request.user_name,
+            data: format!("{:?}", &request),
+            resp: resp_tx
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
+        }
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                EventflowEvent::Created { user } => Ok(to_user_reply(user)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
+        }
     }
 
     #[tracing::instrument]
@@ -149,6 +165,28 @@ impl Into<TransactionInfo> for transaction::Model {
             value: self.data,
             rollback_id: self.rollback_id.map(|x| x.to_string()),
             description: self.description,
+            created_at: self.created_at.to_string(),
+        }
+    }
+}
+
+
+fn to_user_reply(model: User) -> Response<UserCreatedReply> {
+    let res = UserCreatedReply { code: parse_code(Code::Ok), message: "member".to_string(), data: model.into() };
+    Response::new(res)
+}
+
+impl Into<UserInfo> for User {
+    fn into(self) -> UserInfo {
+        UserInfo {
+            user_id: self.user_id.to_string(),
+            user_name: self.user_name,
+            member_id: self.member_id.to_string(),
+            member_type: self.member_type.to_string(),
+            subscription_end_date: self.subscription_end_date.to_string(),
+            account_id: self.account_id.to_string(),
+            account_balance: self.account_balance.to_f64().unwrap(),
+            refer_code: self.refer_code,
             created_at: self.created_at.to_string(),
         }
     }

@@ -1,6 +1,6 @@
 use tokio::sync::mpsc;
-use uuid::Uuid;
 use crate::domain::commands::eventflow_cmd::EventflowCommand;
+use crate::domain::services::TransactionService;
 
 pub struct EventflowActor {
     receiver: mpsc::Receiver<EventflowCommand>,
@@ -13,10 +13,9 @@ impl EventflowActor {
 
     async fn handle_message(&mut self, command: EventflowCommand) {
         match command {
-            EventflowCommand::CreateUser { user_id, user_name, resp } => {
-                // let res = MemberService::create_referral(user_id, event).await;
-                // let _ = resp.send(res);
-                todo!()
+            EventflowCommand::CreateUser { user_id, user_name, data, resp } => {
+                let res = TransactionService::create_user(user_id, user_name, data).await;
+                let _ = resp.send(res);
             }
             EventflowCommand::AccountDeposit { user_id, account_id, payment, resp } => {
                 // let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
