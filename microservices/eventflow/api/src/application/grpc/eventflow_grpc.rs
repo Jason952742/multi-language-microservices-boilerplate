@@ -32,7 +32,7 @@ impl EventflowGrpc {
 #[tonic::async_trait]
 impl eventflow_server::Eventflow for EventflowGrpc {
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn get_transaction_by_id(&self, request: Request<TransactionId>) -> Result<Response<TransactionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get transaction by id: {:?}", &request);
@@ -43,7 +43,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         }
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn get_transactions(&self, request: Request<ListRequest>) -> Result<Response<TransactionListReply>, Status> {
         let request = request.into_inner();
         tracing::info!("get transactions: {:?}", &request);
@@ -80,7 +80,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         }
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn account_deposit(&self, request: Request<AccountTransaction>) -> Result<Response<AccountTransactionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("account deposit: {:?}", &request);
@@ -88,7 +88,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         todo!()
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn account_withdraw(&self, request: Request<AccountTransaction>) -> Result<Response<AccountTransactionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("account withdraw: {:?}", &request);
@@ -96,7 +96,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         todo!()
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn member_subscription(&self, request: Request<MemberSubscriptionRequest>) -> Result<Response<MemberSubscriptionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("member subscription: {:?}", &request);

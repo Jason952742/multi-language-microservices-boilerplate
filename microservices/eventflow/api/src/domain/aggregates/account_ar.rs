@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::domain::entities::enums::CurrencyType;
 use crate::domain::services::HappyPathAccountServices;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize, Debug)]
 pub struct Account {
     account_id: Uuid,
     user_id: Uuid,
@@ -16,37 +16,35 @@ pub struct Account {
 impl Account {
     pub const TABLE_NAME: &'static str = "account_event";
 
-    pub async fn new(account_id: Uuid, user_id: Uuid, currency_type: CurrencyType) -> Account {
-        Self { account_id, user_id, currency_type, balance: 0_f64 }
+    pub fn new(id: &Uuid) -> Account {
+        Self { account_id: *id, ..Default::default() }
     }
 
     // The aggregate logic goes here. Note that this will be the _bulk_ of a CQRS system
     // so expect to use helper functions elsewhere to keep the code clean.
-    pub async fn handle(&self, command: AccountCommand) -> Result<Vec<AccountEvent>, AccountError> {
+    pub async fn handle(&self, command: AccountCommand) -> Result<AccountEvent, AccountError> {
         match command {
             AccountCommand::OpenAccount { account_id, user_id, currency_type, } => {
-                Ok(vec![
-                    AccountEvent::AccountOpened { account_id, user_id, currency_type }
-                ])
+                Ok(AccountEvent::AccountOpened { account_id, user_id, currency_type })
             }
             AccountCommand::DepositMoney { amount } => {
                 let balance = self.balance + amount;
 
-                Ok(vec![AccountEvent::CustomerDepositedMoney { amount, balance }])
+                Ok(AccountEvent::CustomerDepositedMoney { amount, balance })
             }
             AccountCommand::WithdrawMoney { amount, atm_id } => {
                 let balance = self.balance - amount;
                 if balance < 0_f64 { return Err("funds not available".into()); }
                 if HappyPathAccountServices::atm_withdrawal_atm_id(&atm_id, amount).await.is_err() { return Err("atm rule violation".into()); };
 
-                Ok(vec![AccountEvent::CustomerWithdrewCash { amount, balance }])
+                Ok(AccountEvent::CustomerWithdrewCash { amount, balance })
             }
             AccountCommand::WriteCheck { check_number, amount, } => {
                 let balance = self.balance - amount;
                 if balance < 0_f64 { return Err("funds not available".into()); }
                 if HappyPathAccountServices::validate_check(&self.account_id, &check_number).await.is_err() { return Err("check invalid".into()); };
 
-                Ok(vec![AccountEvent::CustomerWroteCheck { check_number, amount, balance }])
+                Ok(AccountEvent::CustomerWroteCheck { check_number, amount, balance })
             }
         }
     }
@@ -83,24 +81,10 @@ pub enum AccountCommand {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum AccountEvent {
-    AccountOpened {
-        account_id: Uuid,
-        user_id: Uuid,
-        currency_type: CurrencyType,
-    },
-    CustomerDepositedMoney {
-        amount: f64,
-        balance: f64,
-    },
-    CustomerWithdrewCash {
-        amount: f64,
-        balance: f64,
-    },
-    CustomerWroteCheck {
-        check_number: String,
-        amount: f64,
-        balance: f64,
-    },
+    AccountOpened { account_id: Uuid, user_id: Uuid, currency_type: CurrencyType },
+    CustomerDepositedMoney { amount: f64, balance: f64 },
+    CustomerWithdrewCash { amount: f64, balance: f64 },
+    CustomerWroteCheck { check_number: String, amount: f64, balance: f64 },
 }
 
 impl AccountEvent {
@@ -116,7 +100,6 @@ impl AccountEvent {
     pub fn event_version(&self) -> String {
         "1.0".to_string()
     }
-
 }
 
 impl Into<serde_json::Value> for AccountEvent {
@@ -147,15 +130,3 @@ impl Display for AccountError {
 }
 
 impl std::error::Error for AccountError {}
-
-#[tokio::test]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    
-    let e = AccountEvent::AccountOpened { user_id: Uuid::new_v4(), account_id: Uuid::new_v4(), currency_type: Default::default() };
-
-    let s: serde_json::Value = e.into();
-
-    println!("{}", s);
-    
-    Ok(())
-}
