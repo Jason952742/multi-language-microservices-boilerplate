@@ -6,9 +6,7 @@ use crate::domain::commands::eventflow_cmd::EventflowEvent;
 use crate::domain::entities::enums::{MemberType, TransactionType};
 use crate::domain::entities::transaction;
 use crate::domain::entities::valobj::User;
-use crate::domain::messages::{MemberCreated};
 use crate::infra::repositories::transaction_mutation::TransactionDbMutation;
-use crate::infra::repositories::transaction_query::TransactionDbQuery;
 
 pub struct TransactionService;
 
@@ -45,33 +43,12 @@ impl TransactionService {
     }
 
     pub async fn update_referral(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<EventflowEvent, Status> {
-        // match MemberDbQuery::get_member_by_id(user_id).await {
-        //     Ok(opt) => match opt {
-        //         None => Err(Status::not_found("member not found")),
-        //         Some(m) => {
-        //             let _ = MemberDbMutation::update_member(member::Model {
-        //                 member_type,
-        //                 level,
-        //                 active,
-        //                 description,
-        //                 updated_at: Local::now().naive_local(),
-        //                 version: m.version + 1,
-        //                 ..m
-        //             }).await;
-        //             Ok(EventflowEvent::Updated)
-        //         }
-        //     }
-        //     Err(e) => Err(Status::internal(e.to_string()))
-        // }
+
         todo!()
     }
 
     pub async fn bind_referral(user_id: Uuid, referral_id: Uuid) -> Result<EventflowEvent, Status> {
-        // let res = MemberDbMutation::create_relationship(user_id, referral_id).await.map_err(|e| GrpcStatusTool::neo4j_error(e));
-        // match res {
-        //     Ok(_) => Ok(EventflowEvent::Bound),
-        //     Err(e) => Err(e)
-        // }
+
         todo!()
     }
 }

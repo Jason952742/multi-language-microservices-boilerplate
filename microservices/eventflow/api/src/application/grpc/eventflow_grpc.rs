@@ -59,12 +59,13 @@ impl eventflow_server::Eventflow for EventflowGrpc {
     async fn user_create(&self, request: Request<UserCreateRequest>) -> Result<Response<UserCreatedReply>, Status> {
         let request = request.into_inner();
         tracing::info!("user create: {:?}", &request);
+        let data = format!("{:?}", &request);
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = EventflowCommand::CreateUser {
             user_id: to_uuid(&request.user_id),
             user_name: request.user_name,
-            data: format!("{:?}", &request),
+            data,
             resp: resp_tx
         };
         if self.tx.send(command).await.is_err() {
@@ -84,26 +85,6 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("account deposit: {:?}", &request);
 
-        // let (resp_tx, resp_rx) = oneshot::channel();
-        // let command = MemberCommand::Update {
-        //     user_id: to_uuid(&request.user_id),
-        //     member_type: MemberType::from_str(&request.member_type).unwrap(),
-        //     level: request.level,
-        //     active: request.active,
-        //     description: request.description,
-        //     resp: resp_tx
-        // };
-        // if self.tx.send(command).await.is_err() {
-        //     eprintln!("connection task shutdown");
-        // }
-        // match resp_rx.await.unwrap() {
-        //     Ok(event) => match event {
-        //         MemberEvent::Updated => Ok(to_process_res(request.user_id.to_string())),
-        //         _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
-        //     },
-        //     Err(e) => Err(e),
-        // }
-
         todo!()
     }
 
@@ -112,22 +93,6 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("account withdraw: {:?}", &request);
 
-        // let (resp_tx, resp_rx) = oneshot::channel();
-        // let command = MemberCommand::Bind {
-        //     user_id: to_uuid(&request.user_id),
-        //     referral_id: to_uuid(&request.referral_id),
-        //     resp: resp_tx
-        // };
-        // if self.tx.send(command).await.is_err() {
-        //     eprintln!("connection task shutdown");
-        // }
-        // match resp_rx.await.unwrap() {
-        //     Ok(event) => match event {
-        //         MemberEvent::Bound => Ok(to_process_res(request.user_id.to_string())),
-        //         _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
-        //     },
-        //     Err(e) => Err(e),
-        // }
         todo!()
     }
 
@@ -139,10 +104,6 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         todo!()
     }
 }
-
-// fn to_process_res(process_id: String) -> Response<ProcessStatusReply> {
-//     Response::new(ProcessStatusReply { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
-// }
 
 fn to_transaction_reply(model: transaction::Model) -> Response<TransactionReply> {
     let res = TransactionReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };

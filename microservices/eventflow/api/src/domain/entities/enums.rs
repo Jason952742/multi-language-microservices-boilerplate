@@ -117,3 +117,25 @@ impl SerializeCql for TransactionType {
         writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
     }
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize, Display)]
+pub enum AggregateType {
+    #[default]
+    Member,
+    Account,
+    Referral,
+}
+
+impl FromCqlVal<CqlValue> for AggregateType {
+    fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
+        let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
+        crate::domain::entities::enums::AggregateType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+    }
+}
+
+impl SerializeCql for AggregateType {
+    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+        let value = self.to_string();
+        writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
+    }
+}
