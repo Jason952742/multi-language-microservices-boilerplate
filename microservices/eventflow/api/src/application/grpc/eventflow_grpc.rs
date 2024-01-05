@@ -1,9 +1,13 @@
+use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest};
-use crate::domain::commands::eventflow_cmd::{EventflowCommand, EventflowEvent};
+use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest};
+use crate::domain::commands::eventflow_cmd::{EventflowCommand};
+use crate::domain::entities::enums::TransactionType;
+use crate::domain::entities::transaction;
 use crate::domain::handlers::{EventflowActor, run_eventflow_actor};
+use crate::domain::queries::transaction_qry::TransactionQuery;
 
 pub mod eventflow_proto {
     tonic::include_proto!("eventflow");
@@ -31,12 +35,10 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("get transaction by id: {:?}", &request);
 
-        // match MemberQuery::get_member_by_id(to_uuid(&request.id)).await? {
-        //     None => Err(Status::not_found(request.id)),
-        //     Some(m) => Ok(to_member_res(m))
-        // }
-
-        todo!()
+        match TransactionQuery::get_transaction_by_id(to_uuid(&request.id)).await? {
+            None => Err(Status::not_found(request.id)),
+            Some(m) => Ok(to_transaction_reply(m))
+        }
     }
 
     #[tracing::instrument]
@@ -44,11 +46,11 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("get transactions: {:?}", &request);
 
-        // match MemberQuery::get_my_referral(to_uuid(&request.id)).await? {
-        //     None => Err(Status::not_found(request.id)),
-        //     Some(m) => Ok(to_member_res(m))
-        // }
-        todo!()
+       let res = TransactionQuery::get_transactions(
+            to_uuid(&request.user_id),
+            TransactionType::from_str(&request.transaction_type).unwrap()).await?;
+
+       Ok(to_transaction_list_reply(res))
     }
 
     #[tracing::instrument]
@@ -125,29 +127,29 @@ impl eventflow_server::Eventflow for EventflowGrpc {
 // fn to_process_res(process_id: String) -> Response<ProcessStatusReply> {
 //     Response::new(ProcessStatusReply { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
 // }
-//
-// fn to_member_res(model: member::Model) -> Response<MemberReply> {
-//     let res = MemberReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
-//     Response::new(res)
-// }
-//
-// fn to_member_list_res(models: Vec<member::Model>) -> Response<MemberListReply> {
-//     let list = models.clone().into_iter().map(|x| x.into()).collect();
-//     let res = MemberListReply { code: parse_code(Code::Ok), message: "member list".to_string(), data: list };
-//     Response::new(res)
-// }
-//
-// impl Into<Member> for member::Model {
-//     fn into(self) -> Member {
-//         Member {
-//             user_id: self.user_id.to_string(),
-//             user_name: self.user_name,
-//             member_type: self.member_type.to_string(),
-//             level: self.level,
-//             hierarchy: self.hierarchy,
-//             active: self.active,
-//             description: self.description,
-//             created_at: self.created_at.to_string(),
-//         }
-//     }
-// }
+
+fn to_transaction_reply(model: transaction::Model) -> Response<TransactionReply> {
+    let res = TransactionReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
+    Response::new(res)
+}
+
+fn to_transaction_list_reply(models: Vec<transaction::Model>) -> Response<TransactionListReply> {
+    let list = models.clone().into_iter().map(|x| x.into()).collect();
+    let res = TransactionListReply { code: parse_code(Code::Ok), message: "member list".to_string(), data: list };
+    Response::new(res)
+}
+
+impl Into<TransactionInfo> for transaction::Model {
+    fn into(self) -> TransactionInfo {
+        TransactionInfo {
+            id: self.id.to_string(),
+            user_id: self.user_id.to_string(),
+            status: self.status.to_string(),
+            transaction_type: self.transaction_type.to_string(),
+            value: self.data,
+            rollback_id: self.rollback_id.map(|x| x.to_string()),
+            description: self.description,
+            created_at: self.created_at.to_string(),
+        }
+    }
+}

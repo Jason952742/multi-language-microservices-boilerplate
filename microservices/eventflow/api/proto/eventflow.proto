@@ -19,8 +19,8 @@ message ListRequest {
   required uint64 page = 1;
   required uint64 perPage = 2;
   optional string status = 3;
-  optional string transactionType = 4;
-  optional string userId = 5;
+  required string transactionType = 4;
+  required string userId = 5;
 }
 
 message AccountTransaction {

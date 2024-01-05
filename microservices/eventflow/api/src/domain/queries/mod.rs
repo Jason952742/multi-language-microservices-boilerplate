@@ -1,2 +1,2 @@
-pub mod member_qry;
+pub mod transaction_qry;
 pub mod bank_qry;
