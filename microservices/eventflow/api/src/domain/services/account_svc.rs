@@ -67,6 +67,33 @@ impl AccountServices {
         (es, balance)
     }
 
+    pub async fn withdraw_event(account: &Account, payment: Payment)-> (eventsource::Model, Decimal) {
+        let cmd = AccountCommand::WithdrawMoney {
+            amount: payment.amount,
+            atm_id: payment.equipment_id,
+        };
+        let event = account.handle(cmd).await.unwrap();
+        let balance = match event {
+            AccountEvent::CustomerWithdrewCash { balance, .. } => balance,
+            _ => dec!(0)
+        };
+
+        let payload: Value = event.clone().into();
+        let es = eventsource::Model {
+            id: Uuid::new_v4(),
+            txn_id: None,
+            aggregate_id: account.account_id,
+            aggregate_type: AggregateType::Account,
+            sequence: Utc::now().timestamp(),
+            event_type: event.event_type(),
+            event_version: event.event_version(),
+            payload: payload.to_string(),
+            created_at: Utc::now(),
+            ..Default::default()
+        };
+        (es, balance)
+    }
+
     pub async fn atm_withdrawal_atm_id(_atm_id: &str, _amount: Decimal) -> Result<(), AtmError> {
         Ok(())
     }

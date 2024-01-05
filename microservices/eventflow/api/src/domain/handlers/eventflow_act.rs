@@ -17,16 +17,16 @@ impl EventflowActor {
                 let res = TransactionService::create_user(user_id, user_name, data).await;
                 let _ = resp.send(res);
             }
-            EventflowCommand::AccountDeposit { user_id, account_id, payment, resp } => {
-                let res = TransactionService::account_deposit(user_id, account_id, payment).await;
+            EventflowCommand::AccountDeposit { account_id, payment, resp } => {
+                let res = TransactionService::account_deposit(account_id, payment).await;
                 let _ = resp.send(res);
             }
-            EventflowCommand::AccountWithdraw { user_id, account_id, payment, resp } => {
-                let res = TransactionService::account_withdraw(user_id, account_id, payment).await;
+            EventflowCommand::AccountWithdraw { account_id, payment, resp } => {
+                let res = TransactionService::account_withdraw(account_id, payment).await;
                 let _ = resp.send(res);
             }
-            EventflowCommand::MemberSubscribe { user_id, member_id, payments, duration, resp } => {
-                let res = TransactionService::member_subscribe(user_id, member_id, payments, duration).await;
+            EventflowCommand::MemberSubscribe { member_id, payments, duration, resp } => {
+                let res = TransactionService::member_subscribe(member_id, payments, duration).await;
                 let _ = resp.send(res);
             }
         }

@@ -27,6 +27,8 @@ impl TransactionService {
                 id: transaction_id.clone(),
                 transaction_type: TransactionType::UserCreate,
                 user_id: user_id.clone(),
+                created_at: Utc::now(),
+                updated_at: Utc::now(),
                 payload,
                 ..Default::default()
             }
@@ -50,7 +52,7 @@ impl TransactionService {
         Ok(EventflowEvent::Created { user })
     }
 
-    pub async fn account_deposit(user_id: Uuid, account_id: Uuid, payment: Payment) -> Result<EventflowEvent, Status> {
+    pub async fn account_deposit(account_id: Uuid, payment: Payment) -> Result<EventflowEvent, Status> {
         let account = AccountQuery::load(account_id).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
         match account {
             None => Err(Status::not_found("account not found")),
@@ -62,11 +64,19 @@ impl TransactionService {
         }
     }
 
-    pub async fn account_withdraw(user_id: Uuid, account_id: Uuid, payment: Payment) -> Result<EventflowEvent, Status> {
-        todo!()
+    pub async fn account_withdraw(account_id: Uuid, payment: Payment) -> Result<EventflowEvent, Status> {
+        let account = AccountQuery::load(account_id).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+        match account {
+            None => Err(Status::not_found("account not found")),
+            Some(a) => {
+                let (es, balance) = AccountServices::withdraw_event(&a, payment).await;
+                EventSourceDbMutation::create_eventsource(Account::TABLE_NAME, es.clone()).await.unwrap();
+                Ok(EventflowEvent::AccountWithdrew { account_id, balance })
+            }
+        }
     }
 
-    pub async fn member_subscribe(user_id: Uuid, member_id: Uuid, payments: Vec<Payment>, duration: i32) -> Result<EventflowEvent, Status> {
+    pub async fn member_subscribe(_member_id: Uuid, _payments: Vec<Payment>, _duration: i32) -> Result<EventflowEvent, Status> {
         todo!()
     }
 }

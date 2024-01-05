@@ -88,7 +88,6 @@ impl eventflow_server::Eventflow for EventflowGrpc {
 
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = EventflowCommand::AccountDeposit {
-            user_id: to_uuid(&request.user_id),
             account_id: to_uuid(&request.account_id),
             payment: Payment {
                 payment_type: PaymentType::from_str(&request.payment.payment_type).unwrap(),
@@ -117,7 +116,29 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("account withdraw: {:?}", &request);
 
-        todo!()
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = EventflowCommand::AccountWithdraw {
+            account_id: to_uuid(&request.account_id),
+            payment: Payment {
+                payment_type: PaymentType::from_str(&request.payment.payment_type).unwrap(),
+                currency_type: CurrencyType::from_str(&request.payment.currency_type).unwrap(),
+                amount: Decimal::from_f64(request.payment.amount).unwrap(),
+                paid_at: to_datetime(&request.payment.paid_at),
+                receipt: request.payment.receipt,
+                equipment_id: request.payment.equipment_id,
+            },
+            resp: resp_tx
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
+        }
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                EventflowEvent::AccountWithdrew { balance, .. } => Ok(to_account_reply(balance)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
+        }
     }
 
     // #[tracing::instrument]

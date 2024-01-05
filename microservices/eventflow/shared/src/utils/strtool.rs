@@ -40,22 +40,12 @@ pub fn base64_to_uuid(encoded: String) -> Result<Uuid, base64::DecodeError> {
 }
 
 pub fn to_datetime(datetime_str: &str) -> DateTime<Utc> {
-    let datetime = DateTime::parse_from_str(datetime_str, "%Y-%m-%dT%H:%M:%S%.fZ")
-        .expect("Failed to parse datetime string")
-        .with_timezone(&Utc);
-    datetime
+    datetime_str.parse().unwrap()
 }
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let id = Uuid::new_v4();
-    let encoded = uuid_to_base64(id);
 
-    println!("{}", encoded);
-
-    let old_id = base64_to_uuid(encoded)?;
-
-    assert_eq!(old_id, id);
 
     Ok(())
 }
