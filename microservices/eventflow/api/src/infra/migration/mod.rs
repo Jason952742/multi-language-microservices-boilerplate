@@ -24,6 +24,40 @@ impl Migrator {
             deleted_at TIMESTAMP,
         ", "PRIMARY KEY (id)", "").await?;
 
+        ScyllaPool::init_table(session, &keyspace, "account_event", "
+            aggregate_id UUID,
+            aggregate_type TEXT,
+            sequence BIGINT,
+            event_type TEXT,
+            event_version TEXT,
+            payload TEXT,
+            metadata TEXT,
+            created_at TIMESTAMP,
+        ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
+
+        ScyllaPool::init_table(session, &keyspace, "member_event", "
+            aggregate_id UUID,
+            aggregate_type TEXT,
+            sequence BIGINT,
+            event_type TEXT,
+            event_version TEXT,
+            payload TEXT,
+            metadata TEXT,
+            created_at TIMESTAMP,
+        ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
+
+        ScyllaPool::init_table(session, &keyspace, "referral_event", "
+            aggregate_id UUID,
+            aggregate_type TEXT,
+            sequence BIGINT,
+            event_type TEXT,
+            event_version TEXT,
+            payload TEXT,
+            metadata TEXT,
+            created_at TIMESTAMP,
+        ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
+
+
         Ok(())
     }
 }

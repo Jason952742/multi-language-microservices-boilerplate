@@ -129,7 +129,7 @@ pub enum AggregateType {
 impl FromCqlVal<CqlValue> for AggregateType {
     fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
         let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
-        crate::domain::entities::enums::AggregateType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+        AggregateType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
     }
 }
 

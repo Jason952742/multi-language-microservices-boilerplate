@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use serde_derive::{Deserialize, Serialize};
+use serde_json::json;
 use uuid::Uuid;
 use crate::domain::entities::enums::CurrencyType;
 use crate::domain::services::HappyPathAccountServices;
@@ -13,8 +14,7 @@ pub struct Account {
 }
 
 impl Account {
-    const TABLE_NAME: &'static str = "account_event";
-    const EVENT_VERSION: &'static str = "1.0";
+    pub const TABLE_NAME: &'static str = "account_event";
 
     pub async fn new(account_id: Uuid, user_id: Uuid, currency_type: CurrencyType) -> Account {
         Self { account_id, user_id, currency_type, balance: 0_f64 }
@@ -103,6 +103,34 @@ pub enum AccountEvent {
     },
 }
 
+impl AccountEvent {
+    pub fn event_type(&self) -> String {
+        match self {
+            AccountEvent::AccountOpened { .. } => "AccountOpened".to_string(),
+            AccountEvent::CustomerDepositedMoney { .. } => "CustomerDepositedMoney".to_string(),
+            AccountEvent::CustomerWithdrewCash { .. } => "CustomerWithdrewCash".to_string(),
+            AccountEvent::CustomerWroteCheck { .. } => "CustomerWroteCheck".to_string(),
+        }
+    }
+
+    pub fn event_version(&self) -> String {
+        "1.0".to_string()
+    }
+
+}
+
+impl Into<serde_json::Value> for AccountEvent {
+    fn into(self) -> serde_json::Value {
+        serde_json::to_value(&json!(self)).expect("Error decoding payload")
+    }
+}
+
+impl From<serde_json::Value> for AccountEvent {
+    fn from(v: serde_json::Value) -> Self {
+        serde_json::from_value::<AccountEvent>(v).unwrap()
+    }
+}
+
 #[derive(Debug)]
 pub struct AccountError(String);
 
@@ -119,3 +147,15 @@ impl Display for AccountError {
 }
 
 impl std::error::Error for AccountError {}
+
+#[tokio::test]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    
+    let e = AccountEvent::AccountOpened { user_id: Uuid::new_v4(), account_id: Uuid::new_v4(), currency_type: Default::default() };
+
+    let s: serde_json::Value = e.into();
+
+    println!("{}", s);
+    
+    Ok(())
+}

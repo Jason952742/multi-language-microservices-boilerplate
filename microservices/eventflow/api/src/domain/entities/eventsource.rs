@@ -1,8 +1,7 @@
 
 use chrono::format::Numeric::*;
 use chrono::{DateTime, Utc};
-use scylla::_macro_internal::{CqlValue, FromCqlVal, SerializeCql};
-use scylla::{FromRow, SerializeRow};
+use scylla::{FromRow, SerializeRow, SerializeCql};
 use uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use crate::domain::entities::enums::{AggregateType};
