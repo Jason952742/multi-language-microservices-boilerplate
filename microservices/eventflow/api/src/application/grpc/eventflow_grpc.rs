@@ -1,13 +1,14 @@
 use std::str::FromStr;
-use rust_decimal::prelude::ToPrimitive;
+use rust_decimal::Decimal;
+use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
-use shared::{parse_code, to_uuid};
-use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransaction, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
+use shared::{parse_code, to_datetime, to_uuid};
+use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransferRequest, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
 use crate::domain::commands::eventflow_cmd::{EventflowCommand, EventflowEvent};
-use crate::domain::entities::enums::TransactionType;
+use crate::domain::entities::enums::{CurrencyType, PaymentType, TransactionType};
 use crate::domain::entities::transaction;
-use crate::domain::entities::valobj::User;
+use crate::domain::entities::valobj::{Payment, User};
 use crate::domain::handlers::{EventflowActor, run_eventflow_actor};
 use crate::domain::queries::transaction_qry::TransactionQuery;
 
@@ -81,15 +82,38 @@ impl eventflow_server::Eventflow for EventflowGrpc {
     }
 
     // #[tracing::instrument]
-    async fn account_deposit(&self, request: Request<AccountTransaction>) -> Result<Response<AccountTransactionReply>, Status> {
+    async fn account_deposit(&self, request: Request<AccountTransferRequest>) -> Result<Response<AccountTransactionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("account deposit: {:?}", &request);
 
-        todo!()
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = EventflowCommand::AccountDeposit {
+            user_id: to_uuid(&request.user_id),
+            account_id: to_uuid(&request.account_id),
+            payment: Payment {
+                payment_type: PaymentType::from_str(&request.payment.payment_type).unwrap(),
+                currency_type: CurrencyType::from_str(&request.payment.currency_type).unwrap(),
+                amount: Decimal::from_f64(request.payment.amount).unwrap(),
+                paid_at: to_datetime(&request.payment.paid_at),
+                receipt: request.payment.receipt,
+                equipment_id: request.payment.equipment_id,
+            },
+            resp: resp_tx
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
+        }
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                EventflowEvent::AccountDeposited { balance, .. } => Ok(to_account_reply(balance)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
+        }
     }
 
     // #[tracing::instrument]
-    async fn account_withdraw(&self, request: Request<AccountTransaction>) -> Result<Response<AccountTransactionReply>, Status> {
+    async fn account_withdraw(&self, request: Request<AccountTransferRequest>) -> Result<Response<AccountTransactionReply>, Status> {
         let request = request.into_inner();
         tracing::info!("account withdraw: {:?}", &request);
 
@@ -103,6 +127,11 @@ impl eventflow_server::Eventflow for EventflowGrpc {
 
         todo!()
     }
+}
+
+fn to_account_reply(balance: Decimal) -> Response<AccountTransactionReply> {
+    let res = AccountTransactionReply { code: parse_code(Code::Ok), message: "account".to_string(), success: true, balance: balance.to_f64().unwrap() };
+    Response::new(res)
 }
 
 fn to_transaction_reply(model: transaction::Model) -> Response<TransactionReply> {
@@ -144,7 +173,7 @@ impl Into<UserInfo> for User {
             user_name: self.user_name,
             member_id: self.member_id.to_string(),
             member_type: self.member_type.to_string(),
-            subscription_end_date: self.subscription_end_date.to_string(),
+            subscription_end_date: self.sub_end_date.to_string(),
             account_id: self.account_id.to_string(),
             account_balance: self.account_balance.to_f64().unwrap(),
             refer_code: self.refer_code,

@@ -1,5 +1,4 @@
 use std::cmp::Ordering;
-use std::str::FromStr;
 use futures::{StreamExt};
 use scylla::IntoTypedRows;
 use uuid::Uuid;
@@ -49,6 +48,8 @@ impl TransactionDbQuery {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use std::str::FromStr;
+
     // let id = Uuid::from_str("2e4c38c6-133c-43c1-a6ad-fa91dee3a06b").unwrap();
     // let r = TransactionDbQuery::get_transaction_by_id(id).await?;
     // println!("{:?}", r);

@@ -1,16 +1,18 @@
 use std::fmt::{Display, Formatter};
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 use crate::domain::entities::enums::CurrencyType;
-use crate::domain::services::HappyPathAccountServices;
+use crate::domain::services::AccountServices;
 
 #[derive(Default, Serialize, Deserialize, Debug)]
 pub struct Account {
-    account_id: Uuid,
-    user_id: Uuid,
-    currency_type: CurrencyType,
-    balance: f64,
+    pub account_id: Uuid,
+    pub user_id: Uuid,
+    pub currency_type: CurrencyType,
+    pub balance: Decimal,
 }
 
 impl Account {
@@ -34,15 +36,15 @@ impl Account {
             }
             AccountCommand::WithdrawMoney { amount, atm_id } => {
                 let balance = self.balance - amount;
-                if balance < 0_f64 { return Err("funds not available".into()); }
-                if HappyPathAccountServices::atm_withdrawal_atm_id(&atm_id, amount).await.is_err() { return Err("atm rule violation".into()); };
+                if balance < dec!(0) { return Err("funds not available".into()); }
+                if AccountServices::atm_withdrawal_atm_id(&atm_id, amount).await.is_err() { return Err("atm rule violation".into()); };
 
                 Ok(AccountEvent::CustomerWithdrewCash { amount, balance })
             }
             AccountCommand::WriteCheck { check_number, amount, } => {
                 let balance = self.balance - amount;
-                if balance < 0_f64 { return Err("funds not available".into()); }
-                if HappyPathAccountServices::validate_check(&self.account_id, &check_number).await.is_err() { return Err("check invalid".into()); };
+                if balance < dec!(0) { return Err("funds not available".into()); }
+                if AccountServices::validate_check(&self.account_id, &check_number).await.is_err() { return Err("check invalid".into()); };
 
                 Ok(AccountEvent::CustomerWroteCheck { check_number, amount, balance })
             }
@@ -74,17 +76,17 @@ impl Account {
 #[derive(Debug, Serialize, Deserialize)]
 pub enum AccountCommand {
     OpenAccount { account_id: Uuid, user_id: Uuid, currency_type: CurrencyType },
-    DepositMoney { amount: f64 },
-    WithdrawMoney { amount: f64, atm_id: String },
-    WriteCheck { check_number: String, amount: f64 },
+    DepositMoney { amount: Decimal },
+    WithdrawMoney { amount: Decimal, atm_id: String },
+    WriteCheck { check_number: String, amount: Decimal },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum AccountEvent {
     AccountOpened { account_id: Uuid, user_id: Uuid, currency_type: CurrencyType },
-    CustomerDepositedMoney { amount: f64, balance: f64 },
-    CustomerWithdrewCash { amount: f64, balance: f64 },
-    CustomerWroteCheck { check_number: String, amount: f64, balance: f64 },
+    CustomerDepositedMoney { amount: Decimal, balance: Decimal },
+    CustomerWithdrewCash { amount: Decimal, balance: Decimal },
+    CustomerWroteCheck { check_number: String, amount: Decimal, balance: Decimal },
 }
 
 impl AccountEvent {

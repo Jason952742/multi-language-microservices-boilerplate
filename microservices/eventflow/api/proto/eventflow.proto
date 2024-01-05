@@ -6,8 +6,8 @@ service Eventflow {
   rpc GetTransactionById(TransactionId) returns (TransactionReply) {}
   rpc GetTransactions(ListRequest) returns (TransactionListReply) {}
   rpc UserCreate(UserCreateRequest) returns (UserCreatedReply) {}
-  rpc AccountDeposit(AccountTransaction) returns (AccountTransactionReply) {}
-  rpc AccountWithdraw(AccountTransaction) returns (AccountTransactionReply) {}
+  rpc AccountDeposit(AccountTransferRequest) returns (AccountTransactionReply) {}
+  rpc AccountWithdraw(AccountTransferRequest) returns (AccountTransactionReply) {}
   rpc MemberSubscription(MemberSubscriptionRequest) returns (MemberSubscriptionReply) {}
 }
 
@@ -23,7 +23,7 @@ message ListRequest {
   required string userId = 5;
 }
 
-message AccountTransaction {
+message AccountTransferRequest {
   required string userId = 1;
   required string accountId = 2;
   required PaymentInfo payment = 3;
@@ -32,7 +32,7 @@ message AccountTransaction {
 message AccountTransactionReply {
   required string code = 1;
   required string message = 2;
-  required string AccountTransaction = 3;
+  required bool success = 3;
   required double balance = 4;
 }
 
@@ -54,8 +54,8 @@ message PaymentInfo {
   required string paymentType = 2;
   required double amount = 3;
   required string paidAt = 4;
-  optional string receipt = 5;
-  optional string equipmentId = 6;
+  required string receipt = 5;
+  required string equipmentId = 6;
 }
 
 message UserCreateRequest {

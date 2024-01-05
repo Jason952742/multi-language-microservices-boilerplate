@@ -1,12 +1,6 @@
-use std::str::FromStr;
-use chrono::{Utc};
-use uuid::Uuid;
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
-use crate::domain::aggregates::account_ar::{Account, AccountEvent};
 use crate::domain::entities::{eventsource};
-use serde_json::Value;
-use crate::domain::entities::enums::{AggregateType, CurrencyType};
 
 pub struct EventSourceDbMutation;
 
@@ -22,6 +16,14 @@ impl EventSourceDbMutation {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use crate::domain::entities::enums::{AggregateType};
+    use crate::domain::aggregates::account_ar::{Account, AccountEvent};
+
+    use serde_json::Value;
+    use std::str::FromStr;
+    use chrono::{Utc};
+    use uuid::Uuid;
+
     let id = Uuid::from_str("ae053855-9321-404c-a3ce-b57e155487cf").unwrap();
     let user_id = Uuid::new_v4();
 

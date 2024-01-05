@@ -1,8 +1,7 @@
-use chrono::{Utc};
 use uuid::Uuid;
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
-use crate::domain::entities::enums::{TransactionStatus, TransactionType};
+use crate::domain::entities::enums::{TransactionStatus};
 use crate::domain::entities::transaction;
 
 pub struct TransactionDbMutation;

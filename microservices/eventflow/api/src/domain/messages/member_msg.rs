@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use strum_macros;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

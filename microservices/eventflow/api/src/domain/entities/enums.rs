@@ -83,12 +83,12 @@ pub enum TransactionStatus {
 impl FromCqlVal<CqlValue> for TransactionStatus {
     fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
         let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
-        TransactionStatus::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+        TransactionStatus::from_str(&str).map_err(|_| FromCqlValError::BadVal)
     }
 }
 
 impl SerializeCql for TransactionStatus {
-    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+    fn serialize<'b>(&self, _typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
         let value = self.to_string();
         writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
     }
@@ -107,12 +107,12 @@ pub enum TransactionType {
 impl FromCqlVal<CqlValue> for TransactionType {
     fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
         let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
-        TransactionType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+        TransactionType::from_str(&str).map_err(|_| FromCqlValError::BadVal)
     }
 }
 
 impl SerializeCql for TransactionType {
-    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+    fn serialize<'b>(&self, _typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
         let value = self.to_string();
         writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
     }
@@ -129,12 +129,12 @@ pub enum AggregateType {
 impl FromCqlVal<CqlValue> for AggregateType {
     fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
         let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
-        AggregateType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+        AggregateType::from_str(&str).map_err(|_| FromCqlValError::BadVal)
     }
 }
 
 impl SerializeCql for AggregateType {
-    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+    fn serialize<'b>(&self, _typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
         let value = self.to_string();
         writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
     }

@@ -18,19 +18,16 @@ impl EventflowActor {
                 let _ = resp.send(res);
             }
             EventflowCommand::AccountDeposit { user_id, account_id, payment, resp } => {
-                // let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
-                // let _ = resp.send(res);
-                todo!()
+                let res = TransactionService::account_deposit(user_id, account_id, payment).await;
+                let _ = resp.send(res);
             }
             EventflowCommand::AccountWithdraw { user_id, account_id, payment, resp } => {
-                // let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
-                // let _ = resp.send(res);
-                todo!()
+                let res = TransactionService::account_withdraw(user_id, account_id, payment).await;
+                let _ = resp.send(res);
             }
             EventflowCommand::MemberSubscribe { user_id, member_id, payments, duration, resp } => {
-                // let res = MemberService::bind_referral(user_id, referral_id).await;
-                // let _ = resp.send(res);
-                todo!()
+                let res = TransactionService::member_subscribe(user_id, member_id, payments, duration).await;
+                let _ = resp.send(res);
             }
         }
     }

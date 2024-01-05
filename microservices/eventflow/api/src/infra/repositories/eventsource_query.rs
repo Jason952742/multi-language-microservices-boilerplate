@@ -1,9 +1,6 @@
-use std::str::FromStr;
 use futures::{StreamExt};
-use scylla::IntoTypedRows;
 use uuid::Uuid;
 use shared::scylladb::ScyllaPool;
-use crate::domain::aggregates::account_ar::Account;
 use crate::domain::entities::{eventsource};
 
 pub struct EventSourceDbQuery;
@@ -27,6 +24,8 @@ impl EventSourceDbQuery {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use std::str::FromStr;
+
     let id = Uuid::from_str("ae053855-9321-404c-a3ce-b57e155487cf").unwrap();
 
     let res1 = EventSourceDbQuery::get_transactions(Account::TABLE_NAME, id).await?;

@@ -1,4 +1,5 @@
 use chrono::{NaiveDateTime};
+use chrono::{DateTime, Utc};
 use neo4rs::DeError;
 use uuid::{Uuid};
 use base64::{Engine};
@@ -36,6 +37,13 @@ pub fn uuid_to_base64(id: Uuid) -> String {
 pub fn base64_to_uuid(encoded: String) -> Result<Uuid, base64::DecodeError> {
     let decoded = general_purpose::URL_SAFE_NO_PAD.decode(encoded)?;
     Ok(Uuid::from_slice(&*decoded).unwrap())
+}
+
+pub fn to_datetime(datetime_str: &str) -> DateTime<Utc> {
+    let datetime = DateTime::parse_from_str(datetime_str, "%Y-%m-%dT%H:%M:%S%.fZ")
+        .expect("Failed to parse datetime string")
+        .with_timezone(&Utc);
+    datetime
 }
 
 #[tokio::test]

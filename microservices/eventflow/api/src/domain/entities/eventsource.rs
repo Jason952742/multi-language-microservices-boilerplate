@@ -1,5 +1,3 @@
-
-use chrono::format::Numeric::*;
 use chrono::{DateTime, Utc};
 use scylla::{FromRow, SerializeRow, SerializeCql};
 use uuid::Uuid;

@@ -1,7 +1,6 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use strum_macros;
 use uuid::Uuid;
 use crate::domain::entities::enums::{CurrencyType, TransferType};
 

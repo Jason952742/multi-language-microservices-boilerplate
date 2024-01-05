@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::fmt::{Display};
+use rust_decimal::Decimal;
 use tokio::sync::oneshot;
 use tonic::Status;
 use uuid::Uuid;
@@ -19,7 +19,7 @@ pub enum EventflowCommand {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum EventflowEvent {
     Created { user: User },
-    AccountDeposited { user_id: Uuid, account_id: Uuid, payment: Payment },
-    AccountWithdrew { user_id: Uuid, account_id: Uuid, payment: Payment },
-    MemberSubscribed { user_id: Uuid, member_id: Uuid, duration: i32 },
+    AccountDeposited { account_id: Uuid, balance: Decimal },
+    AccountWithdrew { account_id: Uuid, balance: Decimal },
+    MemberSubscribed { member_id: Uuid, duration: i32 },
 }

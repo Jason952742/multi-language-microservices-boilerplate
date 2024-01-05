@@ -7,8 +7,8 @@ use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use application::grpc::health_grpc::HealthIndicator;
 use shared::Config;
 use application::grpc::eventflow_grpc::EventflowGrpc;
-use shared::scylladb::ScyllaPool;
 use crate::application::grpc::eventflow_grpc::eventflow_proto::eventflow_server::EventflowServer;
+use crate::infra::migration::Migrator;
 
 mod application;
 mod infra;
@@ -18,7 +18,7 @@ mod domain;
 ///
 pub async fn start(config: Config) -> anyhow::Result<()> {
     // database initialization
-    let _session = ScyllaPool::connection().await;
+    Migrator::migrations().await.expect("database initialization failed");
 
     // Grpc Service
     let health_indicator = HealthIndicator::new().await;
