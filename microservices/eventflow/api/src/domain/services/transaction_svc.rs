@@ -15,7 +15,7 @@ use crate::infra::repositories::transaction_mutation::TransactionDbMutation;
 pub struct TransactionService;
 
 impl TransactionService {
-    pub async fn create_user(user_id: Uuid, user_name: String, data: String) -> Result<EventflowEvent, Status> {
+    pub async fn create_user(user_id: Uuid, user_name: String, payload: String) -> Result<EventflowEvent, Status> {
         let transaction_id = Uuid::new_v4();
         let member_id = Uuid::new_v4();
         let account_id = Uuid::new_v4();
@@ -27,7 +27,7 @@ impl TransactionService {
                 id: transaction_id.clone(),
                 transaction_type: TransactionType::UserCreate,
                 user_id: user_id.clone(),
-                data,
+                payload,
                 ..Default::default()
             }
         ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
@@ -37,7 +37,10 @@ impl TransactionService {
         let account_cmd = AccountCommand::OpenAccount { account_id: account_id.clone(), user_id, currency_type: CurrencyType::EUR };
         let account_event = account.handle(account_cmd).await.unwrap();
         let payload: Value = account_event.clone().into();
+        let account_es_id = Uuid::new_v4();
         let account_es = eventsource::Model {
+            id: account_es_id,
+            txn_id: Some(transaction_id),
             aggregate_id: *&account_id,
             aggregate_type: AggregateType::Account,
             sequence: Utc::now().timestamp(),
@@ -50,7 +53,14 @@ impl TransactionService {
 
         EventSourceDbMutation::create_eventsource(Account::TABLE_NAME, account_es).await.unwrap();
 
-        TransactionDbMutation::update_transaction(transaction_id, TransactionStatus::Completed, vec![], None).await.unwrap();
+        TransactionDbMutation::update_transaction(
+            transaction_id,
+            TransactionStatus::Completed,
+            vec![
+                format!("Account:{:?}", account_es_id)
+            ],
+            None
+        ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
         let user = User {
             user_id,

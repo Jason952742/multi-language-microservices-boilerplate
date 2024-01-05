@@ -13,7 +13,7 @@ impl TransactionDbQuery {
     pub async fn get_transaction_by_id(id: Uuid) -> Result<Option<transaction::Model>, Box<dyn std::error::Error>> {
         let session = ScyllaPool::connection().await;
 
-        let query = session.query("SELECT id, transaction_type, status, user_id, data, event_ids, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at FROM eventflow.transaction WHERE id = ?", (id, )).await?;
+        let query = session.query("SELECT id, transaction_type, status, user_id, payload, events, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at FROM eventflow.transaction WHERE id = ?", (id, )).await?;
 
         if let Some(rows) = query.rows {
             println!("{:?}", rows);
@@ -35,7 +35,7 @@ impl TransactionDbQuery {
         let session = ScyllaPool::connection().await;
         let mut list: Vec<transaction::Model> = vec![];
 
-        let mut rows_stream = session.query_iter("SELECT id, transaction_type, status, user_id, data, event_ids, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at FROM eventflow.transaction WHERE user_id = ? AND transaction_type = ? ALLOW FILTERING", (user_id, transaction_type)).await?.into_typed::<transaction::Model>();
+        let mut rows_stream = session.query_iter("SELECT id, transaction_type, status, user_id, payload, events, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at FROM eventflow.transaction WHERE user_id = ? AND transaction_type = ? ALLOW FILTERING", (user_id, transaction_type)).await?.into_typed::<transaction::Model>();
 
         while let Some(next_row_res) = rows_stream.next().await {
             list.push(next_row_res.unwrap());

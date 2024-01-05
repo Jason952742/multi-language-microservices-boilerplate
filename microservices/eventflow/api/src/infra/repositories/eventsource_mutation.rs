@@ -14,7 +14,7 @@ impl EventSourceDbMutation {
     pub async fn create_eventsource(table: &str, form_data: eventsource::Model) -> Result<(), QueryError> {
         let session = ScyllaPool::connection().await;
 
-        session.query(format!("INSERT INTO eventflow.{} (aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", table), form_data).await?;
+        session.query(format!("INSERT INTO eventflow.{} (id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table), form_data).await?;
 
         Ok(())
     }
@@ -32,6 +32,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let payload: Value = event.clone().into();
 
     let tr = eventsource::Model {
+        id: Uuid::new_v4(),
+        txn_id: None,
         aggregate_id: id,
         aggregate_type: AggregateType::Account,
         sequence: Utc::now().timestamp(),

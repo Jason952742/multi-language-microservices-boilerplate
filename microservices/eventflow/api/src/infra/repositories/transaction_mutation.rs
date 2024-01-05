@@ -12,20 +12,17 @@ impl TransactionDbMutation {
         let session = ScyllaPool::connection().await;
 
         session.query(
-            "INSERT INTO eventflow.transaction (id, transaction_type, status, user_id, data, event_ids, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", form_data).await?;
+            "INSERT INTO eventflow.transaction (id, transaction_type, status, user_id, payload, events, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", form_data).await?;
 
         Ok(())
     }
 
-    pub async fn update_transaction(id: Uuid, status: TransactionStatus, event_ids: Vec<Uuid>, rollback_id: Option<Uuid>) -> Result<(), QueryError> {
+    pub async fn update_transaction(id: Uuid, status: TransactionStatus, events: Vec<String>, rollback_id: Option<Uuid>) -> Result<(), QueryError> {
         let session = ScyllaPool::connection().await;
-        let event_ids = event_ids.iter()
-            .map(|uuid| uuid.to_string())
-            .collect::<Vec<String>>()
-            .join(",");
+        let event_ids = events.join(",");
 
         session.query(
-            "UPDATE eventflow.transaction SET status = ?, event_ids = ?, rollback_id = ? WHERE id = ?", (
+            "UPDATE eventflow.transaction SET status = ?, events = ?, rollback_id = ? WHERE id = ?", (
                 status, event_ids, rollback_id, id,
             )).await?;
 
@@ -35,27 +32,6 @@ impl TransactionDbMutation {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let id = Uuid::new_v4();
-    let user_id = Uuid::new_v4();
-
-    let tr = transaction::Model {
-        id: id.clone(),
-        transaction_type: TransactionType::UserCreate,
-        status: TransactionStatus::Apply,
-        user_id: user_id.clone(),
-        data: "hello".to_string(),
-        created_at: Utc::now(),
-        updated_at: Utc::now(),
-        ..Default::default()
-    };
-
-    TransactionDbMutation::create_transaction(tr).await?;
-
-    let event_ids = vec![
-      Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()
-    ];
-    TransactionDbMutation::update_transaction(id, TransactionStatus::Completed, event_ids, None).await?;
-
 
     Ok(())
 }

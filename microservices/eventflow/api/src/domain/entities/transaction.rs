@@ -1,4 +1,3 @@
-
 use chrono::format::Numeric::*;
 use chrono::{DateTime, Utc};
 use scylla::{FromRow, SerializeCql, SerializeRow};
@@ -13,8 +12,8 @@ pub struct Model {
     pub transaction_type: TransactionType,
     pub status: TransactionStatus,
     pub user_id: Uuid,
-    pub data: String,
-    pub event_ids: Option<String>,
+    pub payload: String,
+    pub events: String,
     pub rollback_id: Option<Uuid>,
     pub description: String,
 

@@ -12,8 +12,8 @@ impl Migrator {
             transaction_type TEXT,
             status TEXT,
             user_id UUID,
-            data TEXT,
-            event_ids TEXT,
+            payload TEXT,
+            events TEXT,
             rollback_id UUID,
             description TEXT,
             created_at TIMESTAMP,
@@ -25,6 +25,8 @@ impl Migrator {
         ", "PRIMARY KEY (id)", "").await?;
 
         ScyllaPool::init_table(session, &keyspace, "account_event", "
+            id UUID,
+            txn_id UUID,
             aggregate_id UUID,
             aggregate_type TEXT,
             sequence BIGINT,
@@ -36,6 +38,8 @@ impl Migrator {
         ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
 
         ScyllaPool::init_table(session, &keyspace, "member_event", "
+            id UUID,
+            txn_id UUID,
             aggregate_id UUID,
             aggregate_type TEXT,
             sequence BIGINT,
@@ -47,6 +51,8 @@ impl Migrator {
         ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
 
         ScyllaPool::init_table(session, &keyspace, "referral_event", "
+            id UUID,
+            txn_id UUID,
             aggregate_id UUID,
             aggregate_type TEXT,
             sequence BIGINT,

@@ -9,6 +9,8 @@ use crate::domain::entities::enums::{AggregateType};
 
 #[derive(Default, Clone, Debug, PartialEq, Eq, Deserialize, Serialize, FromRow, SerializeRow, SerializeCql)]
 pub struct Model {
+    pub id: Uuid,
+    pub txn_id: Option<Uuid>,
     pub aggregate_id: Uuid,
     pub aggregate_type: AggregateType,
     pub sequence: i64,

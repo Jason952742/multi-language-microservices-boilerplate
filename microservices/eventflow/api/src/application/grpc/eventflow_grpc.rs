@@ -123,7 +123,7 @@ impl Into<TransactionInfo> for transaction::Model {
             user_id: self.user_id.to_string(),
             status: self.status.to_string(),
             transaction_type: self.transaction_type.to_string(),
-            value: self.data,
+            value: self.payload,
             rollback_id: self.rollback_id.map(|x| x.to_string()),
             description: self.description,
             created_at: self.created_at.to_string(),

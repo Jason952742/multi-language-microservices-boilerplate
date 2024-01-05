@@ -15,7 +15,7 @@ impl EventSourceDbQuery {
         let session = ScyllaPool::connection().await;
         let mut list: Vec<eventsource::Model> = vec![];
 
-        let mut rows_stream = session.query_iter(format!("SELECT aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at FROM eventflow.{} WHERE aggregate_id = ? ORDER BY sequence ASC ALLOW FILTERING", table), (aggregate_id, )).await?.into_typed::<eventsource::Model>();
+        let mut rows_stream = session.query_iter(format!("SELECT id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at FROM eventflow.{} WHERE aggregate_id = ? ORDER BY sequence ASC ALLOW FILTERING", table), (aggregate_id, )).await?.into_typed::<eventsource::Model>();
 
         while let Some(next_row_res) = rows_stream.next().await {
             list.push(next_row_res.unwrap());
