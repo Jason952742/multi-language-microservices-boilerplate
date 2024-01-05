@@ -8,7 +8,7 @@ impl Migrator {
         let keyspace = ScyllaPool::init_keyspace(session, "eventflow", 1).await?;
 
         ScyllaPool::init_table(session, &keyspace, "transaction", "
-            id UUID PRIMARY KEY,
+            id UUID,
             transaction_type TEXT,
             status TEXT,
             user_id UUID,
@@ -21,8 +21,8 @@ impl Migrator {
             enabled BOOLEAN,
             version INT,
             deleted BOOLEAN,
-            deleted_at TIMESTAMP
-        ").await?;
+            deleted_at TIMESTAMP,
+        ", "PRIMARY KEY (id)", "").await?;
 
         Ok(())
     }

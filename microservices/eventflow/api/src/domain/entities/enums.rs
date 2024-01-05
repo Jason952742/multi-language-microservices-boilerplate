@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use scylla::_macro_internal::{CellWriter, ColumnType, CqlValue, FromCqlVal, FromCqlValError, SerializationError, SerializeCql, WrittenCellProof};
 use serde_derive::{Deserialize, Serialize};
 use strum_macros::{EnumIter, EnumString, Display};
 
@@ -79,6 +80,20 @@ pub enum TransactionStatus {
     Ignored,
 }
 
+impl FromCqlVal<CqlValue> for TransactionStatus {
+    fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
+        let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
+        TransactionStatus::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+    }
+}
+
+impl SerializeCql for TransactionStatus {
+    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+        let value = self.to_string();
+        writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
+    }
+}
+
 #[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, EnumIter, Deserialize, Serialize, Display)]
 pub enum TransactionType {
     #[default]
@@ -87,4 +102,18 @@ pub enum TransactionType {
     AccountDeposit,
     AccountWithdraw,
     MemberSubscription,
+}
+
+impl FromCqlVal<CqlValue> for TransactionType {
+    fn from_cql(cql_val: CqlValue) -> anyhow::Result<Self, FromCqlValError> {
+        let str = cql_val.into_string().ok_or(FromCqlValError::BadCqlType)?;
+        TransactionType::from_str(&str).map_err(|e| FromCqlValError::BadVal)
+    }
+}
+
+impl SerializeCql for TransactionType {
+    fn serialize<'b>(&self, typ: &ColumnType, writer: CellWriter<'b>) -> Result<WrittenCellProof<'b>, SerializationError> {
+        let value = self.to_string();
+        writer.set_value(value.as_ref()).map_err(|e| SerializationError::new(e))
+    }
 }

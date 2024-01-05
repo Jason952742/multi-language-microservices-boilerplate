@@ -1,4 +1,4 @@
-use chrono::Utc;
+use chrono::{Utc};
 use uuid::Uuid;
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
@@ -19,7 +19,6 @@ impl TransactionDbMutation {
 
     pub async fn update_transaction(id: Uuid, status: TransactionStatus, event_ids: Vec<Uuid>, rollback_id: Option<Uuid>) -> Result<(), QueryError> {
         let session = ScyllaPool::connection().await;
-        let status = status.to_string();
         let event_ids = event_ids.iter()
             .map(|uuid| uuid.to_string())
             .collect::<Vec<String>>()
@@ -37,13 +36,14 @@ impl TransactionDbMutation {
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let id = Uuid::new_v4();
+    let user_id = Uuid::new_v4();
 
     let tr = transaction::Model {
         id: id.clone(),
-        transaction_type: TransactionType::UserCreate.to_string(),
-        status: TransactionStatus::Apply.to_string(),
-        user_id: Uuid::new_v4(),
-        data: "bbb".to_string(),
+        transaction_type: TransactionType::UserCreate,
+        status: TransactionStatus::Apply,
+        user_id: user_id.clone(),
+        data: "hello".to_string(),
         created_at: Utc::now(),
         updated_at: Utc::now(),
         ..Default::default()

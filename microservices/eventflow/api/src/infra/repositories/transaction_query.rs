@@ -1,10 +1,10 @@
+use std::cmp::Ordering;
 use std::str::FromStr;
-use scylla::cql_to_rust::FromRowError;
+use futures::{StreamExt};
 use scylla::IntoTypedRows;
-use scylla::transport::errors::QueryError;
 use uuid::Uuid;
-use shared::{convert_to_bool, convert_to_i32, opt_to_uuid, string_to_datetime};
 use shared::scylladb::ScyllaPool;
+use crate::domain::entities::enums::TransactionType;
 use crate::domain::entities::transaction;
 
 pub struct TransactionDbQuery;
@@ -26,21 +26,38 @@ impl TransactionDbQuery {
         Ok(None)
     }
 
-    pub async fn get_transactions() -> Result<Vec<transaction::Model>, QueryError> {
+    pub async fn get_transactions(user_id: Uuid, transaction_type: TransactionType) -> Result<Vec<transaction::Model>, Box<dyn std::error::Error>> {
+
+        fn compare_models(a: &transaction::Model, b: &transaction::Model) -> Ordering {
+            a.created_at.cmp(&b.created_at)
+        }
+
         let session = ScyllaPool::connection().await;
+        let mut list: Vec<transaction::Model> = vec![];
 
+        let mut rows_stream = session.query_iter("SELECT id, transaction_type, status, user_id, data, event_ids, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at FROM eventflow.transaction WHERE user_id = ? AND transaction_type = ? ALLOW FILTERING", (user_id, transaction_type)).await?.into_typed::<transaction::Model>();
 
-        Ok(vec![])
+        while let Some(next_row_res) = rows_stream.next().await {
+            list.push(next_row_res.unwrap());
+        }
+
+        list.sort_by(compare_models);
+
+        Ok(list)
     }
 }
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let id = Uuid::from_str("9da2e969-c313-4f89-a2f5-d24786e899f4").unwrap();
+    // let id = Uuid::from_str("2e4c38c6-133c-43c1-a6ad-fa91dee3a06b").unwrap();
+    // let r = TransactionDbQuery::get_transaction_by_id(id).await?;
+    // println!("{:?}", r);
 
-    let r = TransactionDbQuery::get_transaction_by_id(id).await?;
+    let user_id = Uuid::from_str("7aa9bba7-18c2-429e-8f20-3c25bf3d6e15").unwrap();
+    let transaction_type = TransactionType::UserCreate;
 
-    println!("{:?}", r);
+    let res1 = TransactionDbQuery::get_transactions(user_id, transaction_type).await?;
+    println!("Paging state: {:?} (rows)", res1);
 
     Ok(())
 }
