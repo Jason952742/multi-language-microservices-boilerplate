@@ -1,14 +1,51 @@
+use scylla::batch::{Batch, BatchType};
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
+use crate::domain::aggregates::account_ar::Account;
+use crate::domain::aggregates::member_ar::Member;
 use crate::domain::entities::{eventsource};
+use crate::domain::entities::enums::AggregateType;
 
 pub struct EventSourceDbMutation;
 
 impl EventSourceDbMutation {
-    pub async fn create_eventsource(table: &str, form_data: eventsource::Model) -> Result<(), QueryError> {
+    pub async fn create_eventsource(table: &str, event: eventsource::Model) -> Result<(), QueryError> {
         let session = ScyllaPool::connection().await;
 
-        session.query(format!("INSERT INTO eventflow.{} (id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table), form_data).await?;
+        session.query(format!("INSERT INTO eventflow.{} (id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table), event).await?;
+
+        Ok(())
+    }
+
+    pub async fn batch_eventsource(events: Vec<&eventsource::Model>) -> Result<(), QueryError> {
+        let session = ScyllaPool::connection().await;
+        let mut batch: Batch = Default::default();
+        let mut batch_values = Vec::new();
+
+        events.into_iter().for_each(|evt| {
+            let table = match evt.aggregate_type {
+                AggregateType::Member => Member::TABLE_NAME,
+                AggregateType::Account => Account::TABLE_NAME,
+                AggregateType::Referral => "referral_events",
+            };
+
+            batch.append_statement(format!("INSERT INTO eventflow.{} (id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table).as_str());
+            // let values = (
+            //     evt.id,
+            //     evt.txn_id,
+            //     evt.aggregate_id,
+            //     evt.aggregate_type,
+            //     evt.sequence,
+            //     evt.event_type,
+            //     evt.event_version,
+            //     evt.payload,
+            //     evt.metadata,
+            //     evt.created_at,
+            // );
+            batch_values.push(evt);
+        });
+
+        session.batch(&batch, batch_values).await?;
 
         Ok(())
     }

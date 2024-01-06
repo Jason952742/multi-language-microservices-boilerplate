@@ -39,20 +39,32 @@ impl TransactionService {
         // account event
         let account_es = AccountServices::create_event(&account_id, &user_id, &transaction_id).await;
         let member_es = MemberServices::register_event(&member_id, &user_id, user_name.clone(), &transaction_id).await;
-        EventSourceDbMutation::create_eventsource(Account::TABLE_NAME, account_es.clone()).await.unwrap();
-        EventSourceDbMutation::create_eventsource(Member::TABLE_NAME, member_es.clone()).await.unwrap();
+        let events = vec![&account_es, &member_es];
 
-        TransactionDbMutation::update_transaction(
-            transaction_id,
-            TransactionStatus::Completed,
-            vec![format!("Account:{:?}", account_es.id)],
-            None,
-        ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+        // batch insert events
+        match EventSourceDbMutation::batch_eventsource(events).await {
+            Ok(_) => {
+                // transaction successfully
+                TransactionDbMutation::update_transaction(
+                    transaction_id,
+                    TransactionStatus::Completed,
+                    vec![
+                        format!("Account:{:?}", &account_es.id),
+                        format!("Member:{:?}", &member_es.id)
+                    ],
+                    None,
+                ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
-        let sub_end_date = Utc::now();
-        let user = User { user_id, user_name, member_id, sub_end_date, account_id, refer_code, ..Default::default() };
+                let sub_end_date = Utc::now();
+                let user = User { user_id, user_name, member_id, sub_end_date, account_id, refer_code, ..Default::default() };
 
-        Ok(EventflowEvent::Created { user })
+                Ok(EventflowEvent::Created { user })
+            }
+            Err(_) => {
+                // todo: rollback transaction
+                Err(Status::internal("Transaction failed"))
+            }
+        }
     }
 
     pub async fn account_deposit(account_id: Uuid, payment: Payment) -> Result<EventflowEvent, Status> {
