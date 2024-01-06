@@ -13,7 +13,7 @@ pub struct User {
     pub sub_end_date: DateTime<Utc>,
     pub account_id: Uuid,
     pub account_balance: Decimal,
-    pub refer_code: String,
+    pub referral_code: String,
     pub created_at: DateTime<Utc>,
 }
 

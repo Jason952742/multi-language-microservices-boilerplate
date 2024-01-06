@@ -18,7 +18,7 @@ impl EventSourceDbMutation {
         Ok(())
     }
 
-    pub async fn batch_eventsource(events: Vec<&eventsource::Model>) -> Result<(), QueryError> {
+    pub async fn batch_eventsource(events: Vec<eventsource::Model>) -> Result<(), QueryError> {
         let session = ScyllaPool::connection().await;
         let mut batch: Batch = Default::default();
         let mut batch_values = Vec::new();

@@ -13,8 +13,8 @@ impl EventflowActor {
 
     async fn handle_message(&mut self, command: EventflowCommand) {
         match command {
-            EventflowCommand::CreateUser { user_id, user_name, data, resp } => {
-                let res = TransactionService::create_user(user_id, user_name, data).await;
+            EventflowCommand::CreateUser { user_id, user_name, referrer_id, referrer_code, payload, resp } => {
+                let res = TransactionService::create_user(user_id, user_name, &referrer_id, &referrer_code, payload).await;
                 let _ = resp.send(res);
             }
             EventflowCommand::AccountDeposit { account_id, payment, resp } => {

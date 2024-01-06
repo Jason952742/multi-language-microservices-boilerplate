@@ -33,7 +33,6 @@ impl EventflowGrpc {
 
 #[tonic::async_trait]
 impl eventflow_server::Eventflow for EventflowGrpc {
-
     // #[tracing::instrument]
     async fn get_transaction_by_id(&self, request: Request<TransactionId>) -> Result<Response<TransactionReply>, Status> {
         let request = request.into_inner();
@@ -50,11 +49,11 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("get transactions: {:?}", &request);
 
-       let res = TransactionQuery::get_transactions(
+        let res = TransactionQuery::get_transactions(
             to_uuid(&request.user_id),
             TransactionType::from_str(&request.transaction_type).unwrap()).await?;
 
-       Ok(to_transaction_list_reply(res))
+        Ok(to_transaction_list_reply(res))
     }
 
     // #[tracing::instrument]
@@ -67,8 +66,10 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let command = EventflowCommand::CreateUser {
             user_id: to_uuid(&request.user_id),
             user_name: request.user_name,
-            data,
-            resp: resp_tx
+            referrer_id: request.referrer_id.map(|x| to_uuid(&x)),
+            referrer_code: request.referrer_code,
+            payload: data,
+            resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
             eprintln!("connection task shutdown");
@@ -98,7 +99,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
                 receipt: request.payment.receipt,
                 equipment_id: request.payment.equipment_id,
             },
-            resp: resp_tx
+            resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
             eprintln!("connection task shutdown");
@@ -128,7 +129,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
                 receipt: request.payment.receipt,
                 equipment_id: request.payment.equipment_id,
             },
-            resp: resp_tx
+            resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
             eprintln!("connection task shutdown");
@@ -161,7 +162,7 @@ impl eventflow_server::Eventflow for EventflowGrpc {
                 }
             }).collect(),
             duration: request.duration,
-            resp: resp_tx
+            resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
             eprintln!("connection task shutdown");
@@ -228,7 +229,7 @@ impl Into<UserInfo> for User {
             subscription_end_date: self.sub_end_date.to_string(),
             account_id: self.account_id.to_string(),
             account_balance: self.account_balance.to_f64().unwrap(),
-            refer_code: self.refer_code,
+            refer_code: self.referral_code,
             created_at: self.created_at.to_string(),
         }
     }

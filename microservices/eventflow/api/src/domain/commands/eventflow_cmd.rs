@@ -10,7 +10,7 @@ pub type Response = oneshot::Sender<Result<EventflowEvent, Status>>;
 
 #[derive(Debug)]
 pub enum EventflowCommand {
-    CreateUser { user_id: Uuid, user_name: String, data: String, resp: Response },
+    CreateUser { user_id: Uuid, user_name: String, referrer_id: Option<Uuid>, referrer_code: Option<String>, payload: String, resp: Response },
     AccountDeposit { account_id: Uuid, payment: Payment, resp: Response },
     AccountWithdraw { account_id: Uuid, payment: Payment, resp: Response },
     MemberSubscribe { member_id: Uuid, payments: Vec<Payment>, duration: i64, resp: Response },

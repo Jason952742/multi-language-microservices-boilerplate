@@ -10,23 +10,24 @@ use crate::domain::entities::{transaction};
 use crate::domain::entities::valobj::{Payment, User};
 use crate::domain::queries::account_qry::AccountQuery;
 use crate::domain::queries::member_qry::MemberQuery;
-use crate::domain::services::{AccountServices, MemberServices};
+use crate::domain::queries::referral_qry::ReferralQuery;
+use crate::domain::services::{AccountServices, MemberServices, ReferralServices};
 use crate::infra::repositories::eventsource_mutation::EventSourceDbMutation;
 use crate::infra::repositories::transaction_mutation::TransactionDbMutation;
 
 pub struct TransactionService;
 
 impl TransactionService {
-    pub async fn create_user(user_id: Uuid, user_name: String, payload: String) -> Result<EventflowEvent, Status> {
-        let transaction_id = Uuid::new_v4();
+    pub async fn create_user(user_id: Uuid, user_name: String, referrer_id: &Option<Uuid>, referrer_code: &Option<String>, payload: String) -> Result<EventflowEvent, Status> {
+        let txn_id = Uuid::new_v4();
         let member_id = Uuid::new_v4();
         let account_id = Uuid::new_v4();
-        let refer_code = uuid_to_base64(Uuid::new_v4());
+        let referral_code = uuid_to_base64(Uuid::new_v4());
 
         // start transaction
         TransactionDbMutation::create_transaction(
             transaction::Model {
-                id: transaction_id.clone(),
+                id: txn_id.clone(),
                 transaction_type: TransactionType::UserCreate,
                 user_id: user_id.clone(),
                 created_at: Utc::now(),
@@ -37,26 +38,31 @@ impl TransactionService {
         ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
         // account event
-        let account_es = AccountServices::create_event(&account_id, &user_id, &transaction_id).await;
-        let member_es = MemberServices::register_event(&member_id, &user_id, user_name.clone(), &transaction_id).await;
-        let events = vec![&account_es, &member_es];
+        let mut events = vec![];
+        let account_es = AccountServices::create_event(&account_id, &user_id, &txn_id).await;
+        events.push(account_es);
+        let member_es = MemberServices::register_event(&member_id, &user_id, user_name.clone(), &txn_id).await;
+        events.push(member_es);
+        let referral_es = ReferralServices::create_referral_event(&user_id, &referral_code, referrer_id, referrer_code, &txn_id).await;
+        events.push(referral_es);
+        if let Some(id) = *referrer_id {
+            let referrer =  ReferralQuery::load(id).await?;
+            if let Some(r) = referrer {
+                let referrer_es = ReferralServices::user_registered_event(&r, user_id).await;
+                events.push(referrer_es);
+            }
+        }
+        let event_ids = events.clone().into_iter().map(|e| format!("{:?}:{:?}", e.aggregate_type, e.id)).collect();
 
         // batch insert events
         match EventSourceDbMutation::batch_eventsource(events).await {
             Ok(_) => {
                 // transaction successfully
-                TransactionDbMutation::update_transaction(
-                    transaction_id,
-                    TransactionStatus::Completed,
-                    vec![
-                        format!("Account:{:?}", &account_es.id),
-                        format!("Member:{:?}", &member_es.id)
-                    ],
-                    None,
-                ).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+                TransactionDbMutation::update_transaction(txn_id, TransactionStatus::Completed, event_ids, None)
+                    .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
                 let sub_end_date = Utc::now();
-                let user = User { user_id, user_name, member_id, sub_end_date, account_id, refer_code, ..Default::default() };
+                let user = User { user_id, user_name, member_id, sub_end_date, account_id, referral_code, ..Default::default() };
 
                 Ok(EventflowEvent::Created { user })
             }
@@ -95,7 +101,7 @@ impl TransactionService {
         let member = MemberQuery::load(member_id).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
         match member {
-            None => Err(Status::not_found("account not found")),
+            None => Err(Status::not_found("member not found")),
             Some(m) => {
                 let (es, end_date) = MemberServices::subscribe_event(&m, payments, duration).await;
                 EventSourceDbMutation::create_eventsource(Member::TABLE_NAME, es.clone()).await.unwrap();
