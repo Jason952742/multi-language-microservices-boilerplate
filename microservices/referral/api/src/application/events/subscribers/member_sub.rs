@@ -6,7 +6,7 @@ use shared::lapin;
 use shared::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
 use crate::domain::handlers::{MemberActor, run_member_actor};
-use crate::domain::messages::MemberCreatedEvent;
+use crate::domain::messages::MemberReferralEvent;
 
 #[derive(Clone)]
 pub struct MemberSub;
@@ -35,7 +35,7 @@ impl MemberSub {
             while let Some(delivery) = consumer_stream.next().await {
                 if let Ok(delivery) = delivery {
                     // Do something with the delivery data (The message payload)
-                    let payload = MemberCreatedEvent::from(delivery.data.as_ref());
+                    let payload = MemberReferralEvent::from(delivery.data.as_ref());
                     tracing::info!("Receive {:?} Event: {:?}", &event_name, &payload);
                     let user_id = payload.clone().user_id.to_string();
 

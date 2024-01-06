@@ -12,13 +12,18 @@ impl MemberQuery {
             .map_err(|e| GrpcStatusTool::neo4j_error(e))
     }
 
-    pub async fn get_my_referral(user_id: Uuid) -> Result<Option<member::Model>, Status> {
-        MemberDbQuery::get_referral_member(user_id).await
+    pub async fn get_member_by_code(code: &str) -> Result<Option<member::Model>, Status> {
+        MemberDbQuery::get_member_by_code(code).await
             .map_err(|e| GrpcStatusTool::neo4j_error(e))
     }
 
-    pub async fn get_my_referees(user_id: Uuid) -> Result<Vec<member::Model>, Status> {
-        MemberDbQuery::get_my_referees(user_id).await
+    pub async fn get_referrer(user_id: Uuid) -> Result<Option<member::Model>, Status> {
+        MemberDbQuery::get_referrer(user_id).await
+            .map_err(|e| GrpcStatusTool::neo4j_error(e))
+    }
+
+    pub async fn get_referrals(user_id: Uuid) -> Result<Vec<member::Model>, Status> {
+        MemberDbQuery::get_referrals(user_id).await
             .map_err(|e| GrpcStatusTool::neo4j_error(e))
     }
 }

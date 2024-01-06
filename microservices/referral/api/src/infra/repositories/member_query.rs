@@ -1,10 +1,8 @@
-use std::str::FromStr;
 use shared::neo4rs::{self, Node, query};
 use uuid::Uuid;
 use shared::neo4j::Neo4jPool;
-use shared::{convert_to_bool, convert_to_i32, opt_to_uuid, string_to_datetime};
+use shared::{convert_to_i32, opt_to_uuid, to_datetime};
 use crate::domain::entities::member;
-use crate::domain::messages::MemberType;
 
 pub struct MemberDbQuery;
 
@@ -25,11 +23,11 @@ impl MemberDbQuery {
         }
     }
 
-    pub async fn get_member_by_my_referrer_code(code: &str) -> Result<Option<member::Model>, neo4rs::Error> {
+    pub async fn get_member_by_code(code: &str) -> Result<Option<member::Model>, neo4rs::Error> {
         let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
-            query("MATCH (member: Member {my_referrer_code: $code}) RETURN member").param("code", code))
+            query("MATCH (member: Member {referral_code: $code}) RETURN member").param("code", code))
             .await?;
 
         if let Ok(Some(_row)) = result.next().await {
@@ -53,7 +51,7 @@ impl MemberDbQuery {
         Ok(count > 0)
     }
 
-    pub async fn get_referral_member(user_id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
+    pub async fn get_referrer(user_id: Uuid) -> Result<Option<member::Model>, neo4rs::Error> {
         let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
@@ -68,7 +66,7 @@ impl MemberDbQuery {
         }
     }
 
-    pub async fn get_my_referees(user_id: Uuid) -> Result<Vec<member::Model>, neo4rs::Error> {
+    pub async fn get_referrals(user_id: Uuid) -> Result<Vec<member::Model>, neo4rs::Error> {
         let graph = Neo4jPool::graph().await;
 
         let mut result = graph.execute(
@@ -92,18 +90,13 @@ impl MemberDbQuery {
 
 fn node_to_member(node: Node) -> member::Model {
     member::Model {
+        member_id: opt_to_uuid(node.get::<String>("member_id")),
         user_id: opt_to_uuid(node.get::<String>("user_id")),
         user_name: node.get("user_name").unwrap(),
-        member_type: MemberType::from_str(&node.get::<String>("member_type").unwrap()).unwrap(),
-        member_id: opt_to_uuid(node.get::<String>("member_id")),
-        login_creds: node.get::<String>("login_creds").unwrap(),
-        level: convert_to_i32(node.get::<String>("level")),
-        my_referrer_code: node.get::<String>("my_referrer_code").unwrap(),
-        referee_code: node.get::<String>("referee_code").unwrap(),
+        referral_code: node.get::<String>("referral_code").unwrap(),
         hierarchy: convert_to_i32(node.get::<String>("hierarchy")),
-        active: convert_to_bool(node.get::<String>("active")),
-        created_at: string_to_datetime(node.get::<String>("created_at")),
-        updated_at: string_to_datetime(node.get::<String>("updated_at")),
+        description: node.get("description").unwrap(),
+        created_at: to_datetime(node.get::<String>("created_at").unwrap().as_str()),
         ..Default::default()
     }
 }
@@ -125,10 +118,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let r = MemberQuery::get_referral_member(Uuid::from_str("482b23eb-fdaf-498f-b4ac-ce39ecc6671d").unwrap()).await?;
     //
     // println!("{:?}", r);
-
-    let rs = MemberDbQuery::get_my_referees(Uuid::from_str("79cceea2-fa62-4689-b54b-d15ef5e96ce4").unwrap()).await?;
-
-    println!("{:?}", rs);
 
     Ok(())
 }

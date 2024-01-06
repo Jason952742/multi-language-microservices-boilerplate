@@ -3,28 +3,30 @@ syntax = "proto2";
 package refer_member;
 
 service ReferMember {
-  rpc GetMemberById(UserIdRequest) returns (MemberReply) {}
-  rpc GetMyReferral(UserIdRequest) returns (MemberReply) {}
-  rpc GetMyReferees(UserIdRequest) returns (MemberListReply) {}
+  rpc GetMemberById(UserId) returns (MemberReply) {}
+  rpc GetMemberByCode(ReferralCode) returns (MemberReply) {}
+  rpc GetReferrer(UserId) returns (MemberReply) {}
+  rpc GetReferrals(UserId) returns (MemberListReply) {}
   rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusReply) {}
   rpc BindReferral(BindReferralRequest) returns (ProcessStatusReply) {}
 }
 
-message UserIdRequest {
+message UserId {
   required string id = 1;
+}
+
+message ReferralCode {
+  required string code = 1;
 }
 
 message UpdateMemberRequest {
   required string userId = 1;
-  required string memberType = 2;
-  required int32 level = 3;
-  required bool active = 4;
-  required string description = 5;
+  required string description = 2;
 }
 
 message BindReferralRequest {
   required string userId = 1;
-  required string referralId = 2;
+  required string referrerId = 2;
 }
 
 message ProcessStatusReply {
@@ -49,10 +51,7 @@ message MemberListReply {
 message Member {
   required string userId = 1;
   required string userName = 2;
-  required string memberType = 3;
-  required int32 level = 4;
-  required int32 hierarchy = 5;
-  required bool active = 6;
-  required string description = 7;
-  required string createdAt = 8;
+  required int32 hierarchy = 3;
+  required string description = 4;
+  required string createdAt = 5;
 }

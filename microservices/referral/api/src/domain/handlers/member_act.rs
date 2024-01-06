@@ -17,11 +17,11 @@ impl MemberActor {
                 let res = MemberService::create_referral(user_id, event).await;
                 let _ = resp.send(res);
             }
-            MemberCommand::Update { user_id, member_type, level, active, description, resp } => {
-                let res = MemberService::update_referral(user_id, member_type, level, active, description).await;
+            MemberCommand::Update { user_id, description, resp } => {
+                let res = MemberService::update_referral(user_id, description).await;
                 let _ = resp.send(res);
             }
-            MemberCommand::Bind { user_id, referral_id, resp } => {
+            MemberCommand::Bind { user_id, referrer_id: referral_id, resp } => {
                 let res = MemberService::bind_referral(user_id, referral_id).await;
                 let _ = resp.send(res);
             }

@@ -1,12 +1,10 @@
-use std::str::FromStr;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, UpdateMemberRequest, UserIdRequest};
+use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, ReferralCode, UpdateMemberRequest, UserId};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::member;
 use crate::domain::handlers::{MemberActor, run_member_actor};
-use crate::domain::messages::MemberType;
 use crate::domain::queries::member_qry::MemberQuery;
 
 pub mod refer_member_proto {
@@ -30,38 +28,48 @@ impl MemberGrpc {
 #[tonic::async_trait]
 impl refer_member_server::ReferMember for MemberGrpc {
 
-    #[tracing::instrument]
-    async fn get_member_by_id(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
+    // #[tracing::instrument]
+    async fn get_member_by_id(&self, request: Request<UserId>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get member by id request: {:?}", &request);
+        tracing::info!("get member by code: {:?}", &request);
 
         match MemberQuery::get_member_by_id(to_uuid(&request.id)).await? {
             None => Err(Status::not_found(request.id)),
-            Some(m) => Ok(to_member_res(m))
+            Some(m) => Ok(to_member_reply(m))
         }
     }
 
-    #[tracing::instrument]
-    async fn get_my_referral(&self, request: Request<UserIdRequest>) -> Result<Response<MemberReply>, Status> {
+    async fn get_member_by_code(&self, request: Request<ReferralCode>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get my referral request: {:?}", &request);
+        tracing::info!("get member by code: {:?}", &request);
 
-        match MemberQuery::get_my_referral(to_uuid(&request.id)).await? {
+        match MemberQuery::get_member_by_code(&request.code).await? {
+            None => Err(Status::not_found(request.code)),
+            Some(m) => Ok(to_member_reply(m))
+        }
+    }
+
+    // #[tracing::instrument]
+    async fn get_referrer(&self, request: Request<UserId>) -> Result<Response<MemberReply>, Status> {
+        let request = request.into_inner();
+        tracing::info!("get get_referrer: {:?}", &request);
+
+        match MemberQuery::get_referrer(to_uuid(&request.id)).await? {
             None => Err(Status::not_found(request.id)),
-            Some(m) => Ok(to_member_res(m))
+            Some(m) => Ok(to_member_reply(m))
         }
     }
 
-    #[tracing::instrument]
-    async fn get_my_referees(&self, request: Request<UserIdRequest>) -> Result<Response<MemberListReply>, Status> {
+    // #[tracing::instrument]
+    async fn get_referrals(&self, request: Request<UserId>) -> Result<Response<MemberListReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get my referees request: {:?}", &request);
+        tracing::info!("get referrals: {:?}", &request);
 
-        let res = MemberQuery::get_my_referees(to_uuid(&request.id)).await?;
+        let res = MemberQuery::get_referrals(to_uuid(&request.id)).await?;
         Ok(to_member_list_res(res))
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn update_member(&self, request: Request<UpdateMemberRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("update member  request: {:?}", &request);
@@ -69,9 +77,6 @@ impl refer_member_server::ReferMember for MemberGrpc {
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Update {
             user_id: to_uuid(&request.user_id),
-            member_type: MemberType::from_str(&request.member_type).unwrap(),
-            level: request.level,
-            active: request.active,
             description: request.description,
             resp: resp_tx
         };
@@ -87,7 +92,7 @@ impl refer_member_server::ReferMember for MemberGrpc {
         }
     }
 
-    #[tracing::instrument]
+    // #[tracing::instrument]
     async fn bind_referral(&self, request: Request<BindReferralRequest>) -> Result<Response<ProcessStatusReply>, Status> {
         let request = request.into_inner();
         tracing::info!("bind referral: {:?}", &request);
@@ -95,7 +100,7 @@ impl refer_member_server::ReferMember for MemberGrpc {
         let (resp_tx, resp_rx) = oneshot::channel();
         let command = MemberCommand::Bind {
             user_id: to_uuid(&request.user_id),
-            referral_id: to_uuid(&request.referral_id),
+            referrer_id: to_uuid(&request.referrer_id),
             resp: resp_tx
         };
         if self.tx.send(command).await.is_err() {
@@ -115,7 +120,7 @@ fn to_process_res(process_id: String) -> Response<ProcessStatusReply> {
     Response::new(ProcessStatusReply { code: parse_code(Code::Ok), message: "Processed".to_string(), success: true, process_id })
 }
 
-fn to_member_res(model: member::Model) -> Response<MemberReply> {
+fn to_member_reply(model: member::Model) -> Response<MemberReply> {
     let res = MemberReply { code: parse_code(Code::Ok), message: "member".to_string(), data: Some(model.into()) };
     Response::new(res)
 }
@@ -131,10 +136,7 @@ impl Into<Member> for member::Model {
         Member {
             user_id: self.user_id.to_string(),
             user_name: self.user_name,
-            member_type: self.member_type.to_string(),
-            level: self.level,
             hierarchy: self.hierarchy,
-            active: self.active,
             description: self.description,
             created_at: self.created_at.to_string(),
         }
