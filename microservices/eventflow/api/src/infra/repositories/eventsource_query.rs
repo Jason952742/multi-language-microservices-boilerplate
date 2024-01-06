@@ -7,7 +7,7 @@ pub struct EventSourceDbQuery;
 
 impl EventSourceDbQuery {
 
-    pub async fn get_transactions(table: &str, aggregate_id: Uuid) -> Result<Vec<eventsource::Model>, Box<dyn std::error::Error>> {
+    pub async fn get_eventsources(table: &str, aggregate_id: Uuid) -> Result<Vec<eventsource::Model>, Box<dyn std::error::Error>> {
 
         let session = ScyllaPool::connection().await;
         let mut list: Vec<eventsource::Model> = vec![];
@@ -25,10 +25,11 @@ impl EventSourceDbQuery {
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::str::FromStr;
+    use crate::domain::aggregates::account_ar::Account;
 
     let id = Uuid::from_str("ae053855-9321-404c-a3ce-b57e155487cf").unwrap();
 
-    let res1 = EventSourceDbQuery::get_transactions(Account::TABLE_NAME, id).await?;
+    let res1 = EventSourceDbQuery::get_eventsources(Account::TABLE_NAME, id).await?;
     println!("Paging state: {:?} (rows)", res1);
 
     Ok(())

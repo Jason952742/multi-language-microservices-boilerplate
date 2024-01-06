@@ -3,12 +3,14 @@ use tonic::Status;
 use uuid::Uuid;
 use shared::{GrpcStatusTool, uuid_to_base64};
 use crate::domain::aggregates::account_ar::{Account};
+use crate::domain::aggregates::member_ar::Member;
 use crate::domain::commands::eventflow_cmd::EventflowEvent;
 use crate::domain::entities::enums::{TransactionStatus, TransactionType};
 use crate::domain::entities::{transaction};
 use crate::domain::entities::valobj::{Payment, User};
 use crate::domain::queries::account_qry::AccountQuery;
-use crate::domain::services::AccountServices;
+use crate::domain::queries::member_qry::MemberQuery;
+use crate::domain::services::{AccountServices, MemberServices};
 use crate::infra::repositories::eventsource_mutation::EventSourceDbMutation;
 use crate::infra::repositories::transaction_mutation::TransactionDbMutation;
 
@@ -36,8 +38,9 @@ impl TransactionService {
 
         // account event
         let account_es = AccountServices::create_event(&account_id, &user_id, &transaction_id).await;
-
+        let member_es = MemberServices::register_event(&member_id, &user_id, user_name.clone(), &transaction_id).await;
         EventSourceDbMutation::create_eventsource(Account::TABLE_NAME, account_es.clone()).await.unwrap();
+        EventSourceDbMutation::create_eventsource(Member::TABLE_NAME, member_es.clone()).await.unwrap();
 
         TransactionDbMutation::update_transaction(
             transaction_id,
@@ -77,8 +80,15 @@ impl TransactionService {
     }
 
     pub async fn member_subscribe(member_id: Uuid, payments: Vec<Payment>, duration: i64) -> Result<EventflowEvent, Status> {
+        let member = MemberQuery::load(member_id).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
-
-        todo!()
+        match member {
+            None => Err(Status::not_found("account not found")),
+            Some(m) => {
+                let (es, end_date) = MemberServices::subscribe_event(&m, payments, duration).await;
+                EventSourceDbMutation::create_eventsource(Member::TABLE_NAME, es.clone()).await.unwrap();
+                Ok(EventflowEvent::MemberSubscribed { member_id, end_date })
+            }
+        }
     }
 }

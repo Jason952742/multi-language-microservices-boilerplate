@@ -1,4 +1,3 @@
-use rust_decimal_macros::dec;
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
 use crate::domain::entities::{eventsource};
@@ -17,6 +16,7 @@ impl EventSourceDbMutation {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use rust_decimal_macros::dec;
     use crate::domain::entities::enums::{AggregateType};
     use crate::domain::aggregates::account_ar::{Account, AccountEvent};
 
