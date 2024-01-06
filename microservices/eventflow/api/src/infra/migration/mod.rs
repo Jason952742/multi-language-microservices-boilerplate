@@ -1,4 +1,7 @@
 use shared::scylladb::ScyllaPool;
+use crate::domain::aggregates::account_ar::Account;
+use crate::domain::aggregates::member_ar::Member;
+use crate::domain::aggregates::referral_ar::Referral;
 
 pub struct Migrator;
 
@@ -7,7 +10,7 @@ impl Migrator {
         let session = ScyllaPool::connection().await;
         let keyspace = ScyllaPool::init_keyspace(session, "eventflow", 1).await?;
 
-        ScyllaPool::init_table(session, &keyspace, "transaction", "
+        ScyllaPool::init_table(session, &keyspace, "transactions", "
             id UUID,
             transaction_type TEXT,
             status TEXT,
@@ -24,7 +27,7 @@ impl Migrator {
             deleted_at TIMESTAMP,
         ", "PRIMARY KEY (id)", "").await?;
 
-        ScyllaPool::init_table(session, &keyspace, "account_event", "
+        ScyllaPool::init_table(session, &keyspace, Account::TABLE_NAME, "
             id UUID,
             txn_id UUID,
             aggregate_id UUID,
@@ -37,7 +40,7 @@ impl Migrator {
             created_at TIMESTAMP,
         ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
 
-        ScyllaPool::init_table(session, &keyspace, "member_event", "
+        ScyllaPool::init_table(session, &keyspace, Member::TABLE_NAME, "
             id UUID,
             txn_id UUID,
             aggregate_id UUID,
@@ -50,7 +53,7 @@ impl Migrator {
             created_at TIMESTAMP,
         ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
 
-        ScyllaPool::init_table(session, &keyspace, "referral_event", "
+        ScyllaPool::init_table(session, &keyspace, Referral::TABLE_NAME, "
             id UUID,
             txn_id UUID,
             aggregate_id UUID,
@@ -62,7 +65,6 @@ impl Migrator {
             metadata TEXT,
             created_at TIMESTAMP,
         ", "PRIMARY KEY (aggregate_id, sequence)", "WITH CLUSTERING ORDER BY (sequence DESC)").await?;
-
 
         Ok(())
     }

@@ -16,7 +16,7 @@ pub struct Member {
 }
 
 impl Member {
-    pub const TABLE_NAME: &'static str = "member_event";
+    pub const TABLE_NAME: &'static str = "member_events";
 
     pub fn new(id: &Uuid) -> Member {
         Self { member_id: *id, end_date: Utc::now().add(Duration::minutes(10)), ..Default::default() }

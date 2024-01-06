@@ -16,7 +16,7 @@ pub struct Account {
 }
 
 impl Account {
-    pub const TABLE_NAME: &'static str = "account_event";
+    pub const TABLE_NAME: &'static str = "account_events";
 
     pub fn new(id: &Uuid) -> Account {
         Self { account_id: *id, ..Default::default() }

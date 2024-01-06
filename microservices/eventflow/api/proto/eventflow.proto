@@ -62,6 +62,9 @@ message PaymentInfo {
 message UserCreateRequest {
   required string userId = 1;
   required string userName = 2;
+  required string referralCode = 3;
+  optional string referrerId = 4;
+  optional string referrerCode = 5;
 }
 
 message UserCreatedReply {

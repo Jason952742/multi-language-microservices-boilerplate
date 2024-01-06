@@ -11,7 +11,7 @@ impl TransactionDbMutation {
         let session = ScyllaPool::connection().await;
 
         session.query(
-            "INSERT INTO eventflow.transaction (id, transaction_type, status, user_id, payload, events, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", form_data).await?;
+            "INSERT INTO eventflow.transactions (id, transaction_type, status, user_id, payload, events, rollback_id, description, created_at, updated_at, enabled, version, deleted, deleted_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", form_data).await?;
 
         Ok(())
     }
@@ -21,7 +21,7 @@ impl TransactionDbMutation {
         let event_ids = events.join(",");
 
         session.query(
-            "UPDATE eventflow.transaction SET status = ?, events = ?, rollback_id = ? WHERE id = ?", (
+            "UPDATE eventflow.transactions SET status = ?, events = ?, rollback_id = ? WHERE id = ?", (
                 status, event_ids, rollback_id, id,
             )).await?;
 

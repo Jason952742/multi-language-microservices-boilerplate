@@ -1,8 +1,9 @@
-use scylla::batch::{Batch, BatchType};
+use scylla::batch::{Batch};
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
 use crate::domain::aggregates::account_ar::Account;
 use crate::domain::aggregates::member_ar::Member;
+use crate::domain::aggregates::referral_ar::Referral;
 use crate::domain::entities::{eventsource};
 use crate::domain::entities::enums::AggregateType;
 
@@ -26,23 +27,11 @@ impl EventSourceDbMutation {
             let table = match evt.aggregate_type {
                 AggregateType::Member => Member::TABLE_NAME,
                 AggregateType::Account => Account::TABLE_NAME,
-                AggregateType::Referral => "referral_events",
+                AggregateType::Referral => Referral::TABLE_NAME,
             };
 
             batch.append_statement(format!("INSERT INTO eventflow.{} (id, txn_id, aggregate_id, aggregate_type, sequence, event_type, event_version, payload, metadata, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", table).as_str());
-            // let values = (
-            //     evt.id,
-            //     evt.txn_id,
-            //     evt.aggregate_id,
-            //     evt.aggregate_type,
-            //     evt.sequence,
-            //     evt.event_type,
-            //     evt.event_version,
-            //     evt.payload,
-            //     evt.metadata,
-            //     evt.created_at,
-            // );
-            batch_values.push(evt);
+             batch_values.push(evt);
         });
 
         session.batch(&batch, batch_values).await?;
