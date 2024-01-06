@@ -39,14 +39,15 @@ message AccountTransactionReply {
 message MemberSubscriptionRequest {
   required string userId = 1;
   required string memberId = 2;
-  repeated PaymentInfo payment = 3;
-  optional int32 duration = 4;
+  repeated PaymentInfo payments = 3;
+  required int64 duration = 4;
 }
 
 message MemberSubscriptionReply {
   required string code = 1;
   required string message = 2;
-  required int32 duration = 3;
+  required bool success = 3;
+  required string endDate = 4;
 }
 
 message PaymentInfo {

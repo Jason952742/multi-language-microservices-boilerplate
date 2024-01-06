@@ -76,7 +76,9 @@ impl TransactionService {
         }
     }
 
-    pub async fn member_subscribe(_member_id: Uuid, _payments: Vec<Payment>, _duration: i32) -> Result<EventflowEvent, Status> {
+    pub async fn member_subscribe(member_id: Uuid, payments: Vec<Payment>, duration: i64) -> Result<EventflowEvent, Status> {
+
+
         todo!()
     }
 }

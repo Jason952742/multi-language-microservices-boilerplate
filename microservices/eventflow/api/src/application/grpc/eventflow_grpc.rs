@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use tokio::sync::{mpsc, oneshot};
@@ -146,8 +147,38 @@ impl eventflow_server::Eventflow for EventflowGrpc {
         let request = request.into_inner();
         tracing::info!("member subscription: {:?}", &request);
 
-        todo!()
+        let (resp_tx, resp_rx) = oneshot::channel();
+        let command = EventflowCommand::MemberSubscribe {
+            member_id: to_uuid(&request.member_id),
+            payments: request.payments.into_iter().map(|p| {
+                Payment {
+                    payment_type: PaymentType::from_str(p.payment_type.as_str()).unwrap(),
+                    currency_type: CurrencyType::from_str(p.currency_type.as_str()).unwrap(),
+                    amount: Decimal::from_f64(p.amount).unwrap(),
+                    paid_at: to_datetime(p.paid_at.as_ref()),
+                    receipt: p.receipt,
+                    equipment_id: p.equipment_id,
+                }
+            }).collect(),
+            duration: request.duration,
+            resp: resp_tx
+        };
+        if self.tx.send(command).await.is_err() {
+            eprintln!("connection task shutdown");
+        }
+        match resp_rx.await.unwrap() {
+            Ok(event) => match event {
+                EventflowEvent::MemberSubscribed { end_date, .. } => Ok(to_subscription_reply(end_date)),
+                _ => Err(Status::failed_precondition(format!("error event {:?}", event))),
+            },
+            Err(e) => Err(e),
+        }
     }
+}
+
+fn to_subscription_reply(end_date: DateTime<Utc>) -> Response<MemberSubscriptionReply> {
+    let res = MemberSubscriptionReply { code: parse_code(Code::Ok), message: "account".to_string(), success: true, end_date: end_date.to_string() };
+    Response::new(res)
 }
 
 fn to_account_reply(balance: Decimal) -> Response<AccountTransactionReply> {

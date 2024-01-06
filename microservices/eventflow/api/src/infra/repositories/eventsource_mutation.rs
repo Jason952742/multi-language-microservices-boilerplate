@@ -1,3 +1,4 @@
+use rust_decimal_macros::dec;
 use shared::scylla::transport::errors::QueryError;
 use shared::scylladb::ScyllaPool;
 use crate::domain::entities::{eventsource};
@@ -28,8 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_id = Uuid::new_v4();
 
     let event = AccountEvent::CustomerDepositedMoney {
-        amount: 1000.0,
-        balance: 2000.0,
+        amount: dec!(1000.0),
+        balance: dec!(2000.0),
     };
     let payload: Value = event.clone().into();
 

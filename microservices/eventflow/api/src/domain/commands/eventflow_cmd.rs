@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use rust_decimal::Decimal;
 use tokio::sync::oneshot;
@@ -12,7 +13,7 @@ pub enum EventflowCommand {
     CreateUser { user_id: Uuid, user_name: String, data: String, resp: Response },
     AccountDeposit { account_id: Uuid, payment: Payment, resp: Response },
     AccountWithdraw { account_id: Uuid, payment: Payment, resp: Response },
-    MemberSubscribe { member_id: Uuid, payments: Vec<Payment>, duration: i32, resp: Response },
+    MemberSubscribe { member_id: Uuid, payments: Vec<Payment>, duration: i64, resp: Response },
 }
 
 
@@ -21,5 +22,5 @@ pub enum EventflowEvent {
     Created { user: User },
     AccountDeposited { account_id: Uuid, balance: Decimal },
     AccountWithdrew { account_id: Uuid, balance: Decimal },
-    MemberSubscribed { member_id: Uuid, duration: i32 },
+    MemberSubscribed { member_id: Uuid, end_date: DateTime<Utc> },
 }
