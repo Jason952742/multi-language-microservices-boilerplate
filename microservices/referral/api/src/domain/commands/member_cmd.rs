@@ -3,13 +3,13 @@ use std::fmt::{Display, Formatter};
 use tokio::sync::oneshot;
 use tonic::Status;
 use uuid::Uuid;
-use crate::domain::messages::{MemberReferralEvent};
+use crate::domain::messages::{MemberReferralMsg};
 
 pub type Response = oneshot::Sender<Result<MemberEvent, Status>>;
 
 #[derive(Debug)]
 pub enum MemberCommand {
-    Create { user_id: Uuid, event: MemberReferralEvent, resp: Response },
+    Create { user_id: Uuid, event: MemberReferralMsg, resp: Response },
     Update { user_id: Uuid, description: String, resp: Response },
     Bind { user_id: Uuid, referrer_id: Uuid, resp: Response },
 }

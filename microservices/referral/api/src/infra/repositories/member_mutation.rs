@@ -10,7 +10,7 @@ impl MemberDbMutation {
         let graph = Neo4jPool::graph().await;
 
         let _ = graph.run(
-            query("CREATE (m:Member { member_id: $member_id, user_id: $user_id, user_name: $user_name, referral_code: referral_code, hierarchy: $hierarchy, description: $description, created_at: $created_at, deleted: $deleted }) RETURN m")
+            query("CREATE (m:Member { member_id: $member_id, user_id: $user_id, user_name: $user_name, referral_code: $referral_code, hierarchy: $hierarchy, description: $description, created_at: $created_at, deleted: $deleted }) RETURN m")
                 .params([
                     ("member_id", form_data.member_id.to_string().to_owned()),
                     ("user_id", form_data.user_id.to_string().to_owned()),
@@ -60,7 +60,7 @@ impl MemberDbMutation {
         let mut opt = graph.execute(
             query("MATCH (m1:Member { user_id: $user_id }) MATCH (m2:Member { user_id: $referrer_id }) CREATE (m1)-[r:REFERRED_BY]->(m2) RETURN r")
                 .params([
-                    ("$user_id", user_id.to_string().to_owned()),
+                    ("user_id", user_id.to_string().to_owned()),
                     ("referrer_id", referrer_id.to_string().to_owned()),
                 ])
         ).await.unwrap();
@@ -79,12 +79,18 @@ impl MemberDbMutation {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     use std::str::FromStr;
 
-    let r = MemberDbMutation::create_relationship(
-        Uuid::from_str("e7c4536f-e27d-474c-97cb-9e18e8338d10").unwrap(),
-        Uuid::from_str("70ef92d3-a856-412b-997d-6c27b827d8ff").unwrap(),
-    ).await?;
+    // let r = MemberDbMutation::create_relationship(
+    //     Uuid::from_str("e7c4536f-e27d-474c-97cb-9e18e8338d10").unwrap(),
+    //     Uuid::from_str("70ef92d3-a856-412b-997d-6c27b827d8ff").unwrap(),
+    // ).await?;
+    //
+    // println!("{:?}", r);
 
-    println!("{:?}", r);
+    let member = member::Model {
+        ..Default::default()
+    };
+
+    MemberDbMutation::create_member(member).await.expect("failed");
 
     Ok(())
 }

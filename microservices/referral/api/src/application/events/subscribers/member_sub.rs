@@ -6,7 +6,7 @@ use shared::lapin;
 use shared::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
 use crate::domain::handlers::{MemberActor, run_member_actor};
-use crate::domain::messages::MemberReferralEvent;
+use crate::domain::messages::MemberReferralMsg;
 
 #[derive(Clone)]
 pub struct MemberSub;
@@ -24,10 +24,10 @@ impl MemberSub {
 
     /// Handle member created
     pub async fn subscribe_member_created(tx: mpsc::Sender<MemberCommand>) -> Result<(), lapin::Error> {
-        let event_name = "member_created";
+        let event_name = "member_referral";
         let connection = RabbitPool::connection().await;
         let channel = RabbitPool::channel(&connection).await;
-        let _queue = RabbitPool::queue(&channel, &event_name, "member", "created").await;
+        let _queue = RabbitPool::queue(&channel, &event_name, "multi_lang", "referral").await;
         let consumer = RabbitPool::consumer(&channel, &event_name, "referral-member").await;
         let mut consumer_stream = consumer.into_stream();
 
@@ -35,7 +35,7 @@ impl MemberSub {
             while let Some(delivery) = consumer_stream.next().await {
                 if let Ok(delivery) = delivery {
                     // Do something with the delivery data (The message payload)
-                    let payload = MemberReferralEvent::from(delivery.data.as_ref());
+                    let payload = MemberReferralMsg::from(delivery.data.as_ref());
                     tracing::info!("Receive {:?} Event: {:?}", &event_name, &payload);
                     let user_id = payload.clone().user_id.to_string();
 

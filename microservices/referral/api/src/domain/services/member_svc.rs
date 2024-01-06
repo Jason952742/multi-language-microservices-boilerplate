@@ -4,14 +4,14 @@ use uuid::Uuid;
 use shared::GrpcStatusTool;
 use crate::domain::commands::member_cmd::MemberEvent;
 use crate::domain::entities::member;
-use crate::domain::messages::{MemberReferralEvent};
+use crate::domain::messages::{MemberReferralMsg};
 use crate::infra::repositories::member_mutation::MemberDbMutation;
 use crate::infra::repositories::member_query::MemberDbQuery;
 
 pub struct MemberService;
 
 impl MemberService {
-    pub async fn create_referral(user_id: Uuid, event: MemberReferralEvent) -> Result<MemberEvent, Status> {
+    pub async fn create_referral(user_id: Uuid, event: MemberReferralMsg) -> Result<MemberEvent, Status> {
         match MemberDbQuery::check_member(user_id).await.map_err(|e| GrpcStatusTool::neo4j_error(e))? {
             true => Err(Status::already_exists("member already exists")),
             false => {
