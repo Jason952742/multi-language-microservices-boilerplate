@@ -69,9 +69,9 @@ services:
     container_name: keycloak-db
     image: mysql:8
     restart: always
-    command: [ "mysqld", "--port=3307", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
+    command: [ "mysqld", "--port=3305", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci" ]
     ports:
-      - "3307:3307"
+      - "3305:3305"
     env_file:
       - ./.env
     volumes:
