@@ -1,0 +1,115 @@
+[tool.poetry]
+name = "api"
+version = "0.1.0"
+description = ""
+authors = []
+maintainers = []
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.100.0"
+uvicorn = { version = "^0.22.0", extras = ["standard"] }
+pydantic = "^2"
+pydantic-settings = "^2"
+yarl = "^1.9.2"
+ujson = "^5.8.0"
+tortoise-orm = "^0.19.3"
+aerich = "^0.7.1"
+asyncpg = "^0.28.0"
+redis = {version = "^4.6.0", extras = ["hiredis"]}
+aiofiles = "^23.1.0"
+httptools = "^0.6.0"
+aio-pika = "^9.1.4"
+prometheus-client = "^0.17.0"
+prometheus-fastapi-instrumentator = "6.0.0"
+loguru = "^0.7.0"
+
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.1"
+flake8 = "~4.0.1"
+mypy = "^1.1.1"
+isort = "^5.11.4"
+pre-commit = "^3.0.1"
+wemake-python-styleguide = "^0.17.0"
+black = "^22.12.0"
+autoflake = "^1.6.1"
+pytest-cov = "^4.0.0"
+anyio = "^3.6.2"
+pytest-env = "^0.8.1"
+fakeredis = "^2.5.0"
+asynctest = "^0.13.0"
+nest-asyncio = "^1.5.6"
+httpx = "^0.23.3"
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+src_paths = ["api",]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+allow_subclassing_any = true
+allow_untyped_calls = true
+pretty = true
+show_error_codes = true
+implicit_reexport = true
+allow_untyped_decorators = true
+warn_unused_ignores = false
+warn_return_any = false
+namespace_packages = true
+
+# Remove this and add `types-redis`
+# when the issue https://github.com/python/typeshed/issues/8242 is resolved.
+[[tool.mypy.overrides]]
+module = [
+    'redis.asyncio'
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "ignore:.*unclosed.*:ResourceWarning",
+]
+env = [
+    "API_ENVIRONMENT=pytest",
+    "API_DB_BASE=api_test",
+]
+[tool.aerich]
+tortoise_orm = "api.db.config.TORTOISE_CONFIG"
+location = "./api/db/migrations"
+src_folder = "./api"
+
+[fastapi-template.options]
+project_name = "api"
+api_type = "rest"
+enable_redis = "True"
+enable_rmq = "True"
+ci_type = "none"
+enable_migrations = "True"
+enable_taskiq = "None"
+enable_kube = "None"
+kube_name = "api"
+enable_routers = "True"
+enable_kafka = "None"
+enable_loguru = "True"
+traefik_labels = "None"
+add_dummy = "True"
+orm = "tortoise"
+self_hosted_swagger = "True"
+prometheus_enabled = "True"
+sentry_enabled = "None"
+otlp_enabled = "None"
+pydanticv1 = "None"
+gunicorn = "None"
+add_users = "None"
+cookie_auth = "None"
+jwt_auth = "None"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
