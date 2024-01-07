@@ -26,12 +26,12 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Members::CheckSum).string().null())
                     .col(ColumnDef::new(Members::Region).string().null())
                     .col(ColumnDef::new(Members::GroupId).string().null())
-                    .col(ColumnDef::new(Members::CreatedAt).date_time().not_null())
-                    .col(ColumnDef::new(Members::UpdatedAt).date_time().not_null())
+                    .col(ColumnDef::new(Members::CreatedAt).timestamp().not_null())
+                    .col(ColumnDef::new(Members::UpdatedAt).timestamp().not_null())
                     .col(ColumnDef::new(Members::Enabled).boolean().not_null().default(true))
                     .col(ColumnDef::new(Members::Version).integer().not_null().default(0))
                     .col(ColumnDef::new(Members::Deleted).boolean().not_null().default(false))
-                    .col(ColumnDef::new(Members::DeletedAt).date_time().null())
+                    .col(ColumnDef::new(Members::DeletedAt).timestamp().null())
                     .to_owned(),
             )
             .await

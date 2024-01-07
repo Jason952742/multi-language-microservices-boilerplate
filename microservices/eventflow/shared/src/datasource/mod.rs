@@ -6,3 +6,4 @@ pub mod neo4j;
 pub mod mongo;
 pub mod scylladb;
 pub mod influx;
+pub mod mariadb;

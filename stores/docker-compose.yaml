@@ -1,137 +1,20 @@
 version: "3.8"
 
 services:
-  # postgres
-  postgres:
-    container_name: postgres
-    image: postgres:latest
+
+  # mariadb
+  mysql:
+    container_name: mariadb
+    image: mariadb:latest
     restart: always
     ports:
-      - "5432:5432"
+      - "3306:3306"
     env_file:
       - ./.env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
     volumes:
-      - ./postgres/pg_data:/var/lib/postgresql/data/
-
-  adminer:
-    container_name: postgres_adminer
-    image: adminer
-    restart: always
-    ports:
-      - "4030:8080"
-
-  # neo4j
-  neo4j:
-    container_name: neo4j
-    image: neo4j:latest
-    restart: always
-    ports:
-      - "7474:7474"
-      - "7473:7473"
-      - "7687:7687"
-    env_file:
-      - ./.env
-    environment:
-      NEO4J_AUTH: ${NEO4J_AUTH}
-      # Raise memory limits
-      NEO4J_dbms_memory_pagecache_size: 1G
-      NEO4J_dbms.memory.heap.initial_size: 1G
-      NEO4J_dbms_memory_heap_max__size: 1G
-    volumes:
-      - ./neo4j/data:/data
-      - ./neo4j/logs:/logs
-      - ./neo4j/import:/import
-      - ./neo4j/script:/script
-
-  # redis
-  dragonfly:
-    container_name: dragonfly
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
-    restart: always
-    ulimits:
-      memlock: -1
-    ports:
-      - "6379:6379"
-    env_file:
-      - ./.env
-    environment:
-      REQUIREPASS: ${DRAGONFLY_REQUIRE_PASS}
-    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
-    # `host` mode is NOT currently supported in Swarm Mode.
-    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    # network_mode: "host"
-    volumes:
-      - ./dragonfly/data:/data
-
-  # cassandra
-  scylla:
-    container_name: scylla
-    image: scylladb/scylla
-    restart: always
-    ports:
-      - "7100:7000"
-      - "7101:7001"
-      - "9042:9042"
-      - "9160:9160"
-      - "10000:10000"
-    env_file:
-      - ./.env
-    environment:
-      MEMORY: 4G
-      SCYLLA_USER: ${SCYLLA_USER}
-      SCYLLA_PASSWORD: ${SCYLLA_PASSWORD}
-    volumes:
-      - ./scylla/data/:/var/lib/scylla
-      - ./scylla/scylla.yaml:/etc/scylla/scylla.yaml
-
-  influxdb:
-    container_name: influxdb
-    image: influxdb:2.7.4
-    restart: always
-    ports:
-      - "8086:8086"
-    env_file:
-      - ./.env
-    volumes:
-      - ./influxdb/data:/var/lib/influxdb2
-
-  # mongodb
-  mongodb:
-    container_name: mongodb
-    image: mongodb/mongodb-community-server:6.0-ubuntu2204
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./mongo/data:/data
-
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3.12-management
-    restart: always
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    env_file:
-      - ./.env
-    volumes:
-      - ./rabbitmq/data:/var/lib/rabbitmq
-
-  # nats
-  nats:
-    container_name: nats
-    image: nats:latest
-    restart: always
-    ports:
-      - "4222:4222"
-      - "8222:8222"
-      - "6222:6222"
-    environment:
-      HTTP_PORT: 8222
+      - ./mariadb/data:/var/lib/mysql:z
 
   # The 'setup' service runs a one-off script which initializes users inside
   # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the

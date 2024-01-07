@@ -1,6 +1,7 @@
 use axum::{Json, Router};
 use axum::response::{Html, IntoResponse};
 use axum::routing::{get, post};
+use chrono::Utc;
 use jsonwebtoken::{encode, Header};
 use serde_derive::{Deserialize, Serialize};
 use validator::Validate;
@@ -94,5 +95,5 @@ pub struct UserParams {
 pub struct User {
     id: u64,
     name: String,
-    created_at: chrono::NaiveDateTime,
+    created_at: chrono::DateTime<Utc>,
 }

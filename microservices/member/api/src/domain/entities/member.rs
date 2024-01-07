@@ -30,8 +30,8 @@ pub struct Model {
     pub check_sum: Option<String>,
     pub region: Option<String>,
     pub group_id: Option<String>,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeUtc,
+    pub updated_at: DateTimeUtc,
     #[sea_orm(default_value = true)]
     pub enabled: bool,
     #[sea_orm(default_value = 0)]
@@ -41,7 +41,7 @@ pub struct Model {
     pub deleted: bool,
     #[sea_orm(nullable)]
     #[serde(skip_deserializing)]
-    pub deleted_at: Option<DateTime>,
+    pub deleted_at: Option<DateTimeUtc>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

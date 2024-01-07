@@ -58,6 +58,7 @@ nb-configuration.xml
 /platform/keycloak/db
 /platform/kong/pg_data
 /stores/postgres/pg_data
+/stores/mariadb/data
 /stores/neo4j/data
 /stores/neo4j/logs
 /stores/dragonfly/data

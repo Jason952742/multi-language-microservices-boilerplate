@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use sea_orm::*;
-use chrono::Local;
-use shared::postgres::PgPool;
+use chrono::Utc;
+use shared::mariadb::MariaPool;
 use crate::domain::entities::enums::MemberType;
 use crate::domain::entities::member;
 
@@ -9,13 +9,13 @@ pub struct MemberOrmMutation;
 
 impl MemberOrmMutation {
     pub async fn create_member(form_data: member::Model) -> Result<Uuid, DbErr> {
-        let db: &DbConn = PgPool::conn().await;
+        let db: &DbConn = MariaPool::conn().await;
         let inserted = create(form_data.clone()).insert(db).await.expect("model save failed");
         Ok(inserted.id)
     }
 
     pub async fn update_member(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<member::Model, DbErr> {
-        let db: &DbConn = PgPool::conn().await;
+        let db: &DbConn = MariaPool::conn().await;
         let active_model = update(user_id).await?;
 
         member::ActiveModel {
@@ -28,7 +28,7 @@ impl MemberOrmMutation {
     }
 
     pub async fn disable_member(user_id: Uuid) -> Result<member::Model, DbErr> {
-        let db: &DbConn = PgPool::conn().await;
+        let db: &DbConn = MariaPool::conn().await;
 
         let active_model = update(user_id).await?;
 
@@ -39,13 +39,13 @@ impl MemberOrmMutation {
     }
 
     pub async fn _soft_delete(user_id: Uuid) -> Result<member::Model, DbErr> {
-        let db: &DbConn = PgPool::conn().await;
+        let db: &DbConn = MariaPool::conn().await;
         let active_model = update(user_id).await?;
 
         // set deleted
         member::ActiveModel {
             deleted: Set(true),
-            deleted_at: Set(Some(Local::now().naive_local())),
+            deleted_at: Set(Some(Utc::now())),
             ..active_model
         }.update(db).await
     }
@@ -53,20 +53,26 @@ impl MemberOrmMutation {
 
 fn create(model: member::Model) -> member::ActiveModel {
     let active_model = member::ActiveModel::from(model);
-    member::ActiveModel { enabled: Set(true), created_at: Set(Local::now().naive_local()), updated_at: Set(Local::now().naive_local()), ..active_model }
+    member::ActiveModel { enabled: Set(true), created_at: Set(Utc::now()), updated_at: Set(Utc::now()), ..active_model }
 }
 
 async fn update(id: Uuid) -> Result<member::ActiveModel, DbErr> {
-    let db: &DbConn = PgPool::conn().await;
+    let db: &DbConn = MariaPool::conn().await;
     let active_model: member::ActiveModel = member::Entity::find_by_id(id)
         .one(db).await?
         .ok_or(DbErr::RecordNotFound(format!("Cannot find user {:?}.", id)))
         .map(Into::into)?;
 
-    Ok(member::ActiveModel { version: Set(active_model.version.unwrap() + 1), updated_at: Set(Local::now().naive_local()), ..active_model })
+    Ok(member::ActiveModel { version: Set(active_model.version.unwrap() + 1), updated_at: Set(Utc::now()), ..active_model })
 }
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let member = member::Model {
+      ..Default::default()
+    };
+
+    MemberOrmMutation::create_member(member).await?;
+
     Ok(())
 }

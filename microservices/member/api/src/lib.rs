@@ -9,7 +9,7 @@ use application::grpc::health_grpc::HealthIndicator;
 use application::events::subscribers::MemberSub;
 use shared::Config;
 use application::grpc::member_grpc::MemberGrpc;
-use shared::postgres::PgPool;
+use shared::mariadb::MariaPool;
 use crate::application::grpc::member_grpc::member_proto::member_server::MemberServer;
 
 mod application;
@@ -20,7 +20,7 @@ mod domain;
 ///
 pub async fn start(config: Config) -> anyhow::Result<()> {
     // database initialization
-    let connection = PgPool::conn().await;
+    let connection = MariaPool::conn().await;
 
     // database migrator
     Migrator::up(*&connection, None).await?;
