@@ -35,8 +35,8 @@ impl ScyllaPool {
         Ok(keyspace.to_string())
     }
 
-    pub async fn init_table(session: &Session, keyspace: &str, table: &str, column: &str) -> Result<String, QueryError> {
-        let q = format!("CREATE TABLE IF NOT EXISTS {}.{} ({})", keyspace, table, column);
+    pub async fn init_table(session: &Session, keyspace: &str, table: &str, column: &str, primary: &str, or: &str) -> Result<String, QueryError> {
+        let q = format!("CREATE TABLE IF NOT EXISTS {}.{} ({} {}) {};", keyspace, table, column, primary, or);
         let _ = session.query(q, &[]).await?;
         Ok(table.to_string())
     }
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
-    ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text, primary key (a, b)").await?;
+    ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text,", "primary key (a, b)", "").await?;
 
     session.query("INSERT INTO ks.t (a, b, c) VALUES (?, ?, ?)", (3, 4, "def")).await?;
     session.query("INSERT INTO ks.t (a, b, c) VALUES (1, 2, 'abc')", &[]).await?;
@@ -103,7 +103,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // }
 
     ScyllaPool::init_type(session, &keyspace, "my_type", "int_val int, text_val text").await?;
-    ScyllaPool::init_table(session, &keyspace, "udt_tab", "k int, my my_type, primary key (k)").await?;
+    ScyllaPool::init_table(session, &keyspace, "udt_tab", "k int, my my_type,","primary key (k)", "").await?;
 
     // Define custom struct that matches User Defined Type created earlier
     // wrapping field in Option will gracefully handle null field values
@@ -151,7 +151,7 @@ async fn select_paging() -> Result<(), Box<dyn std::error::Error>> {
 
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
-    let table = ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text, primary key (a, b)").await?;
+    let table = ScyllaPool::init_table(session, &keyspace, "t", "a int, b int, c text,", "primary key (a, b)", "").await?;
 
     for i in 0..16_i32 {
         session.query(format!("INSERT INTO {}.{} (a, b, c) VALUES (?, ?, 'abc')", &keyspace, &table), (i, 2 * i)).await?;
@@ -193,7 +193,7 @@ async fn select_paging() -> Result<(), Box<dyn std::error::Error>> {
 async fn value_list() -> Result<(), Box<dyn std::error::Error>> {
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
-    let table = ScyllaPool::init_table(session, &keyspace, "my_type", "k int, my text, primary key (k)").await;
+    let table = ScyllaPool::init_table(session, &keyspace, "my_type", "k int, my text,", "primary key (k)", "").await;
 
     #[derive(scylla::SerializeRow)]
     struct MyType<'a> {
@@ -231,7 +231,7 @@ async fn custom_deserialization() -> Result<(), Box<dyn std::error::Error>> {
 
     let session = ScyllaPool::connection().await;
     let keyspace = ScyllaPool::init_keyspace(session, "ks", 1).await?;
-    let table = ScyllaPool::init_table(session, &keyspace, "tc", "pk int PRIMARY KEY, v text").await?;
+    let table = ScyllaPool::init_table(session, &keyspace, "tc", "pk int, v text", "PRIMARY KEY (pk)", "").await?;
 
     session.query("INSERT INTO ks.tc (pk, v) VALUES (?, ?)", (1, "asdf")).await?;
 
@@ -284,7 +284,7 @@ async fn get_test() -> Result<(), Box<dyn std::error::Error>> {
     let session = ScyllaPool::connection().await;
 
     ScyllaPool::init_keyspace(session, "ks", 1).await?;
-    ScyllaPool::init_table(session, "ks", "hello", "pk int, ck int, value text, primary key (pk, ck)").await?;
+    ScyllaPool::init_table(session, "ks", "hello", "pk int, ck int, value text,", "primary key (pk, ck)", "").await?;
 
     session.query("INSERT INTO ks.hello (pk, ck, value) VALUES (?, ?, ?)", (3, 4, "def")).await?;
     session.query("INSERT INTO ks.hello (pk, ck, value) VALUES (1, 2, 'abc')", &[]).await?;
@@ -313,7 +313,7 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
 
     // Date
     // Date is a year, month and day in the range -5877641-06-23 to -5877641-06-23
-    ScyllaPool::init_table(session, "ks", "dates", "d date primary key").await?;
+    ScyllaPool::init_table(session, "ks", "dates", "d date,", "primary key (d)", "").await?;
     // If 'chrono' feature is enabled, dates in the range -262145-1-1 to 262143-12-31 can be represented using
     // chrono::NaiveDate
     let chrono_date = NaiveDate::from_ymd_opt(2020, 2, 20).unwrap();
@@ -360,7 +360,7 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
 
     // Time
     // Time is represented as nanosecond count since midnight in range 0..=86399999999999
-    ScyllaPool::init_table(session, "ks", "times", "t time primary key").await?;
+    ScyllaPool::init_table(session, "ks", "times", "t time,", "primary key (t)", "").await?;
 
     // Time can be represented using 3 different types, chrono::NaiveTime, time::Time and CqlTime. All types support full value range
 
@@ -399,7 +399,7 @@ async fn cql_time_type() -> Result<(), Box<dyn std::error::Error>> {
 
     // Timestamp
     // Timestamp is represented as milliseconds since unix epoch - 1970-01-01. Negative values are also possible
-    ScyllaPool::init_table(session, "ks", "timestamps", "t timestamp primary key").await?;
+    ScyllaPool::init_table(session, "ks", "timestamps", "t timestamp,", "primary key (t)", "").await?;
 
     // Timestamp can also be represented using 3 different types,
     // chrono::DateTime<chrono::Utc>, time::OffsetDateTime and CqlTimestamp.
