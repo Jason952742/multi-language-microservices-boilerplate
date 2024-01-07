@@ -8,6 +8,7 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from api.db.config import TORTOISE_CONFIG
 from api.logging import configure_logging
+from api.web.api import monitoring
 from api.web.api.router import api_router
 from api.web.lifetime import register_shutdown_event, register_startup_event
 
@@ -38,6 +39,7 @@ def get_app() -> FastAPI:
 
     # Main router for the API.
     app.include_router(router=api_router, prefix="/api")
+    app.include_router(monitoring.router)
     # Adds static directory.
     # This directory is used to access swagger files.
     app.mount(
