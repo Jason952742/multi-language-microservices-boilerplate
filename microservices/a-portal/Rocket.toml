@@ -1,5 +1,18 @@
+## defaults for _all_ profiles
 [default]
+address = "127.0.0.1"
+port = 50013
+workers = 16
+max_blocking = 512
+keep_alive = 5
+ident = "Rocket"
+ip_header = "X-Real-IP" # set to `false` to disable
+log_level = "normal"
+temp_dir = "/tmp"
+cli_colors = true
+secret_key = "hPrYyЭRiMyµ5sBB1π+CMæ1køFsåqKvBiQJxBVHQk="
 template_dir = "api/templates/"
+
 
 [default.databases.sea_orm]
 # Mysql
