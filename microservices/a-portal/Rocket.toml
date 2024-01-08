@@ -7,10 +7,12 @@ max_blocking = 512
 keep_alive = 5
 ident = "Rocket"
 ip_header = "X-Real-IP" # set to `false` to disable
-log_level = "normal"
+log_level = "critical"
 temp_dir = "/tmp"
 cli_colors = true
 secret_key = "hPrYyЭRiMyµ5sBB1π+CMæ1køFsåqKvBiQJxBVHQk="
+key = "a release app-key"
+extra = false
 template_dir = "api/templates/"
 
 

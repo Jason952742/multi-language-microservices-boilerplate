@@ -2,7 +2,6 @@ use std::env;
 use clap::Parser;
 use colored::Colorize;
 use tracing::info;
-use api::start;
 use shared::{Config, consul_api};
 
 #[tokio::main]
