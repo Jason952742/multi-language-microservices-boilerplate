@@ -15,8 +15,8 @@
       </tr>
     </thead>
     {% for post in posts %}
-    <tr class="post" onclick="window.location='/{{ post.id }}';">
-      <td>{{ post.id }}</td>
+    <tr class="post" onclick="window.location='/{{ post._id }}';">
+      <td>{{ post._id }}</td>
       <td>{{ post.title }}</td>
       <td>{{ post.text }}</td>
     </tr>
