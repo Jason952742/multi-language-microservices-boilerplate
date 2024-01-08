@@ -1,0 +1,12 @@
+[package]
+authors = ["jason <jason@jaasun.com>"]
+edition = "2021"
+name = "a-portal"
+publish = false
+version = "0.1.0"
+
+[workspace]
+members = [".", "api", "service", "entity", "migration"]
+
+[dependencies]
+api = { path = "api" }
