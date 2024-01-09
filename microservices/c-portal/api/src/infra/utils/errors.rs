@@ -36,6 +36,9 @@ pub enum CustomError {
   AxumFormRejection(#[from] FormRejection),
 
   #[error("{0}")]
+  JsonValidationError(String),
+
+  #[error("{0}")]
   NotFound(#[from] NotFound),
 
   #[error("{0}")]
@@ -61,12 +64,17 @@ impl CustomError {
       CustomError::AxumFormRejection(_) => (StatusCode::BAD_REQUEST, 40004),
       CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40005),
       CustomError::BadPath(_) => (StatusCode::BAD_REQUEST, 40006),
+      CustomError::JsonValidationError(_) => (StatusCode::BAD_REQUEST, 40007),
+
       CustomError::NotFound(_) => (StatusCode::NOT_FOUND, 40403),
+
       CustomError::Authenticate(AuthError::MissingCredentials) => (StatusCode::UNAUTHORIZED, 40102),
       CustomError::Authenticate(AuthError::MissingToken) => (StatusCode::UNAUTHORIZED, 40103),
       CustomError::Authenticate(AuthError::WrongCredentials) => (StatusCode::UNAUTHORIZED, 40104),
       CustomError::Authenticate(AuthError::InvalidToken) => (StatusCode::UNAUTHORIZED, 40105),
+
       CustomError::Authenticate(AuthError::Locked) => (StatusCode::LOCKED, 42301),
+
       CustomError::Authorisation(_) => (StatusCode::FORBIDDEN, 40301),
 
       // 5XX Errors

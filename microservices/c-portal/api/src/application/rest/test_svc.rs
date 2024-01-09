@@ -1,21 +1,22 @@
 use axum::{Json, Router};
 use axum::extract::Path;
 use axum::response::{IntoResponse};
-use axum::routing::{get};
+use axum::routing::{get, post};
 use chrono::Utc;
 use serde_derive::{Deserialize, Serialize};
-use crate::infra::{ValidatedPath};
+use serde_json::Value;
+use crate::infra::{CustomError, ValidatedPath};
+use crate::infra::json_validate::ValidatedJson;
 
 pub fn test_routes() -> Router {
     Router::new()
-        .route("/test/:s", get(test))
+        .route("/test", post(handler))
         .route("/users/:user_id/teams/:team_id", get(pathcustomize))
 }
 
-async fn test(ValidatedPath(s): ValidatedPath<i32>) -> String {
-    println!("{:?}", s);
-
-    "hello".to_string()
+pub async fn handler(ValidatedJson(value): ValidatedJson<Params>) -> Result<String, CustomError> {
+    println!("{:?}", value);
+    Ok("hello".to_string())
 }
 
 async fn pathcustomize(Path(params): Path<Params>) -> impl IntoResponse {
@@ -28,9 +29,3 @@ struct Params {
     team_id: u32,
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
-pub struct User {
-    id: u64,
-    name: String,
-    created_at: chrono::DateTime<Utc>,
-}
