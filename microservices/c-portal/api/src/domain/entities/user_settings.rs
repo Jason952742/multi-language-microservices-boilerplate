@@ -1,7 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
-use shared::bson::{Bson, DateTime};
+use shared::bson::{Bson, DateTime, Uuid};
 use shared::mongodb::bson::oid::ObjectId;
-use uuid::Uuid;
 use shared::bson;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

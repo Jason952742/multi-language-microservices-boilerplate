@@ -4,6 +4,7 @@ use shared::bson::serde_helpers::serialize_object_id_as_hex_string;
 use shared::bson::serde_helpers::bson_datetime_as_rfc3339_string;
 use uuid::Uuid;
 use validator::Validate;
+use shared::{bson_uuid_to_uuid, uuid_to_bson_uuid};
 use shared::bson::DateTime;
 use shared::bson::oid::ObjectId;
 use crate::domain::entities::user_settings;
@@ -22,7 +23,7 @@ impl Into<user_settings::Model> for UserSettingsForm {
         let now: DateTime = Utc::now().into();
         user_settings::Model {
             id: None,
-            user_id: self.user_id,
+            user_id: uuid_to_bson_uuid(self.user_id),
             theme: self.theme,
             font_size: 12,
             background_color: "blue".to_string(),
@@ -56,7 +57,7 @@ impl From<user_settings::Model> for UserSettingsItem {
     fn from(value: user_settings::Model) -> Self {
        Self {
            id: value.id.unwrap(),
-           user_id: value.user_id,
+           user_id: bson_uuid_to_uuid(value.user_id),
            theme: value.theme,
            language: value.language,
            created_at: value.created_at,

@@ -31,7 +31,7 @@ async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 
 bytes = { version = "1.5.0" }
 chrono = "0.4.31"
-uuid = "1.6.1"
+uuid = { version = "1.6.1", features = ["serde"] }
 dotenvy = "0.15.7"
 colored = "2.1.0"
 

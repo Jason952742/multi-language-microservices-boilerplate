@@ -5,7 +5,7 @@ use tracing::debug;
 use shared::bson::doc;
 use shared::mongo::MongoPool;
 use shared::to_object_id;
-use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedPath};
+use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedJson, ValidatedPath};
 use crate::infra::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::domain::entities::{user_settings};
@@ -59,14 +59,29 @@ async fn remove_settings_by_id(ValidatedPath(id): ValidatedPath<String>) -> Resu
     Ok(res)
 }
 
-async fn update_settings_by_id(ValidatedPath(id): ValidatedPath<String>, Json(payload): Json<user_settings::Model>) -> Result<Json<UserSettingsItem>, CustomError> {
+async fn update_settings_by_id(ValidatedPath(id): ValidatedPath<String>, ValidatedJson(payload): ValidatedJson<UserSettingsForm>) -> Result<Json<UserSettingsItem>, CustomError> {
     let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
     let conn = MongoPool::conn().await;
 
-    SettingsDbMutation::update_settings_by_id(conn, oid, payload.clone())
-        .await.map_err(|e| CustomError::Mongo(e))?;
+    match SettingsDbQuery::find_settings_by_id(conn, oid)
+        .await.map_err(|e| CustomError::Mongo(e))? {
+        Some(x) => {
+            let model = user_settings::Model {
+                user_id: x.user_id,
+                theme: payload.theme,
+                language: payload.language,
+                ..x
+            };
+            SettingsDbMutation::update_settings_by_id(conn, oid, model.clone())
+                .await.map_err(|e| CustomError::Mongo(e))?;
 
-    Ok(Json(UserSettingsItem::from(payload)))
+            Ok(Json(UserSettingsItem::from(model)))
+        }
+        None => {
+            debug!("Cat not found, returning 404 status code");
+            return Err(CustomError::not_found());
+        }
+    }
 }
 
 async fn query_settings(pagination: PaginationQuery) -> Response<Vec<UserSettingsItem>> {
