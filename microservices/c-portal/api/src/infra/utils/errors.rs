@@ -1,8 +1,9 @@
-use axum::extract::rejection::FormRejection;
+use axum::extract::rejection::{FormRejection, JsonRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
 use bcrypt::BcryptError;
+use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::task::JoinError;
 use shared::bson;
@@ -23,8 +24,8 @@ pub enum CustomError {
   #[error("{0}")]
   Authenticate(#[from] AuthError),
 
-  #[error("Error authorisation: {0}")]
-  Authorisation(String),
+  // #[error("Error authorisation: {0}")]
+  // Authorisation(String),
 
   #[error("{0}")]
   BadRequest(#[from] BadRequest),
@@ -35,8 +36,8 @@ pub enum CustomError {
   #[error(transparent)]
   AxumFormRejection(#[from] FormRejection),
 
-  #[error("{0}")]
-  JsonValidationError(String),
+  #[error(transparent)]
+  AxumJsonRejection(#[from] JsonRejection),
 
   #[error("{0}")]
   NotFound(#[from] NotFound),
@@ -62,9 +63,10 @@ impl CustomError {
       CustomError::BadRequest(_) => (StatusCode::BAD_REQUEST, 40002),
       CustomError::ValidationError(_) => (StatusCode::BAD_REQUEST, 40003),
       CustomError::AxumFormRejection(_) => (StatusCode::BAD_REQUEST, 40004),
-      CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40005),
-      CustomError::BadPath(_) => (StatusCode::BAD_REQUEST, 40006),
-      CustomError::JsonValidationError(_) => (StatusCode::BAD_REQUEST, 40007),
+      CustomError::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, 40005),
+      CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40006),
+      CustomError::BadPath(_) => (StatusCode::BAD_REQUEST, 40007),
+
 
       CustomError::NotFound(_) => (StatusCode::NOT_FOUND, 40403),
 
@@ -73,9 +75,9 @@ impl CustomError {
       CustomError::Authenticate(AuthError::WrongCredentials) => (StatusCode::UNAUTHORIZED, 40104),
       CustomError::Authenticate(AuthError::InvalidToken) => (StatusCode::UNAUTHORIZED, 40105),
 
-      CustomError::Authenticate(AuthError::Locked) => (StatusCode::LOCKED, 42301),
+      // CustomError::Authenticate(AuthError::Locked) => (StatusCode::LOCKED, 42301),
 
-      CustomError::Authorisation(_) => (StatusCode::FORBIDDEN, 40301),
+      // CustomError::Authorisation(_) => (StatusCode::FORBIDDEN, 40301),
 
       // 5XX Errors
       CustomError::Authenticate(AuthError::TokenCreation) => (StatusCode::INTERNAL_SERVER_ERROR, 50001),
@@ -119,8 +121,8 @@ pub enum AuthError {
   MissingToken,
   #[error("Invalid authentication token")]
   InvalidToken,
-  #[error("User is locked")]
-  Locked,
+  // #[error("User is locked")]
+  // Locked,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -130,3 +132,10 @@ pub struct BadRequest {}
 #[derive(thiserror::Error, Debug)]
 #[error("Not found")]
 pub struct NotFound {}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct JsonError {
+  pub message: String,
+  pub origin: Option<String>,
+  pub path: Option<String>
+}
