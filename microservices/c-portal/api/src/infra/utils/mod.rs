@@ -14,7 +14,7 @@ use serde_derive::{Deserialize, Serialize};
 
 
 #[derive(Deserialize)]
-pub struct Params {
+pub struct PageingParams {
     pub page: Option<u32>,
     pub per_page: Option<u32>,
 }

@@ -4,7 +4,7 @@ use tokio::net::TcpListener;
 use axum::http::header;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
-use crate::application::rest::{health_routes, settings_routes};
+use crate::application::rest::{health_routes, test_routes, settings_routes};
 use listenfd::ListenFd;
 use shared::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
@@ -45,7 +45,7 @@ pub async fn start(config: Config) -> anyhow::Result<()> {
 fn api_router() -> Router {
     Router::new()
         .merge(health_routes())
-        // .merge(test_routes())
+        .merge(test_routes())
         .merge(Router::new().nest(
             "/api/v1",
             // All public v1 routes will be nested here.
