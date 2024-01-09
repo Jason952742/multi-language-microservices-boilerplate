@@ -17,7 +17,7 @@ pub use json_validate::*;
 pub use query_validate::*;
 pub use pagination::*;
 
-pub fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+pub fn _empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
     where
         D: Deserializer<'de>,
         T: FromStr,

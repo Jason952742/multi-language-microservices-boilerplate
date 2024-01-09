@@ -1,12 +1,12 @@
-use std::str::FromStr;
+
 use axum::{Json, Router};
 use axum::extract::{Path, Query};
 use axum::response::{IntoResponse};
 use axum::routing::{get};
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize};
 use serde_derive::{Serialize};
 use validator::Validate;
-use crate::infra::{CustomError, PaginationQuery, ValidatedPath, ValidatedQuery};
+use crate::infra::{CustomError, PaginationQuery};
 
 pub fn test_routes() -> Router {
     Router::new()
@@ -14,15 +14,15 @@ pub fn test_routes() -> Router {
         .route("/users/:user_id/teams/:team_id", get(pathcustomize))
 }
 
-pub async fn handler(pagination: PaginationQuery, Query(q): Query<QueryParams>) -> Result<String, CustomError> {
+async fn handler(pagination: PaginationQuery, Query(q): Query<QueryParams>) -> Result<String, CustomError> {
     println!("{:?}", pagination);
     println!("{:?}", q);
     Ok("hello".to_string())
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize)]
 struct QueryParams {
-    qs: i64
+    _qs: i64
 }
 
 // #[serde(default, deserialize_with = "empty_string_as_none")]

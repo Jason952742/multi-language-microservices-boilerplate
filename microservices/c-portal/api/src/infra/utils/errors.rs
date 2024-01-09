@@ -93,7 +93,7 @@ impl CustomError {
     }
   }
 
-  pub fn bad_request() -> Self {
+  pub fn _bad_request() -> Self {
     CustomError::BadRequest(BadRequest {})
   }
 

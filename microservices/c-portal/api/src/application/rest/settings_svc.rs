@@ -1,12 +1,11 @@
 use axum::{Json, Router};
-use axum::extract::{Path};
 use axum::routing::{get, delete, post, put};
 use axum::http::StatusCode;
 use tracing::debug;
 use shared::bson::doc;
 use shared::mongo::MongoPool;
 use shared::to_object_id;
-use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, PageingParams, ResponsePagination, ValidatedForm};
+use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedPath};
 use crate::infra::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::domain::entities::{user_settings};
@@ -23,8 +22,6 @@ pub fn settings_routes() -> Router<> {
 }
 
 async fn create_settings(form: ValidatedForm<UserSettingsForm>) -> Response<UserSettingsItem> {
-
-
     let form = form.0;
     let model = form.into();
     let conn = MongoPool::conn().await;
@@ -48,8 +45,7 @@ async fn create_settings(form: ValidatedForm<UserSettingsForm>) -> Response<User
     }
 }
 
-async fn remove_settings_by_id(Path(id): Path<String>) -> Result<CustomResponse<()>, CustomError> {
-
+async fn remove_settings_by_id(ValidatedPath(id): ValidatedPath<String>) -> Result<CustomResponse<()>, CustomError> {
     let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
     let conn = MongoPool::conn().await;
 
@@ -63,17 +59,17 @@ async fn remove_settings_by_id(Path(id): Path<String>) -> Result<CustomResponse<
     Ok(res)
 }
 
-async fn update_settings_by_id(Path(id): Path<String>, Json(payload): Json<user_settings::Model>) -> Result<Json<user_settings::Model>, CustomError> {
-    let oid = to_object_id(id).map_err(|_| CustomError::bad_request())?;
+async fn update_settings_by_id(ValidatedPath(id): ValidatedPath<String>, Json(payload): Json<user_settings::Model>) -> Result<Json<UserSettingsItem>, CustomError> {
+    let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
     let conn = MongoPool::conn().await;
 
     SettingsDbMutation::update_settings_by_id(conn, oid, payload.clone())
         .await.map_err(|e| CustomError::Mongo(e))?;
 
-    Ok(Json(payload))
+    Ok(Json(UserSettingsItem::from(payload)))
 }
 
-async fn query_settings(pagination: PaginationQuery) -> Response<Vec<user_settings::Model>> {
+async fn query_settings(pagination: PaginationQuery) -> Response<Vec<UserSettingsItem>> {
     let conn = MongoPool::conn().await;
 
     let filter = doc! { };
@@ -82,7 +78,7 @@ async fn query_settings(pagination: PaginationQuery) -> Response<Vec<user_settin
         .await.map_err(|e| CustomError::Mongo(e))?;
 
     let res = CustomResponseBuilder::new()
-        .body(models)
+        .body(models.into_iter().map(|x| UserSettingsItem::from(x)).collect())
         .pagination(ResponsePagination {
             count: num_pages,
             offset: pagination.offset,
@@ -94,8 +90,8 @@ async fn query_settings(pagination: PaginationQuery) -> Response<Vec<user_settin
     Ok(res)
 }
 
-async fn get_settings_by_id(Path(id): Path<String>) -> Result<Json<user_settings::Model>, CustomError> {
-    let oid = to_object_id(id).map_err(|_| CustomError::bad_request())?;
+async fn get_settings_by_id(ValidatedPath(id): ValidatedPath<String>) -> Result<Json<UserSettingsItem>, CustomError> {
+    let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
     let conn = MongoPool::conn().await;
 
     let opt = SettingsDbQuery::find_settings_by_id(conn, oid)
@@ -104,7 +100,7 @@ async fn get_settings_by_id(Path(id): Path<String>) -> Result<Json<user_settings
     match opt {
         Some(x) => {
             debug!("Returning settings");
-            Ok(Json(x))
+            Ok(Json(UserSettingsItem::from(x)))
         }
         None => {
             debug!("Cat not found, returning 404 status code");

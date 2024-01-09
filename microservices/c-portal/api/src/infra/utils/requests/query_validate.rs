@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use axum::extract::{FromRequest, Request, Query, FromRequestParts};
+use axum::extract::{FromRequest, Request, Query};
 use axum::extract::rejection::{QueryRejection};
 
 use serde::de::DeserializeOwned;
