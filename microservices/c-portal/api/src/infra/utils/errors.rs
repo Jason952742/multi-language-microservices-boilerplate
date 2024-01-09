@@ -21,7 +21,10 @@ pub enum CustomError {
   SerializeMongoResponse(#[from] bson::de::Error),
 
   #[error("{0}")]
-  Authenticate(#[from] AuthenticateError),
+  Authenticate(#[from] AuthError),
+
+  #[error("Error authorisation: {0}")]
+  Authorisation(String),
 
   #[error("{0}")]
   BadRequest(#[from] BadRequest),
@@ -59,12 +62,15 @@ impl CustomError {
       CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40005),
       CustomError::BadPath(_) => (StatusCode::BAD_REQUEST, 40006),
       CustomError::NotFound(_) => (StatusCode::NOT_FOUND, 40403),
-      CustomError::Authenticate(AuthenticateError::WrongCredentials) => (StatusCode::UNAUTHORIZED, 40104),
-      CustomError::Authenticate(AuthenticateError::InvalidToken) => (StatusCode::UNAUTHORIZED, 40105),
-      CustomError::Authenticate(AuthenticateError::Locked) => (StatusCode::LOCKED, 40106),
+      CustomError::Authenticate(AuthError::MissingCredentials) => (StatusCode::UNAUTHORIZED, 40102),
+      CustomError::Authenticate(AuthError::MissingToken) => (StatusCode::UNAUTHORIZED, 40103),
+      CustomError::Authenticate(AuthError::WrongCredentials) => (StatusCode::UNAUTHORIZED, 40104),
+      CustomError::Authenticate(AuthError::InvalidToken) => (StatusCode::UNAUTHORIZED, 40105),
+      CustomError::Authenticate(AuthError::Locked) => (StatusCode::LOCKED, 42301),
+      CustomError::Authorisation(_) => (StatusCode::FORBIDDEN, 40301),
 
       // 5XX Errors
-      CustomError::Authenticate(AuthenticateError::TokenCreation) => (StatusCode::INTERNAL_SERVER_ERROR, 50001),
+      CustomError::Authenticate(AuthError::TokenCreation) => (StatusCode::INTERNAL_SERVER_ERROR, 50001),
       // CustomError::Authorisation(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50002),
       CustomError::Mongo(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50003),
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
@@ -94,12 +100,16 @@ impl IntoResponse for CustomError {
 
 #[derive(thiserror::Error, Debug)]
 #[error("...")]
-pub enum AuthenticateError {
+pub enum AuthError {
+  #[error("Missing authentication credentials")]
+  MissingCredentials,
   #[error("Wrong authentication credentials")]
   WrongCredentials,
   #[error("Failed to create authentication token")]
   TokenCreation,
-  #[error("Invalid authentication credentials")]
+  #[error("Missing authentication token")]
+  MissingToken,
+  #[error("Invalid authentication token")]
   InvalidToken,
   #[error("User is locked")]
   Locked,
@@ -112,31 +122,3 @@ pub struct BadRequest {}
 #[derive(thiserror::Error, Debug)]
 #[error("Not found")]
 pub struct NotFound {}
-
-
-
-#[derive(Debug)]
-pub enum AuthError {
-  WrongCredentials,
-  MissingCredentials,
-  TokenCreation,
-  InvalidToken,
-}
-
-
-impl IntoResponse for AuthError {
-  fn into_response(self) -> Response {
-    let (status, error_message) = match self {
-      AuthError::WrongCredentials => (StatusCode::UNAUTHORIZED, "Wrong credentials"),
-      AuthError::MissingCredentials => (StatusCode::BAD_REQUEST, "Missing credentials"),
-      AuthError::TokenCreation => (StatusCode::INTERNAL_SERVER_ERROR, "Token creation error"),
-      AuthError::InvalidToken => (StatusCode::BAD_REQUEST, "Invalid token"),
-    };
-    let body = Json(json!({
-            "error": error_message,
-        }));
-    (status, body).into_response()
-  }
-}
-
-pub struct AuthorisationError;

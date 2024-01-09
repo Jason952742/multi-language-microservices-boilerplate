@@ -1,16 +1,15 @@
-pub mod jwt;
+
 pub mod requests;
 pub mod responses;
 pub mod errors;
 
-pub use jwt::*;
 pub use requests::*;
 pub use responses::*;
 pub use errors::*;
 
 use axum::Router;
 use axum::routing::MethodRouter;
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::{Deserialize};
 
 
 #[derive(Deserialize)]

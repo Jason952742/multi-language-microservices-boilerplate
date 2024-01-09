@@ -6,7 +6,7 @@ use tracing::debug;
 use shared::bson::doc;
 use shared::mongo::MongoPool;
 use shared::to_object_id;
-use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, PageingParams, ResponsePagination, ValidatedForm, ValidatedPath, Version};
+use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, PageingParams, ResponsePagination, ValidatedForm};
 use crate::infra::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::domain::entities::{user_settings};
@@ -64,7 +64,7 @@ async fn remove_settings_by_id(Path(id): Path<String>) -> Result<CustomResponse<
 }
 
 async fn update_settings_by_id(Path(id): Path<String>, Json(payload): Json<user_settings::Model>) -> Result<Json<user_settings::Model>, CustomError> {
-    let oid = to_object_id(id).map_err(|e| CustomError::bad_request())?;
+    let oid = to_object_id(id).map_err(|_| CustomError::bad_request())?;
     let conn = MongoPool::conn().await;
 
     SettingsDbMutation::update_settings_by_id(conn, oid, payload.clone())
@@ -73,7 +73,7 @@ async fn update_settings_by_id(Path(id): Path<String>, Json(payload): Json<user_
     Ok(Json(payload))
 }
 
-async fn query_settings(Query(params): Query<PageingParams>, pagination: Pagination) -> Response<Vec<user_settings::Model>> {
+async fn query_settings(Query(_params): Query<PageingParams>, pagination: Pagination) -> Response<Vec<user_settings::Model>> {
     let conn = MongoPool::conn().await;
 
     let filter = doc! { };
@@ -95,7 +95,7 @@ async fn query_settings(Query(params): Query<PageingParams>, pagination: Paginat
 }
 
 async fn get_settings_by_id(Path(id): Path<String>) -> Result<Json<user_settings::Model>, CustomError> {
-    let oid = to_object_id(id).map_err(|e| CustomError::bad_request())?;
+    let oid = to_object_id(id).map_err(|_| CustomError::bad_request())?;
     let conn = MongoPool::conn().await;
 
     let opt = SettingsDbQuery::find_settings_by_id(conn, oid)

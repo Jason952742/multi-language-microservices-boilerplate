@@ -1,8 +1,7 @@
 use axum::{
     async_trait,
     extract::{FromRequestParts, Path},
-    http::{request::Parts},
-    RequestPartsExt,
+    http::{request::Parts}
 };
 use serde::de::DeserializeOwned;
 use crate::infra::CustomError;
