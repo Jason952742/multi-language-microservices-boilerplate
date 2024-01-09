@@ -1,5 +1,5 @@
 use core::fmt;
-use axum::extract::rejection::{FormRejection};
+use axum::extract::rejection::{FormRejection, PathRejection, QueryRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -41,6 +41,12 @@ pub enum CustomError {
   AxumJsonRejection(AxumJsonRejection),
 
   #[error("{0}")]
+  AxumQueryRejection(#[from] QueryRejection),
+
+  #[error("{0}")]
+  AxumPathRejection(#[from] PathRejection),
+
+  #[error("{0}")]
   NotFound(#[from] NotFound),
 
   #[error("{0}")]
@@ -51,9 +57,6 @@ pub enum CustomError {
 
   #[error("Error version {0}")]
   BadVersion(String),
-
-  #[error("Error path {0}")]
-  BadPath(String),
 }
 
 impl CustomError {
@@ -65,9 +68,9 @@ impl CustomError {
       CustomError::ValidationError(_) => (StatusCode::BAD_REQUEST, 40003),
       CustomError::AxumFormRejection(_) => (StatusCode::BAD_REQUEST, 40004),
       CustomError::AxumJsonRejection(_) => (StatusCode::BAD_REQUEST, 40005),
-      CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40006),
-      CustomError::BadPath(_) => (StatusCode::BAD_REQUEST, 40007),
-
+      CustomError::AxumQueryRejection(_) => (StatusCode::BAD_REQUEST, 40006),
+      CustomError::AxumPathRejection(_) => (StatusCode::BAD_REQUEST, 40007),
+      CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40008),
 
       CustomError::NotFound(_) => (StatusCode::NOT_FOUND, 40403),
 

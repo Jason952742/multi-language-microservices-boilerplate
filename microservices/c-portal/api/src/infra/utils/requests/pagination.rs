@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use axum::extract::{FromRequestParts, Query};
-use axum::http::{request::Parts, StatusCode};
+use axum::http::{request::Parts};
 use serde::Deserialize;
+use crate::infra::CustomError;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Limit {
@@ -25,7 +26,7 @@ struct Page {
 }
 
 #[derive(Debug, Clone)]
-pub struct Pagination {
+pub struct PaginationQuery {
   pub page: u64,
   /// The number of documents to skip before counting
   pub offset: u64,
@@ -34,20 +35,18 @@ pub struct Pagination {
 }
 
 #[async_trait]
-impl<S> FromRequestParts<S> for Pagination
+impl<S> FromRequestParts<S> for PaginationQuery
 where
   S: Send + Sync,
 {
-  type Rejection = (StatusCode, &'static str);
+  type Rejection = CustomError;
 
   async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
     let Query(Page { page }) = Query::<Page>::from_request_parts(parts, state)
-        .await
-        .unwrap_or_default();
+        .await.map_err(|e| CustomError::AxumQueryRejection(e))?;
 
     let Query(Limit { limit }) = Query::<Limit>::from_request_parts(parts, state)
-      .await
-      .unwrap_or_default();
+      .await.map_err(|e| CustomError::AxumQueryRejection(e))?;
 
     let Query(Offset { offset }) = Query::<Offset>::from_request_parts(parts, state)
       .await

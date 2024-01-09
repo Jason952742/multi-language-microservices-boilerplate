@@ -81,6 +81,7 @@ validator = { version = "0.14.0", features = ["derive"] }
 thiserror = "1.0.52"
 mime = "0.3.17"
 bcrypt = "0.15.0"
+serde_qs = "0.12.0"
 
 [dev-dependencies]
 tokio = { version = "1.35.1", features = ["macros", "rt"] }

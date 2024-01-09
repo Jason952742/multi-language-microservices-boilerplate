@@ -1,22 +1,31 @@
+use std::str::FromStr;
 use axum::{Json, Router};
-use axum::extract::Path;
+use axum::extract::{Path, Query};
 use axum::response::{IntoResponse};
-use axum::routing::{get, post};
-use serde_derive::{Deserialize, Serialize};
+use axum::routing::{get};
+use serde::{Deserialize, Deserializer};
+use serde_derive::{Serialize};
 use validator::Validate;
-use crate::infra::{CustomError};
-use crate::infra::json_validate::ValidatedJson;
+use crate::infra::{CustomError, PaginationQuery, ValidatedPath, ValidatedQuery};
 
 pub fn test_routes() -> Router {
     Router::new()
-        .route("/test", post(handler))
+        .route("/test", get(handler))
         .route("/users/:user_id/teams/:team_id", get(pathcustomize))
 }
 
-pub async fn handler(ValidatedJson(value): ValidatedJson<Login>) -> Result<String, CustomError> {
-    println!("{:?}", value);
+pub async fn handler(pagination: PaginationQuery, Query(q): Query<QueryParams>) -> Result<String, CustomError> {
+    println!("{:?}", pagination);
+    println!("{:?}", q);
     Ok("hello".to_string())
 }
+
+#[derive(Debug, Deserialize, Validate)]
+struct QueryParams {
+    qs: i64
+}
+
+// #[serde(default, deserialize_with = "empty_string_as_none")]
 
 async fn pathcustomize(Path(params): Path<Params>) -> impl IntoResponse {
     Json(params)

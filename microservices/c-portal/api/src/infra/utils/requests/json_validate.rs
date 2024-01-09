@@ -4,12 +4,13 @@ use validator::{Validate};
 use crate::infra::{AxumJsonRejection, CustomError, JsonError};
 
 // We define our own `Json` extractor that customizes the error from `axum::Json`
+#[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedJson<T>(pub T);
 
 #[async_trait]
 impl<'a, S, T> FromRequest<S> for ValidatedJson<T>
 where
-    axum::Json<T>: FromRequest<S, Rejection = JsonRejection>,
+    Json<T>: FromRequest<S, Rejection = JsonRejection>,
     S: Send + Sync,
     T: Deserialize<'a> + Validate + std::fmt::Debug,
 {

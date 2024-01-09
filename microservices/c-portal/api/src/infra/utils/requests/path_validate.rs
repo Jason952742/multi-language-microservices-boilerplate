@@ -22,7 +22,7 @@ impl<S, T> FromRequestParts<S> for ValidatedPath<T>
         match Path::<T>::from_request_parts(parts, state).await {
             Ok(value) => Ok(Self(value.0)),
             Err(rejection) => {
-                Err(CustomError::BadPath(rejection.to_string()))
+                Err(CustomError::AxumPathRejection(rejection))
             }
         }
     }

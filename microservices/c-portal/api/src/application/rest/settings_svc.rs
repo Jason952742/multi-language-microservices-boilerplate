@@ -1,5 +1,5 @@
 use axum::{Json, Router};
-use axum::extract::{Path, Query};
+use axum::extract::{Path};
 use axum::routing::{get, delete, post, put};
 use axum::http::StatusCode;
 use tracing::debug;
@@ -10,7 +10,7 @@ use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, PageingPa
 use crate::infra::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::domain::entities::{user_settings};
-use crate::infra::dto::pagination::Pagination;
+use crate::infra::utils::requests::pagination::PaginationQuery;
 use crate::infra::dto::user_settings::{UserSettingsForm, UserSettingsItem};
 
 pub fn settings_routes() -> Router<> {
@@ -73,7 +73,7 @@ async fn update_settings_by_id(Path(id): Path<String>, Json(payload): Json<user_
     Ok(Json(payload))
 }
 
-async fn query_settings(Query(_params): Query<PageingParams>, pagination: Pagination) -> Response<Vec<user_settings::Model>> {
+async fn query_settings(pagination: PaginationQuery) -> Response<Vec<user_settings::Model>> {
     let conn = MongoPool::conn().await;
 
     let filter = doc! { };
