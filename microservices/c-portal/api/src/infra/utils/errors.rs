@@ -1,4 +1,5 @@
-use axum::extract::rejection::{FormRejection, JsonRejection};
+use core::fmt;
+use axum::extract::rejection::{FormRejection};
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -36,8 +37,8 @@ pub enum CustomError {
   #[error(transparent)]
   AxumFormRejection(#[from] FormRejection),
 
-  #[error(transparent)]
-  AxumJsonRejection(#[from] JsonRejection),
+  #[error("{0}")]
+  AxumJsonRejection(AxumJsonRejection),
 
   #[error("{0}")]
   NotFound(#[from] NotFound),
@@ -136,6 +137,14 @@ pub struct NotFound {}
 #[derive(Debug, Deserialize, Serialize)]
 pub struct JsonError {
   pub message: String,
-  pub origin: Option<String>,
-  pub path: Option<String>
+  pub origin: Option<String>
+}
+
+#[derive(Debug)]
+pub struct AxumJsonRejection(pub Json<JsonError>);
+
+impl fmt::Display for AxumJsonRejection {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "Axum JSON rejection: {:?}", self.0)
+  }
 }

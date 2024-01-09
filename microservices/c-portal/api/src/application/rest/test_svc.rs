@@ -2,11 +2,9 @@ use axum::{Json, Router};
 use axum::extract::Path;
 use axum::response::{IntoResponse};
 use axum::routing::{get, post};
-use chrono::Utc;
 use serde_derive::{Deserialize, Serialize};
-use serde_json::Value;
 use validator::Validate;
-use crate::infra::{CustomError, ValidatedPath};
+use crate::infra::{CustomError};
 use crate::infra::json_validate::ValidatedJson;
 
 pub fn test_routes() -> Router {
