@@ -6,7 +6,7 @@ use axum::routing::{get};
 use serde::{Deserialize};
 use serde_derive::{Serialize};
 use validator::Validate;
-use crate::infra::{CustomError, PaginationQuery};
+use shared::utils::{CustomError, PaginationQuery};
 
 pub fn test_routes() -> Router {
     Router::new()

@@ -5,7 +5,8 @@ use axum::{
     http::{request::Parts},
     RequestPartsExt,
 };
-use crate::infra::CustomError;
+use crate::CustomError;
+
 
 #[derive(Debug)]
 pub enum Version {

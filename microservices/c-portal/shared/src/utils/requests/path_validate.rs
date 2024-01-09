@@ -4,7 +4,7 @@ use axum::{
     http::{request::Parts}
 };
 use serde::de::DeserializeOwned;
-use crate::infra::CustomError;
+use crate::CustomError;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedPath<T>(pub T);

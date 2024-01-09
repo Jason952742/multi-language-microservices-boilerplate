@@ -4,7 +4,8 @@ use axum::extract::rejection::{QueryRejection};
 
 use serde::de::DeserializeOwned;
 use validator::Validate;
-use crate::infra::{CustomError};
+use crate::CustomError;
+
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedQuery<T>(pub T);

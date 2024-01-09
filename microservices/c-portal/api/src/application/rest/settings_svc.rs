@@ -5,11 +5,11 @@ use tracing::debug;
 use shared::bson::doc;
 use shared::mongo::MongoPool;
 use shared::to_object_id;
-use crate::infra::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedJson, ValidatedPath};
-use crate::infra::CustomResponseResult as Response;
+use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedJson, ValidatedPath};
+use shared::utils::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::domain::entities::{user_settings};
-use crate::infra::utils::requests::pagination::PaginationQuery;
+use shared::utils::requests::pagination::PaginationQuery;
 use crate::infra::dto::user_settings::{UserSettingsForm, UserSettingsItem};
 
 pub fn settings_routes() -> Router<> {

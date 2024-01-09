@@ -1,7 +1,7 @@
 use axum::{Router};
 use axum::http::StatusCode;
 use axum::routing::{get};
-use crate::infra::{route};
+use shared::utils::{route};
 
 pub fn health_routes() -> Router {
     route("/health", get(HealthService::health_check))

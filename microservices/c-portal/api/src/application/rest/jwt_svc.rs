@@ -1,8 +1,8 @@
 use axum::{Json, Router};
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
-use crate::infra::{Claims, CustomError, AuthError};
-use crate::infra::dto::auth::{AuthBody, AuthPayload, KEYS};
+use shared::utils::{CustomError, AuthError};
+use crate::infra::dto::auth::{AuthBody, AuthPayload, Claims, KEYS};
 
 pub fn jwt_routes() -> Router {
     Router::new()

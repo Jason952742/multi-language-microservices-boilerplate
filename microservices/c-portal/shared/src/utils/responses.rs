@@ -6,8 +6,7 @@ use axum::{
 use bytes::{BufMut, BytesMut};
 use serde::Serialize;
 use tracing::error;
-
-use crate::infra::CustomError;
+use crate::CustomError;
 
 pub type CustomResponseResult<T> = Result<CustomResponse<T>, CustomError>;
 

@@ -1,6 +1,5 @@
 pub mod form_validate;
 pub mod version;
-pub mod jwt_validate;
 pub mod path_validate;
 pub mod json_validate;
 pub mod query_validate;
@@ -11,13 +10,12 @@ use std::str::FromStr;
 use serde::{de, Deserialize, Deserializer};
 pub use form_validate::*;
 pub use version::*;
-pub use jwt_validate::*;
 pub use path_validate::*;
 pub use json_validate::*;
 pub use query_validate::*;
 pub use pagination::*;
 
-pub fn _empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+pub fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
     where
         D: Deserializer<'de>,
         T: FromStr,

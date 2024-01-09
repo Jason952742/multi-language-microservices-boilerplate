@@ -7,8 +7,8 @@ use bcrypt::BcryptError;
 use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::task::JoinError;
-use shared::bson;
-use shared::mongodb::error::Error as MongoError;
+use bson;
+use mongodb::error::Error as MongoError;
 
 
 #[derive(thiserror::Error, Debug)]
