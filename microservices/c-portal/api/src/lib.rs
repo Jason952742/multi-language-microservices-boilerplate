@@ -47,7 +47,7 @@ fn api_router() -> Router {
         .merge(health_routes())
         // .merge(test_routes())
         .merge(Router::new().nest(
-            "/api",
+            "/api/v1",
             // All public v1 routes will be nested here.
             Router::new().merge(settings_routes()),
         ))
