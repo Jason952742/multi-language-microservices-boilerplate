@@ -1,5 +1,5 @@
-pub mod mutation;
-pub mod query;
+pub mod settings_mutation;
+pub mod settings_query;
 
-pub use mutation::*;
-pub use query::*;
+pub use settings_mutation::*;
+pub use settings_query::*;

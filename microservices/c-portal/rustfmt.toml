@@ -8,3 +8,4 @@ use_small_heuristics="Max"
 reorder_imports = true
 merge_imports = true
 imports_layout = "HorizontalVertical"
+tab_spaces = 2

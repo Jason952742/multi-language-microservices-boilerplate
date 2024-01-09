@@ -1,15 +1,16 @@
 use std::env;
-use tera::Tera;
 use colored::Colorize;
 use tokio::net::TcpListener;
+use axum::http::header;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
-use crate::application::rest::{health_routes, test_routes, post_routes};
-use crate::infra::AppState;
+use crate::application::rest::{health_routes, settings_routes};
 use listenfd::ListenFd;
 use shared::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
-use shared::mongo::MongoPool;
+use tower_http::{
+    compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer,
+    sensitive_headers::SetSensitiveHeadersLayer, };
 
 mod flash;
 mod infra;
@@ -19,18 +20,8 @@ mod application;
 /// API entry
 ///
 pub async fn start(config: Config) -> anyhow::Result<()> {
-    // database initialization
-    let conn = MongoPool::conn().await.clone();
-
-    // create app state
-    let templates = Tera::new(concat!(env!("CARGO_MANIFEST_DIR"), "/templates/**/*"))
-        .expect("Tera initialization failed");
-
-    let state: AppState = AppState { templates, conn };
-
     let app = api_router()
-        .layer(CookieManagerLayer::new())
-        .with_state(state);
+        .layer(CookieManagerLayer::new());
 
     // listen addr
     let mut listenfd = ListenFd::from_env();
@@ -51,11 +42,15 @@ pub async fn start(config: Config) -> anyhow::Result<()> {
 
 /// App Router
 ///
-fn api_router() -> Router<AppState> {
+fn api_router() -> Router {
     Router::new()
-        .merge(post_routes())
         .merge(health_routes())
-        .merge(test_routes())
+        // .merge(test_routes())
+        .merge(Router::new().nest(
+            "/api",
+            // All public v1 routes will be nested here.
+            Router::new().merge(settings_routes()),
+        ))
         .nest_service(
             "/static",
             get_service(ServeDir::new(concat!(env!("CARGO_MANIFEST_DIR"), "/static")))
@@ -63,4 +58,23 @@ fn api_router() -> Router<AppState> {
                     (StatusCode::INTERNAL_SERVER_ERROR, format!("Unhandled internal error: {error}"))
                 }),
         )
+        // High level logging of requests and responses
+        //.layer(
+        // trace::TraceLayer::new_for_http()
+        //     .make_span_with(trace::DefaultMakeSpan::new().include_headers(true))
+        // .on_request(trace::DefaultOnRequest::new().level(tracing::Level::INFO))
+        // .on_response(trace::DefaultOnResponse::new().level(tracing::Level::INFO)),
+        //)
+        // Mark the `Authorization` request header as sensitive so it doesn't show in logs.
+        .layer(SetSensitiveHeadersLayer::new(std::iter::once(
+            header::AUTHORIZATION,
+        )))
+        // Compress responses
+        .layer(CompressionLayer::new())
+        // Propagate `X-Request-Id`s from requests to responses
+        .layer(PropagateHeaderLayer::new(header::HeaderName::from_static(
+            "x-request-id",
+        )))
+        // CORS configuration. This should probably be more restrictive in production.
+        .layer(CorsLayer::permissive())
 }

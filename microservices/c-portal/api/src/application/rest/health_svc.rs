@@ -3,7 +3,7 @@ use axum::http::StatusCode;
 use axum::routing::{get};
 use crate::infra::{AppState, route};
 
-pub fn health_routes() -> Router<AppState> {
+pub fn health_routes() -> Router {
     route("/health", get(HealthService::health_check))
 }
 
@@ -15,5 +15,3 @@ impl HealthService {
     }
 
 }
-
-
