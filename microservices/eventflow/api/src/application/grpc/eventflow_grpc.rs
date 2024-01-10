@@ -5,7 +5,7 @@ use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::utils::{parse_code, to_datetime, to_uuid};
-use crate::application::grpc::eventflow_grpc::eventflow_proto::{AccountTransferRequest, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
+use eventflow_proto::{AccountTransferRequest, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
 use crate::domain::commands::eventflow_cmd::{EventflowCommand, EventflowEvent};
 use crate::domain::entities::enums::{CurrencyType, PaymentType, TransactionType};
 use crate::domain::entities::transaction;
