@@ -131,7 +131,7 @@ pub async fn users_count(base_url: &str, realm_name:&str, token: &str) -> Result
 }
 
 pub async fn add_user_group<'a>(base_url: &'a str, realm_name: &str, id: &str, group_id: &str, token: &'a str) -> Result<(), reqwest::Error> {
-    let url = AdminUrl::UrlAdminUserGroup { realm_name: realm_name.clone(), id: id.clone(), group_id: group_id.clone() };
+    let url = AdminUrl::UrlAdminUserGroup { realm_name, id, group_id };
 
     let k_res = client().await
         .put(format!("{base_url}/{url}"))
@@ -148,7 +148,7 @@ pub async fn add_user_group<'a>(base_url: &'a str, realm_name: &str, id: &str, g
 }
 
 pub async fn remove_user_group<'a>(base_url: &'a str, realm_name: &str, id: &str, group_id: &str, token: &'a str) -> Result<(), reqwest::Error> {
-    let url = AdminUrl::UrlAdminUserGroup { realm_name: realm_name.clone(), id: id.clone(), group_id: group_id.clone() };
+    let url = AdminUrl::UrlAdminUserGroup { realm_name, id, group_id };
 
     let k_res = client().await
         .delete(format!("{base_url}/{url}"))
