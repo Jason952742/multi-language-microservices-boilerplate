@@ -1,6 +1,6 @@
 use tonic::Status;
 use uuid::Uuid;
-use shared::GrpcStatusTool;
+use shared::utils::GrpcStatusTool;
 use crate::domain::aggregates::referral_ar::{Referral, ReferralEvent};
 use crate::infra::repositories::eventsource_query::EventSourceDbQuery;
 

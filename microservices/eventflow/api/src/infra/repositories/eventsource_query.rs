@@ -1,6 +1,6 @@
 use futures::{StreamExt};
 use uuid::Uuid;
-use shared::scylladb::ScyllaPool;
+use shared::datasource::scylladb::ScyllaPool;
 use crate::domain::entities::{eventsource};
 
 pub struct EventSourceDbQuery;

@@ -1,6 +1,6 @@
 use tonic::Status;
 use uuid::Uuid;
-use shared::GrpcStatusTool;
+use shared::utils::GrpcStatusTool;
 use crate::domain::aggregates::member_ar::{Member, MemberEvent};
 use crate::infra::repositories::eventsource_query::EventSourceDbQuery;
 

@@ -4,7 +4,7 @@ use axum::extract::rejection::FormRejection;
 use axum::Form;
 use serde::de::DeserializeOwned;
 use validator::Validate;
-use crate::{CustomError};
+use crate::utils::CustomError;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ValidatedForm<T>(pub T);

@@ -4,7 +4,7 @@ use axum::extract::rejection::{QueryRejection};
 
 use serde::de::DeserializeOwned;
 use validator::Validate;
-use crate::CustomError;
+use crate::utils::CustomError;
 
 
 #[derive(Debug, Clone, Copy, Default)]

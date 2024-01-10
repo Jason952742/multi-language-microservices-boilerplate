@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use futures::{StreamExt};
 use scylla::IntoTypedRows;
 use uuid::Uuid;
-use shared::scylladb::ScyllaPool;
+use shared::datasource::scylladb::ScyllaPool;
 use crate::domain::entities::enums::TransactionType;
 use crate::domain::entities::transaction;
 

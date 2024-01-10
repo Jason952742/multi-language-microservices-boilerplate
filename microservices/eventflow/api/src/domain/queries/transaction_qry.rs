@@ -1,6 +1,6 @@
 use tonic::Status;
 use uuid::Uuid;
-use shared::GrpcStatusTool;
+use shared::utils::GrpcStatusTool;
 use crate::domain::entities::enums::TransactionType;
 use crate::domain::entities::transaction;
 use crate::infra::repositories::transaction_query::TransactionDbQuery;

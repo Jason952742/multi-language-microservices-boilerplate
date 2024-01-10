@@ -1,6 +1,6 @@
 use tracing::log;
 use shared::{lapin};
-use shared::rabbitmq::RabbitPool;
+use shared::datasource::rabbitmq::RabbitPool;
 use crate::domain::messages::MemberReferralMsg;
 
 #[derive(Debug)]

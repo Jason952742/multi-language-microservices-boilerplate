@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use shared::scylla::transport::errors::QueryError;
-use shared::scylladb::ScyllaPool;
+use shared::datasource::scylladb::ScyllaPool;
 use crate::domain::entities::enums::{TransactionStatus};
 use crate::domain::entities::transaction;
 

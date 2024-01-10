@@ -1,6 +1,6 @@
 use scylla::batch::{Batch};
 use shared::scylla::transport::errors::QueryError;
-use shared::scylladb::ScyllaPool;
+use shared::datasource::scylladb::ScyllaPool;
 use crate::domain::aggregates::account_ar::Account;
 use crate::domain::aggregates::member_ar::Member;
 use crate::domain::aggregates::referral_ar::Referral;

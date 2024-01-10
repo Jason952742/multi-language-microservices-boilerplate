@@ -1,7 +1,8 @@
 use axum::{async_trait, extract::{rejection::JsonRejection, FromRequest, Request}, Json};
 use serde::Deserialize;
 use validator::{Validate};
-use crate::{AxumJsonRejection, CustomError, JsonError};
+use crate::utils::{AxumJsonRejection, CustomError, JsonError};
+
 
 // We define our own `Json` extractor that customizes the error from `axum::Json`
 #[derive(Debug, Clone, Copy, Default)]

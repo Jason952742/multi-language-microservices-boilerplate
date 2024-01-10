@@ -5,7 +5,7 @@ use std::net::SocketAddr;
 use colored::Colorize;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use application::grpc::health_grpc::HealthIndicator;
-use shared::Config;
+use shared::config::Config;
 use application::grpc::eventflow_grpc::EventflowGrpc;
 use crate::application::grpc::eventflow_grpc::eventflow_proto::eventflow_server::EventflowServer;
 use crate::infra::migration::Migrator;

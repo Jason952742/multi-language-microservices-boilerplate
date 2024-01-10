@@ -1,7 +1,7 @@
 use chrono::Utc;
 use tonic::Status;
 use uuid::Uuid;
-use shared::{GrpcStatusTool, uuid_to_base64};
+use shared::utils::{GrpcStatusTool, uuid_to_base64};
 use crate::application::events::publishers::ReferralPub;
 use crate::domain::aggregates::account_ar::{Account};
 use crate::domain::aggregates::member_ar::Member;
