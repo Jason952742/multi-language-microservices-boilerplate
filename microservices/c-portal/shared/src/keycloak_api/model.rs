@@ -131,3 +131,39 @@ pub struct GroupRepresentation {
     pub name: String,
     pub path: String,
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Token {
+    pub access_token: String,
+    pub token_type: String,
+    pub session_state: String,
+    pub scope: String,
+}
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+pub struct TokenRequestBody {
+    pub username: String,
+    pub password: String,
+    pub client_id: String,
+    pub client_secret: Option<String>,
+    pub grant_type: String,
+    pub code: Option<String>,
+    pub redirect_uri: Option<String>,
+    pub scope: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RefreshTokenRequestBody {
+    pub client_id: String,
+    pub grant_type: String,
+    pub refresh_token: String,
+}
+
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ClientTokenRequestBody {
+    pub client_id: String,
+    pub grant_type: String,
+    pub client_secret: String,
+}
+

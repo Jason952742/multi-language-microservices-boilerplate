@@ -1,5 +1,4 @@
 pub mod admin;
-pub mod keycloak;
 pub mod openid;
 pub mod urls;
 pub mod model;
@@ -11,6 +10,7 @@ use tracing::info;
 pub use model::*;
 
 use colored::Colorize;
+use jsonwebtoken::{decode_header, errors::Error as JwtError};
 
 static SESSION: OnceCell<Client> = OnceCell::const_new();
 
@@ -25,4 +25,8 @@ pub async fn client() -> &'static Client {
             client
         })
         .await
+}
+
+pub fn jwt_decode(token: String) -> Result<jsonwebtoken::Header, JwtError> {
+    decode_header(&token)
 }

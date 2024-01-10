@@ -6,7 +6,7 @@ use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
 use crate::application::rest::{health_routes, test_routes, settings_routes, jwt_routes};
 use listenfd::ListenFd;
-use shared::Config;
+use shared::config::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
 use tower_http::{
     compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer,

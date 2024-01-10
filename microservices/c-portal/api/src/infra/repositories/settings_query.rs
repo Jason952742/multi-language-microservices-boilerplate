@@ -1,6 +1,6 @@
 use futures::{stream, TryStreamExt};
 use tokio_stream::StreamExt;
-use shared::mongo::MongoPool;
+use shared::datasource::mongo::MongoPool;
 use shared::mongodb;
 use shared::mongodb::{Client, Collection};
 use shared::mongodb::bson::Document;

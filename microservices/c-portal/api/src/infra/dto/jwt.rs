@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use once_cell::sync::Lazy;
 use serde_derive::{Deserialize, Serialize};
-use shared::{AuthError, CustomError};
+use shared::utils::{AuthError, CustomError};
 use axum::{
     async_trait,
     extract::FromRequestParts,

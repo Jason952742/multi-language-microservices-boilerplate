@@ -1,4 +1,4 @@
-use shared::mongo::MongoPool;
+use shared::datasource::mongo::MongoPool;
 use shared::{mongodb};
 use shared::mongodb::bson::oid::ObjectId;
 use shared::mongodb::{Client, Collection};
