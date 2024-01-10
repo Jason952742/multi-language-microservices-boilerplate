@@ -5,7 +5,6 @@ use axum::http::header;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
 use crate::application::rest::{health_routes, test_routes, settings_routes, jwt_routes, auth_routes};
-use listenfd::ListenFd;
 use shared::config::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
 use tower_http::{
@@ -24,16 +23,9 @@ pub async fn start(config: Config) -> anyhow::Result<()> {
         .layer(CookieManagerLayer::new());
 
     // listen addr
-    let mut listenfd = ListenFd::from_env();
     let server_url = format!("{}:{}", config.host, config.port);
-    let listener = match listenfd.take_tcp_listener(0).unwrap() {
-        // if we are given a tcp listener on listen fd 0, we use that one
-        Some(listener) => TcpListener::from_std(listener).unwrap(),
-        // otherwise fall back to local listening
-        None => TcpListener::bind(&server_url).await.unwrap(),
-    };
-
     // run it
+    let listener = TcpListener::bind(&server_url).await.unwrap();
     tracing::info!("C-PortalServer listening on {}", &server_url.color("magenta"));
     axum::serve(listener, app).await.unwrap();
 

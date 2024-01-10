@@ -8,13 +8,12 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::task::JoinError;
 use bson;
-use mongodb::error::Error as MongoError;
 
 
 #[derive(thiserror::Error, Debug)]
 pub enum CustomError {
   #[error("{0}")]
-  Mongo(#[from] MongoError),
+  Mongo(#[from] mongodb::error::Error),
 
   #[error("Error parsing ObjectID: {0}")]
   ParseObjectID(String),
@@ -65,7 +64,10 @@ pub enum CustomError {
   BadVersion(String),
 
   #[error("Error {0}")]
-  UnknownError(#[from] Box<dyn std::error::Error>),
+  BoxStdError(#[from] Box<dyn std::error::Error>),
+
+  #[error("Error {0}")]
+  UnknownErr(&'static str),
 }
 
 impl CustomError {
@@ -99,7 +101,8 @@ impl CustomError {
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
       CustomError::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50005),
       CustomError::HashPassword(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50006),
-      CustomError::UnknownError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
+      CustomError::BoxStdError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
+      CustomError::UnknownErr(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50008),
     }
   }
 

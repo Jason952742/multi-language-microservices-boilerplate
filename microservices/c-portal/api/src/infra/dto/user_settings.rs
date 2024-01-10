@@ -1,7 +1,6 @@
 use chrono::Utc;
 use serde_derive::{Deserialize, Serialize};
 use shared::bson::serde_helpers::serialize_object_id_as_hex_string;
-use shared::bson::serde_helpers::bson_datetime_as_rfc3339_string;
 use uuid::Uuid;
 use validator::Validate;
 use shared::utils::{bson_uuid_to_uuid, uuid_to_bson_uuid};
@@ -40,17 +39,15 @@ impl Into<user_settings::Model> for UserSettingsForm {
 }
 
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct UserSettingsItem {
     #[serde(rename = "_id", serialize_with = "serialize_object_id_as_hex_string")]
     pub id: ObjectId,
     pub user_id: Uuid,
     pub theme: String,
     pub language: String,
-    #[serde(with = "bson_datetime_as_rfc3339_string")]
-    pub created_at: DateTime,
-    #[serde(with = "bson_datetime_as_rfc3339_string")]
-    pub updated_at: DateTime,
+    pub created_at: chrono::DateTime<Utc>,
+    pub updated_at: chrono::DateTime<Utc>,
 }
 
 impl From<user_settings::Model> for UserSettingsItem {
@@ -60,8 +57,8 @@ impl From<user_settings::Model> for UserSettingsItem {
            user_id: bson_uuid_to_uuid(value.user_id),
            theme: value.theme,
            language: value.language,
-           created_at: value.created_at,
-           updated_at: value.updated_at
+           created_at: value.created_at.into(),
+           updated_at: value.updated_at.into()
        }
     }
 }
