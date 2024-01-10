@@ -20,7 +20,7 @@ pub async fn get_admin_token() -> Result<Token, reqwest::Error> {
         scope: Some("openid".to_string()),
         ..Default::default()
     };
-    let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, "master".to_string()).await?;
+    let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, "master").await?;
     Ok(access_token)
 }
 
@@ -35,12 +35,14 @@ pub async fn get_user_token(username: &str, password: &str) -> Result<Token, req
         scope: Some("openid".to_string()),
         ..Default::default()
     };
-    let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, "member".to_string()).await?;
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, &realm).await?;
     Ok(access_token)
 }
 
-pub async fn get_user(username: String, admin_token: &str) -> Result<Option<UserRepresentation>, reqwest::Error> {
-    let user = keycloak_api::admin::get_user_by_name(&**BASE_URL, "member".to_string(), username, admin_token).await?;
+pub async fn get_user(username: &str, admin_token: &str) -> Result<Option<UserRepresentation>, reqwest::Error> {
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    let user = keycloak_api::admin::get_user_by_name(&**BASE_URL, &realm, username, admin_token).await?;
     Ok(user)
 }
 
@@ -64,7 +66,8 @@ pub async fn create_user(username: &str, password: &str, admin_token: &str) -> R
         ..Default::default()
     };
 
-    let result = keycloak_api::admin::create_user(&**BASE_URL, &user, "member".to_string(), admin_token).await?;
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    let result = keycloak_api::admin::create_user(&**BASE_URL, &user, &realm, admin_token).await?;
 
     Ok(result)
 }
@@ -77,7 +80,8 @@ pub async fn change_password(id: String, new_password: String, admin_token: &str
         ..Default::default()
     };
 
-    keycloak_api::admin::change_password(&**BASE_URL, id, &credential, "member".to_string(), admin_token).await?;
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    keycloak_api::admin::change_password(&**BASE_URL, &*id, &credential, &realm, admin_token).await?;
 
     Ok(())
 }

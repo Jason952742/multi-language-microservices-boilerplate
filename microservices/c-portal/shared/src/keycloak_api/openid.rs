@@ -3,18 +3,18 @@ use serde_json::json;
 use crate::keycloak_api::{client, ClientTokenRequestBody, RefreshTokenRequestBody, Token, TokenRequestBody};
 use crate::keycloak_api::urls::OpenIdUrl;
 
-pub async fn user_info(base_url: &str, realm_name: String, bearer: &str) -> Result<serde_json::Value, reqwest::Error> {
+pub async fn user_info(base_url: &str, realm_name: &str, token: &str) -> Result<serde_json::Value, reqwest::Error> {
     let url = OpenIdUrl::UrlUserinfo { realm_name };
 
     let k_res = client().await
         .post(format!("{base_url}/{url}"))
-        .bearer_auth(bearer)
+        .bearer_auth(token)
         .send().await?
         .error_for_status()?;
     Ok(json!(k_res.json().await?))
 }
 
-pub async fn well_known(base_url: &str, realm_name: String) -> Result<String, reqwest::Error> {
+pub async fn well_known(base_url: &str, realm_name: &str) -> Result<String, reqwest::Error> {
     let url = OpenIdUrl::UrlWellKnown { realm_name }.to_string();
 
     let res = client().await
@@ -23,7 +23,7 @@ pub async fn well_known(base_url: &str, realm_name: String) -> Result<String, re
     res.text().await
 }
 
-pub async fn password_token(base_url: &str, payload: TokenRequestBody, realm_name: String) -> Result<Token, reqwest::Error> {
+pub async fn password_token(base_url: &str, payload: TokenRequestBody, realm_name: &str) -> Result<Token, reqwest::Error> {
     let url = OpenIdUrl::UrlToken { realm_name }.to_string();
 
     let k_res = client().await
@@ -43,7 +43,7 @@ pub async fn password_token(base_url: &str, payload: TokenRequestBody, realm_nam
     k_res.json().await
 }
 
-pub async fn client_token(base_url: &str, realm_name: String, client_id: &str, client_secret: &str) -> Result<Token, reqwest::Error> {
+pub async fn client_token(base_url: &str, realm_name: &str, client_id: &str, client_secret: &str) -> Result<Token, reqwest::Error> {
     let url = OpenIdUrl::UrlToken { realm_name }.to_string();
     let payload = ClientTokenRequestBody {
         client_id: client_id.to_owned(),
@@ -64,7 +64,7 @@ pub async fn client_token(base_url: &str, realm_name: String, client_id: &str, c
     k_res.json().await
 }
 
-pub async fn introspect(base_url: &str, realm_name: String, data: serde_json::Value) -> Result<String, reqwest::Error> {
+pub async fn introspect(base_url: &str, realm_name: &str, data: serde_json::Value) -> Result<String, reqwest::Error> {
     let url = OpenIdUrl::UrlIntrospect { realm_name }.to_string();
     let payload = json!({
             "client_id":data["client_id"],
@@ -81,7 +81,7 @@ pub async fn introspect(base_url: &str, realm_name: String, data: serde_json::Va
     k_res.text().await
 }
 
-pub async fn refresh_token(base_url: &str, payload: RefreshTokenRequestBody, realm_name: String) -> Result<String, reqwest::Error> {
+pub async fn refresh_token(base_url: &str, payload: RefreshTokenRequestBody, realm_name:&str) -> Result<String, reqwest::Error> {
     let url = OpenIdUrl::UrlToken { realm_name }.to_string();
 
     let k_res = client().await

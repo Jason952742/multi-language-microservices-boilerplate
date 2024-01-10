@@ -23,6 +23,9 @@ pub enum CustomError {
   SerializeMongoResponse(#[from] bson::de::Error),
 
   #[error("{0}")]
+  ReqwestError(#[from] reqwest::Error),
+
+  #[error("{0}")]
   Authenticate(#[from] AuthError),
 
   // #[error("Error authorisation: {0}")]
@@ -50,6 +53,9 @@ pub enum CustomError {
   NotFound(#[from] NotFound),
 
   #[error("{0}")]
+  AlreadyExists(#[from] AlreadyExists),
+
+  #[error("{0}")]
   RunSyncTask(#[from] JoinError),
 
   #[error("{0}")]
@@ -73,6 +79,7 @@ impl CustomError {
       CustomError::BadVersion(_) => (StatusCode::BAD_REQUEST, 40008),
 
       CustomError::NotFound(_) => (StatusCode::NOT_FOUND, 40403),
+      CustomError::AlreadyExists(_) => (StatusCode::CONFLICT, 40901),
 
       CustomError::Authenticate(AuthError::MissingCredentials) => (StatusCode::UNAUTHORIZED, 40102),
       CustomError::Authenticate(AuthError::MissingToken) => (StatusCode::UNAUTHORIZED, 40103),
@@ -80,12 +87,11 @@ impl CustomError {
       CustomError::Authenticate(AuthError::InvalidToken) => (StatusCode::UNAUTHORIZED, 40105),
 
       // CustomError::Authenticate(AuthError::Locked) => (StatusCode::LOCKED, 42301),
-
       // CustomError::Authorisation(_) => (StatusCode::FORBIDDEN, 40301),
 
       // 5XX Errors
       CustomError::Authenticate(AuthError::TokenCreation) => (StatusCode::INTERNAL_SERVER_ERROR, 50001),
-      // CustomError::Authorisation(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50002),
+      CustomError::ReqwestError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50002),
       CustomError::Mongo(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50003),
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
       CustomError::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50005),
@@ -99,6 +105,10 @@ impl CustomError {
 
   pub fn not_found() -> Self {
     CustomError::NotFound(NotFound {})
+  }
+
+  pub fn already_exists() -> Self {
+    CustomError::AlreadyExists(AlreadyExists {})
   }
 }
 
@@ -136,6 +146,10 @@ pub struct BadRequest {}
 #[derive(thiserror::Error, Debug)]
 #[error("Not found")]
 pub struct NotFound {}
+
+#[derive(thiserror::Error, Debug)]
+#[error("Already exists")]
+pub struct AlreadyExists {}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct JsonError {
