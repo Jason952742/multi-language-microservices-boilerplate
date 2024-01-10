@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use axum::extract::{FromRequestParts, Query};
 use axum::http::{request::Parts};
 use serde::Deserialize;
-use crate::CustomError;
+use crate::utils::CustomError;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Limit {

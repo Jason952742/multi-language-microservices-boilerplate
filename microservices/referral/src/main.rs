@@ -10,7 +10,7 @@ use std::env;
 use clap::Parser;
 use tracing::info;
 use colored::Colorize;
-use shared::{Config, consul_api};
+use shared::{config::Config, consul_api};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

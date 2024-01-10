@@ -6,10 +6,10 @@ use colored::Colorize;
 use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use application::grpc::health_grpc::HealthIndicator;
 use application::events::subscribers::MemberSub;
-use shared::Config;
+use shared::config::Config;
 use application::grpc::member_grpc::MemberGrpc;
 use application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
-use shared::neo4j::Neo4jPool;
+use shared::datasource::neo4j::Neo4jPool;
 
 mod application;
 mod infra;

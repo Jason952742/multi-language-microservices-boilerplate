@@ -1,7 +1,7 @@
 use chrono::{Utc};
 use tonic::Status;
 use uuid::Uuid;
-use shared::GrpcStatusTool;
+use shared::utils::GrpcStatusTool;
 use crate::domain::commands::member_cmd::MemberEvent;
 use crate::domain::entities::member;
 use crate::domain::messages::{MemberReferralMsg};

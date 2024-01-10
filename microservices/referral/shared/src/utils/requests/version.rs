@@ -5,7 +5,7 @@ use axum::{
     http::{request::Parts},
     RequestPartsExt,
 };
-use crate::CustomError;
+use crate::utils::CustomError;
 
 
 #[derive(Debug)]

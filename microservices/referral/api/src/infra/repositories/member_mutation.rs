@@ -1,6 +1,6 @@
 use shared::neo4rs::{self, query, Relation};
 use uuid::Uuid;
-use shared::neo4j::Neo4jPool;
+use shared::datasource::neo4j::Neo4jPool;
 use crate::domain::entities::member;
 
 pub struct MemberDbMutation;

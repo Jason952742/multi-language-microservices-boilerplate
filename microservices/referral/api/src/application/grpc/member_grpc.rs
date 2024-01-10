@@ -1,6 +1,6 @@
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
-use shared::{parse_code, to_uuid};
+use shared::utils::{parse_code, to_uuid};
 use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, ReferralCode, UpdateMemberRequest, UserId};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::member;

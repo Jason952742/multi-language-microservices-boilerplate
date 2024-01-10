@@ -1,5 +1,5 @@
 use shared::{lapin};
-use shared::rabbitmq::RabbitPool;
+use shared::datasource::rabbitmq::RabbitPool;
 
 #[derive(Debug)]
 pub struct MemberPub;
