@@ -18,7 +18,7 @@ pub fn settings_routes() -> Router<> {
         .route("/settings", get(query_settings))
         .route("/settings/:id", get(get_settings_by_id))
         .route("/settings/:id", delete(remove_settings_by_id))
-        .route("/settings/:id", put(update_settings_by_id))
+        // .route("/settings/:id", put(update_settings_by_id))
 }
 
 async fn create_settings(form: ValidatedForm<UserSettingsForm>) -> Response<UserSettingsItem> {
@@ -59,30 +59,30 @@ async fn remove_settings_by_id(ValidatedPath(id): ValidatedPath<String>) -> Resu
     Ok(res)
 }
 
-async fn update_settings_by_id(ValidatedPath(id): ValidatedPath<String>, ValidatedJson(payload): ValidatedJson<UserSettingsForm>) -> Result<Json<UserSettingsItem>, CustomError> {
-    let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
-    let conn = MongoPool::conn().await;
-
-    match SettingsDbQuery::find_settings_by_id(conn, oid)
-        .await.map_err(|e| CustomError::Mongo(e))? {
-        Some(x) => {
-            let model = user_settings::Model {
-                user_id: x.user_id,
-                theme: payload.theme,
-                language: payload.language,
-                ..x
-            };
-            SettingsDbMutation::update_settings_by_id(conn, oid, model.clone())
-                .await.map_err(|e| CustomError::Mongo(e))?;
-
-            Ok(Json(UserSettingsItem::from(model)))
-        }
-        None => {
-            debug!("Cat not found, returning 404 status code");
-            return Err(CustomError::not_found());
-        }
-    }
-}
+// async fn update_settings_by_id(ValidatedPath(id): ValidatedPath<String>, ValidatedJson(payload): ValidatedJson<UserSettingsForm>) -> Result<Json<UserSettingsItem>, CustomError> {
+//     let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
+//     let conn = MongoPool::conn().await;
+//
+//     match SettingsDbQuery::find_settings_by_id(conn, oid)
+//         .await.map_err(|e| CustomError::Mongo(e))? {
+//         Some(x) => {
+//             let model = user_settings::Model {
+//                 user_id: x.user_id,
+//                 theme: payload.theme,
+//                 language: payload.language,
+//                 ..x
+//             };
+//             SettingsDbMutation::update_settings_by_id(conn, oid, model.clone())
+//                 .await.map_err(|e| CustomError::Mongo(e))?;
+//
+//             Ok(Json(UserSettingsItem::from(model)))
+//         }
+//         None => {
+//             debug!("Cat not found, returning 404 status code");
+//             return Err(CustomError::not_found());
+//         }
+//     }
+// }
 
 async fn query_settings(pagination: PaginationQuery) -> Response<Vec<UserSettingsItem>> {
     let conn = MongoPool::conn().await;

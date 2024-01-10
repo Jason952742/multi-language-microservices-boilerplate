@@ -63,6 +63,9 @@ pub enum CustomError {
 
   #[error("Error version {0}")]
   BadVersion(String),
+
+  #[error("Error {0}")]
+  UnknownError(#[from] Box<dyn std::error::Error>),
 }
 
 impl CustomError {
@@ -96,6 +99,7 @@ impl CustomError {
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
       CustomError::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50005),
       CustomError::HashPassword(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50006),
+      CustomError::UnknownError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
     }
   }
 
