@@ -5,7 +5,6 @@ use axum::response::{IntoResponse};
 use axum::routing::{get};
 use serde::{Deserialize};
 use serde_derive::{Serialize};
-use validator::Validate;
 use shared::utils::{CustomError, PaginationQuery};
 
 pub fn test_routes() -> Router {

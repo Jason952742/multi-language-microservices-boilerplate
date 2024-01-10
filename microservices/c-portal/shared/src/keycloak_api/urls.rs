@@ -1,6 +1,5 @@
 use std::fmt::Display;
 use std::string::ToString;
-use strum_macros;
 
 #[derive(Debug)]
 pub enum OpenIdUrl {
