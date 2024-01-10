@@ -1,110 +1,113 @@
+use std::fmt::Display;
+use std::string::ToString;
+use strum_macros;
+
 #[derive(Debug)]
-pub struct Urls {
-    pub url_well_known: &'static str,
-    pub url_token: &'static str,
-    pub url_userinfo: &'static str,
-    pub url_introspect: &'static str,
-    /*url_logout : &'static str,
-    url_certs : &'static str,
-    url_introspect : &'static str,
-    url_entitlement : &'static str,
-    url_auth : &'static str,*/
+pub enum OpenIdUrl {
+    UrlWellKnown { realm_name: String },
+    UrlToken { realm_name: String },
+    UrlUserinfo { realm_name: String },
+    UrlIntrospect { realm_name: String },
+    UrlLogout { realm_name: String },
+    UrlCerts { realm_name: String },
+    UrlEntitlement { realm_name: String },
+    UrlAuth { endpoint: String, client_id: String, redirect_uri: String },
+}
+
+impl Display for OpenIdUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            OpenIdUrl::UrlWellKnown { realm_name } => format!("realms/{realm_name}/.well-known/openid-configuration"),
+            OpenIdUrl::UrlToken { realm_name } => format!("realms/{realm_name}/protocol/openid-connect/token"),
+            OpenIdUrl::UrlUserinfo { realm_name } => format!("realms/{realm_name}/protocol/openid-connect/userinfo"),
+            OpenIdUrl::UrlIntrospect { realm_name } => format!("realms/{realm_name}/protocol/openid-connect/token/introspect"),
+            OpenIdUrl::UrlLogout { realm_name } => format!("realms/{realm_name}/protocol/openid-connect/logout"),
+            OpenIdUrl::UrlCerts { realm_name } => format!("realms/{realm_name}/protocol/openid-connect/certs"),
+            OpenIdUrl::UrlEntitlement { realm_name } => format!("realms/{realm_name}/.well-known/openid-configuration"),
+            OpenIdUrl::UrlAuth { endpoint, client_id, redirect_uri } => format!("{endpoint}?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}"),
+        };
+        write!(f, "{}", str)
+    }
 }
 
 #[derive(Debug)]
-pub struct AdminUrls {
-    pub url_admin_users: &'static str,
-    pub url_admin_users_count: &'static str,
-    pub url_admin_user : &'static str,
-    //url_admin_user_consents : &'static str,
-    pub url_admin_send_update_account : &'static str,
-    /*url_admin_send_verify_email : &'static str,
-    url_admin_reset_password : &'static str,
-    url_admin_get_sessions : &'static str,*/
-    pub url_admin_user_client_roles : &'static str,
-    /*url_admin_user_client_roles_available : &'static str,
-    url_admin_user_client_roles_composite : &'static str,*/
-    pub url_admin_user_realm_roles: &'static str,
-    pub url_admin_user_group : &'static str,
-    pub url_admin_user_groups : &'static str,
-    /*url_admin_user_password : &'static str,
-    url_admin_user_storage : &'static str,
-
-    url_admin_server_info : &'static str,
-
-    url_admin_groups : &'static str,
-    url_admin_group : &'static str,
-    url_admin_group_child : &'static str,
-    url_admin_group_permissions : &'static str,
-    url_admin_group_members : &'static str,
-
-    url_admin_clients : &'static str,
-    url_admin_client : &'static str,
-    url_admin_client_roles : &'static str,
-    url_admin_client_role : &'static str,
-    url_admin_client_authz_settings : &'static str,
-    url_admin_client_authz_resources : &'static str,
-    url_admin_client_certs : &'static str,
-
-    url_admin_realm_roles : &'static str,
-    url_admin_realm_import : &'static str,
-    url_admin_idps : &'static str,
-
-    url_admin_flows : &'static str,
-    url_admin_flows_executions : &'static str,*/
+pub enum AdminUrl {
+    UrlAdminUsers { realm_name: String },
+    UrlAdminUsersCount { realm_name: String },
+    UrlAdminUser { realm_name: String, id: String },
+    UrlAdminUsername { realm_name: String, username: String },
+    UrlAdminUserConsents { realm_name: String, id: String },
+    UrlAdminSendUpdateAccount { realm_name: String, id: String },
+    UrlAdminSendVerifyEmail { realm_name: String, id: String },
+    UrlAdminResetPassword { realm_name: String, id: String },
+    UrlAdminGetSessions { realm_name: String, id: String },
+    UrlAdminUserClientRoles { realm_name: String, id: String, client_id: String },
+    UrlAdminUserClientRolesAvailable { realm_name: String, id: String, client_id: String },
+    UrlAdminUserClientRolesComposite { realm_name: String, id: String, client_id: String },
+    UrlAdminUserRealmRoles { realm_name: String, id: String },
+    UrlAdminUserGroup { realm_name: String, id: String, group_id: String },
+    UrlAdminUserGroups { realm_name: String, id: String },
+    UrlAdminUserPassword { realm_name: String, id: String },
+    UrlAdminUserStorage { realm_name: String, id: String },
+    UrlAdminServerInfo {},
+    UrlAdminGroups { realm_name: String },
+    UrlAdminGroup { realm_name: String, id: String },
+    UrlAdminGroupChild { realm_name: String, id: String },
+    UrlAdminGroupPermissions { realm_name: String, id: String },
+    UrlAdminGroupMembers { realm_name: String, id: String },
+    UrlAdminClients { realm_name: String },
+    UrlAdminClient { realm_name: String, id: String },
+    UrlAdminClientRoles { realm_name: String, id: String },
+    UrlAdminClientRole { realm_name: String, id: String, role_name: String },
+    UrlAdminClientAuthzSettings { realm_name: String, id: String },
+    UrlAdminClientAuthzResources { realm_name: String, id: String },
+    UrlAdminClientCerts { realm_name: String, id: String, attr: String },
+    UrlAdminRealmRoles { realm_name: String },
+    UrlAdminRealmImport {},
+    UrlAdminIdps { realm_name: String },
+    UrlAdminFlows { realm_name: String },
+    UrlAdminFlowsExecutions { realm_name: String, flow_alias: String },
 }
 
-pub const OPENID_URLS: Urls = Urls {
-    url_well_known: "realms/{realm-name}/.well-known/openid-configuration",
-    url_token: "realms/{realm-name}/protocol/openid-connect/token",
-    url_userinfo: "realms/{realm-name}/protocol/openid-connect/userinfo",
-    url_introspect: "realms/{realm-name}/protocol/openid-connect/token/introspect",
-    /*url_logout : "realms/{realm-name}/protocol/openid-connect/logout",
-    url_certs : "realms/{realm-name}/protocol/openid-connect/certs",
-
-    url_entitlement : "realms/{realm-name}/authz/entitlement/{resource-server-id}",
-    url_auth : "{authorization-endpoint}?client_id={client-id}&response_type=code&redirect_uri={redirect-uri}",*/
-};
-
-pub const ADMIN_URLS: AdminUrls = AdminUrls {
-    url_admin_users: "admin/realms/{realm-name}/users",
-    url_admin_users_count: "admin/realms/{realm-name}/users/count",
-    url_admin_user: "admin/realms/{realm-name}/users/{id}",
-    //url_admin_user_consents : "admin/realms/{realm-name}/users/{id}/consents",
-    url_admin_send_update_account : "admin/realms/{realm-name}/users/{id}/execute-actions-email",
-    /*url_admin_send_verify_email : "admin/realms/{realm-name}/users/{id}/send-verify-email",
-    url_admin_reset_password : "admin/realms/{realm-name}/users/{id}/reset-password",
-    url_admin_get_sessions : "admin/realms/{realm-name}/users/{id}/sessions",*/
-    url_admin_user_client_roles : "admin/realms/{realm-name}/users/{id}/role-mappings/clients/{client-id}",
-    /*url_admin_user_client_roles_available : "admin/realms/{realm-name}/users/{id}/role-mappings/clients/{client-id}/available",
-    url_admin_user_client_roles_composite : "admin/realms/{realm-name}/users/{id}/role-mappings/clients/{client-id}/composite",*/
-    url_admin_user_realm_roles: "admin/realms/{realm-name}/users/{id}/role-mappings/realm",
-    url_admin_user_group : "admin/realms/{realm-name}/users/{id}/groups/{group-id}",
-    url_admin_user_groups : "admin/realms/{realm-name}/users/{id}/groups",
-    /*url_admin_user_password : "admin/realms/{realm-name}/users/{id}/reset-password",
-    url_admin_user_storage : "admin/realms/{realm-name}/user-storage/{id}/sync",
-
-    url_admin_server_info : "admin/serverinfo",
-
-    url_admin_groups : "admin/realms/{realm-name}/groups",
-    url_admin_group : "admin/realms/{realm-name}/groups/{id}",
-    url_admin_group_child : "admin/realms/{realm-name}/groups/{id}/children",
-    url_admin_group_permissions : "admin/realms/{realm-name}/groups/{id}/management/permissions",
-    url_admin_group_members : "admin/realms/{realm-name}/groups/{id}/members",
-
-    url_admin_clients : "admin/realms/{realm-name}/clients",
-    url_admin_client : "admin/realms/{realm-name}/clients/{id}",
-    url_admin_client_roles : "admin/realms/{realm-name}/clients/{id}/roles",
-    url_admin_client_role : "admin/realms/{realm-name}/clients/{id}/roles/{role-name}",
-    url_admin_client_authz_settings : "admin/realms/{realm-name}/clients/{id}/authz/resource-server/settings",
-    url_admin_client_authz_resources : "admin/realms/{realm-name}/clients/{id}/authz/resource-server/resource",
-    url_admin_client_certs : "admin/realms/{realm-name}/clients/{id}/certificates/{attr}",
-
-    url_admin_realm_roles : "admin/realms/{realm-name}/roles",
-    url_admin_realm_import : "admin/realms",
-    url_admin_idps : "admin/realms/{realm-name}/identity-provider/instances",
-
-    url_admin_flows : "admin/realms/{realm-name}/authentication/flows",
-    url_admin_flows_executions : "admin/realms/{realm-name}/authentication/flows/{flow-alias}/executions",
-    */
-};
+impl Display for AdminUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
+            AdminUrl::UrlAdminUsers { realm_name } => format!("admin/realms/{realm_name}/users"),
+            AdminUrl::UrlAdminUsersCount { realm_name } => format!("admin/realms/{realm_name}/users/count"),
+            AdminUrl::UrlAdminUser { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}"),
+            AdminUrl::UrlAdminUsername { realm_name, username } => format!("admin/realms/{realm_name}/users?username={username}"),
+            AdminUrl::UrlAdminUserConsents { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/consents"),
+            AdminUrl::UrlAdminSendUpdateAccount { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/execute-actions-email"),
+            AdminUrl::UrlAdminSendVerifyEmail { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/send-verify-email"),
+            AdminUrl::UrlAdminResetPassword { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/reset-password"),
+            AdminUrl::UrlAdminGetSessions { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/sessions"),
+            AdminUrl::UrlAdminUserClientRoles { realm_name, id, client_id } => format!("admin/realms/{realm_name}/users/{id}/role-mappings/clients/{client_id}"),
+            AdminUrl::UrlAdminUserClientRolesAvailable { realm_name, id, client_id } => format!("admin/realms/{realm_name}/users/{id}/role-mappings/clients/{client_id}/available"),
+            AdminUrl::UrlAdminUserClientRolesComposite { realm_name, id, client_id } => format!("admin/realms/{realm_name}/users/{id}/role-mappings/clients/{client_id}/composite"),
+            AdminUrl::UrlAdminUserRealmRoles { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/role-mappings/realm"),
+            AdminUrl::UrlAdminUserGroup { realm_name, id, group_id } => format!("admin/realms/{realm_name}/users/{id}/groups/{group_id}"),
+            AdminUrl::UrlAdminUserGroups { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/groups"),
+            AdminUrl::UrlAdminUserPassword { realm_name, id } => format!("admin/realms/{realm_name}/users/{id}/reset-password"),
+            AdminUrl::UrlAdminUserStorage { realm_name, id } => format!("admin/realms/{realm_name}/user-storage/{id}/sync"),
+            AdminUrl::UrlAdminServerInfo {} => "admin/serverinfo".to_string(),
+            AdminUrl::UrlAdminGroups { realm_name } => format!("admin/realms/{realm_name}/groups"),
+            AdminUrl::UrlAdminGroup { realm_name, id } => format!("admin/realms/{realm_name}/groups/{id}"),
+            AdminUrl::UrlAdminGroupChild { realm_name, id } => format!("admin/realms/{realm_name}/groups/{id}/children"),
+            AdminUrl::UrlAdminGroupPermissions { realm_name, id } => format!("admin/realms/{realm_name}/groups/{id}/management/permissions"),
+            AdminUrl::UrlAdminGroupMembers { realm_name, id } => format!("admin/realms/{realm_name}/groups/{id}/members"),
+            AdminUrl::UrlAdminClients { realm_name } => format!("admin/realms/{realm_name}/clients"),
+            AdminUrl::UrlAdminClient { realm_name, id } => format!("admin/realms/{realm_name}/clients/{id}"),
+            AdminUrl::UrlAdminClientRoles { realm_name, id } => format!("admin/realms/{realm_name}/clients/{id}/roles"),
+            AdminUrl::UrlAdminClientRole { realm_name, id, role_name } => format!("admin/realms/{realm_name}/clients/{id}/roles/{role_name}"),
+            AdminUrl::UrlAdminClientAuthzSettings { realm_name, id } => format!("admin/realms/{realm_name}/clients/{id}/authz/resource-server/settings"),
+            AdminUrl::UrlAdminClientAuthzResources { realm_name, id } => format!("admin/realms/{realm_name}/clients/{id}/authz/resource-server/resource"),
+            AdminUrl::UrlAdminClientCerts { realm_name, id, attr } => format!("admin/realms/{realm_name}/clients/{id}/certificates/{attr}"),
+            AdminUrl::UrlAdminRealmRoles { realm_name } => format!("admin/realms/{realm_name}/roles"),
+            AdminUrl::UrlAdminRealmImport {} => format!("admin/realms"),
+            AdminUrl::UrlAdminIdps { realm_name } => format!("admin/realms/{realm_name}/identity-provider/instances"),
+            AdminUrl::UrlAdminFlows { realm_name } => format!("admin/realms/{realm_name}/authentication/flows"),
+            AdminUrl::UrlAdminFlowsExecutions { realm_name, flow_alias } => format!("admin/realms/{realm_name}/authentication/flows/{flow_alias}/executions"),
+        };
+        write!(f, "{}", str)
+    }
+}
