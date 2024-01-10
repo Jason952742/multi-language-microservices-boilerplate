@@ -37,13 +37,4 @@ struct Params {
     team_id: u32,
 }
 
-#[derive(Debug, Deserialize, Serialize, Validate)]
-pub struct Login {
-    #[validate(length(min = 3, message = "username must be at least 3 characters"))]
-    #[validate()]
-    identifier: String,
-    #[validate(length(min = 8, message = "password must be at least 8 characters"))]
-    password:String,
-    #[serde(default)]
-    remember_me: bool,
-}
+

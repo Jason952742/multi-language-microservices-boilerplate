@@ -4,14 +4,9 @@ use axum::routing::{get};
 use shared::utils::{route};
 
 pub fn health_routes() -> Router {
-    route("/health", get(HealthService::health_check))
+    route("/health", get(health_check))
 }
 
-pub struct HealthService;
-
-impl HealthService {
-    pub async fn health_check() -> Result<&'static str, (StatusCode, &'static str)> {
-        Ok("OK")
-    }
-
+async fn health_check() -> Result<&'static str, (StatusCode, &'static str)> {
+    Ok("OK")
 }

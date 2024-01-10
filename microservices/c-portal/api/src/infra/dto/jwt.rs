@@ -15,8 +15,6 @@ use axum_extra::{
 use jsonwebtoken::{decode, DecodingKey, EncodingKey, Validation};
 
 
-
-
 pub static KEYS: Lazy<Keys> = Lazy::new(|| {
     let secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
     Keys::new(secret.as_bytes())
@@ -59,20 +57,20 @@ impl AuthBody {
 
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
+pub struct SimpleClaims {
     pub sub: String,
     pub company: String,
     pub exp: usize,
 }
 
-impl Display for Claims {
+impl Display for SimpleClaims {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "Email: {}\nCompany: {}", self.sub, self.company)
     }
 }
 
 #[async_trait]
-impl<S> FromRequestParts<S> for Claims
+impl<S> FromRequestParts<S> for SimpleClaims
     where
         S: Send + Sync,
 {
@@ -86,7 +84,7 @@ impl<S> FromRequestParts<S> for Claims
             .map_err(|_| CustomError::Authenticate(AuthError::MissingToken))?;
 
         // Decode the user data
-        let token_data = decode::<Claims>(bearer.token(), &KEYS.decoding, &Validation::default())
+        let token_data = decode::<SimpleClaims>(bearer.token(), &KEYS.decoding, &Validation::default())
             .map_err(|_| CustomError::Authenticate(AuthError::InvalidToken))?;
 
         Ok(token_data.claims)

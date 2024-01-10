@@ -2,7 +2,7 @@ use axum::{Json, Router};
 use axum::routing::{get, post};
 use jsonwebtoken::{encode, Header};
 use shared::utils::{CustomError, AuthError};
-use crate::infra::dto::auth::{AuthBody, AuthPayload, Claims, KEYS};
+use crate::infra::dto::jwt::{AuthBody, AuthPayload, SimpleClaims, KEYS};
 
 pub fn jwt_routes() -> Router {
     Router::new()
@@ -19,7 +19,7 @@ async fn authorize(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, C
     if payload.client_id != "foo" || payload.client_secret != "bar" {
         return Err(CustomError::Authenticate(AuthError::WrongCredentials));
     }
-    let claims = Claims {
+    let claims = SimpleClaims {
         sub: "b@b.com".to_owned(),
         company: "ACME".to_owned(),
         // Mandatory expiry time as UTC timestamp
@@ -33,7 +33,7 @@ async fn authorize(Json(payload): Json<AuthPayload>) -> Result<Json<AuthBody>, C
     Ok(Json(AuthBody::new(token)))
 }
 
-async fn protected(claims: Claims) -> Result<String, CustomError> {
+async fn protected(claims: SimpleClaims) -> Result<String, CustomError> {
     // Send the protected data to the user
     Ok(format!(
         "Welcome to the protected area :)\nYour data:\n{claims}",
