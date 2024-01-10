@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use sea_orm::*;
 use chrono::Utc;
-use shared::mariadb::MariaPool;
+use shared::datasource::mariadb::MariaPool;
 use crate::domain::entities::enums::MemberType;
 use crate::domain::entities::member;
 

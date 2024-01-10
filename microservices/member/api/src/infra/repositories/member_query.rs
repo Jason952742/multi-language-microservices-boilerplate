@@ -1,6 +1,6 @@
 use sea_orm::*;
 use uuid::Uuid;
-use shared::mariadb::MariaPool;
+use shared::datasource::mariadb::MariaPool;
 use crate::domain::entities::member;
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 

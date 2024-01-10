@@ -7,9 +7,9 @@ use tonic::{metadata::MetadataValue, transport::Server, Request, Status};
 use infra::migration::{Migrator, MigratorTrait};
 use application::grpc::health_grpc::HealthIndicator;
 use application::events::subscribers::MemberSub;
-use shared::Config;
+use shared::config::Config;
 use application::grpc::member_grpc::MemberGrpc;
-use shared::mariadb::MariaPool;
+use shared::datasource::mariadb::MariaPool;
 use crate::application::grpc::member_grpc::member_proto::member_server::MemberServer;
 
 mod application;

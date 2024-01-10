@@ -4,7 +4,7 @@ use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
 use uuid::Uuid;
 use shared::lapin;
-use shared::rabbitmq::RabbitPool;
+use shared::datasource::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
 use crate::domain::handlers::{MemberActor, run_member_actor};
 use crate::domain::messages::UserCreatedEvent;

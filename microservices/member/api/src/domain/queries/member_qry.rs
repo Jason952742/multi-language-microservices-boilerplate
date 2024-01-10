@@ -1,6 +1,6 @@
 use tonic::Status;
 use uuid::Uuid;
-use shared::GrpcStatusTool;
+use shared::utils::GrpcStatusTool;
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::member;
 use crate::infra::repositories::member_query::MemberOrmQuery;

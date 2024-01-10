@@ -79,6 +79,8 @@ impl Consul {
                 ServiceName::MuReferral,
                 ServiceName::MuMember,
                 ServiceName::MuEventFlow,
+                ServiceName::MuChat,
+                ServiceName::MuPayment,
             ];
 
             for service in services.iter() {

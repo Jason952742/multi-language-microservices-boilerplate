@@ -3,7 +3,7 @@ use rust_decimal::prelude::ToPrimitive;
 use sea_orm::ActiveEnum;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
-use shared::{parse_code, to_uuid};
+use shared::utils::{parse_code, to_uuid};
 use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, MemberId, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
