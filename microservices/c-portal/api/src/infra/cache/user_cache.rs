@@ -7,7 +7,7 @@ use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
 use shared::utils::{to_datetime, to_uuid};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
-use crate::domain::entities::user::CacheUser;
+use crate::domain::entities::cache_user::CacheUser;
 
 pub async fn get_user(user_id: Uuid) -> Result<CacheUser, RedisError> {
     let client = DragonflyPool::client(2).await;

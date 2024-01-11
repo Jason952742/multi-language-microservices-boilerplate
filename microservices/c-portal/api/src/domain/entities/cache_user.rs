@@ -18,4 +18,3 @@ pub struct CacheUser {
   pub referral_code: String,
   pub last_login_at: DateTime<Utc>,
 }
-

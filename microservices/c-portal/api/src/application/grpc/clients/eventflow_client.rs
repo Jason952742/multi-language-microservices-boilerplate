@@ -45,7 +45,7 @@ async fn get_transaction_by_id(id: Uuid) -> Result<TransactionReply, Box<dyn std
 }
 
 // #[tracing::instrument]
-pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<Uuid>, referrer_code: Option<String>) -> Result<UserCreatedReply, Box<dyn std::error::Error>> {
+pub async fn user_create(user_id: Uuid, user_name: &str, referrer_id: Option<Uuid>, referrer_code: Option<String>) -> Result<UserCreatedReply, Box<dyn std::error::Error>> {
     let (token, timeout_channel) = get_channel().await?;
     let mut client = EventflowClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
         let token = token.clone();
@@ -55,7 +55,7 @@ pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<U
 
     let response = client.user_create(Request::new(UserCreateRequest {
         user_id: user_id.to_string(),
-        user_name,
+        user_name: user_name.to_string(),
         referrer_id: referrer_id.map(|x| x.to_string()),
         referrer_code
     })).await?;
@@ -66,7 +66,7 @@ pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<U
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let id = Uuid::from_str("11112222-e4a9-4fba-bb8d-555566667777").unwrap();
-    let result = user_create(id, "wowowo".to_string(), None, None).await?;
+    let result = user_create(id, "wowowo", None, None).await?;
 
     println!("{:?}", result);
 

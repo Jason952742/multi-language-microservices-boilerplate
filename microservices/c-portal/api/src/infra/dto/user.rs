@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 use validator::Validate;
-use crate::domain::entities::user::CacheUser;
+use crate::domain::entities::cache_user::CacheUser;
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct CreateBody {
