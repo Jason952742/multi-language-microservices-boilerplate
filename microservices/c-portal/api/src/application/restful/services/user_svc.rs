@@ -7,7 +7,6 @@ use chrono::Utc;
 use rust_decimal_macros::dec;
 use serde_derive::Deserialize;
 use tracing::debug;
-use uuid::Uuid;
 use validator::Validate;
 use shared::bson::doc;
 use shared::datasource::mongo::MongoPool;
@@ -15,12 +14,13 @@ use shared::utils::{parse_code, to_datetime, to_object_id, to_uuid};
 use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedJson, ValidatedPath};
 use shared::utils::CustomResponseResult as Response;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
-use crate::domain::entities::{user_settings};
 use shared::utils::requests::pagination::PaginationQuery;
 use crate::application::grpc::eventflow_client;
+use crate::application::restful::keycloak_client;
+use crate::application::services::referral_svc;
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::user::CacheUser;
-use crate::domain::services::keycloak;
+use crate::infra::cache::referral_cache;
 use crate::infra::dto::user::{AuthenticateResponse, AuthorizeBody, CreateBody};
 use crate::infra::dto::user_settings::{UserSettingsForm, UserSettingsItem};
 
@@ -39,27 +39,40 @@ pub fn auth_routes() -> Router<> {
 
 #[derive(Debug, Default, Clone, Deserialize, Validate)]
 struct CheckParm {
-    username: String
+    username: String,
 }
 
 async fn check_user(Query(parm): Query<CheckParm>) -> Result<String, CustomError> {
     let username = parm.username;
-    let token = keycloak::get_admin_token().await?;
-    let user = keycloak::get_user(&username, &token.access_token).await?;
+    let token = keycloak_client::get_admin_token().await?;
+    let user = keycloak_client::get_user(&username, &token.access_token).await?;
 
     Ok(user.is_some().to_string())
 }
 
 async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<CustomResponse<CacheUser>, CustomError> {
-    let token = keycloak::get_admin_token().await?;
-    match keycloak::get_user(&body.identifier, &token.access_token).await? {
+    let token = keycloak_client::get_admin_token().await?;
+    match keycloak_client::get_user(&body.identifier, &token.access_token).await? {
         None => {
+            // check referrer
+            let referrer_id = if (body.referral_code.is_some()) {
+                referral_svc::get_referral(&body.referral_code.clone().unwrap()).await?
+            } else { None };
             // keycloak create user
-            let id = keycloak::create_user(&body.identifier, &body.password, &token.access_token).await?.unwrap();
+            let id = keycloak_client::create_user(&body.identifier, &body.password, &token.access_token).await?.unwrap();
             // event flow
-            let created_user = eventflow_client::user_create(to_uuid(&id), body.identifier, None, None).await?;
+            let created_user = eventflow_client::user_create(
+                to_uuid(&id),
+                body.identifier,
+                referrer_id,
+                body.referral_code,
+            ).await?;
             if (created_user.code == parse_code(tonic::Code::Ok)) {
                 let user = created_user.data;
+                // cache user's referral code
+                let _ = referral_cache::set_referral(&user.refer_code, to_uuid(&id)).await?;
+
+                // todo: cache user's info
 
                 let res = CacheUser {
                     user_id: to_uuid(&user.user_id),
@@ -84,20 +97,17 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
 
                 Ok(res)
             } else {
-                // todo: rollback keycloak
+                // todo: rollback keycloak, If the event write fails, request to keycloak to remove the user
                 Err(CustomError::not_found())
             }
-        },
+        }
         Some(_) => Err(CustomError::already_exists())
     }
-
-
 }
 
 async fn authenticate_user(
     Json(body): Json<AuthorizeBody>,
 ) -> Result<Json<AuthenticateResponse>, CustomError> {
-
     let email = &body.identifier;
     let password = &body.password;
 
@@ -126,8 +136,6 @@ async fn refrresh_user() -> Result<(), CustomError> {
 }
 
 async fn unauthenticate_user(form: ValidatedForm<UserSettingsForm>) -> Response<UserSettingsItem> {
-
-
     let form = form.0;
     let model = form.into();
     let conn = MongoPool::conn().await;
@@ -152,7 +160,6 @@ async fn unauthenticate_user(form: ValidatedForm<UserSettingsForm>) -> Response<
 }
 
 async fn change_password(ValidatedPath(id): ValidatedPath<String>) -> Result<CustomResponse<()>, CustomError> {
-
     let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
     let conn = MongoPool::conn().await;
 

@@ -1,0 +1,57 @@
+syntax = "proto2";
+
+package referral_member;
+
+service ReferralMember {
+  rpc GetMemberById(UserId) returns (MemberReply) {}
+  rpc GetMemberByCode(ReferralCode) returns (MemberReply) {}
+  rpc GetReferrer(UserId) returns (MemberReply) {}
+  rpc GetReferrals(UserId) returns (MemberListReply) {}
+  rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusReply) {}
+  rpc BindReferral(BindReferralRequest) returns (ProcessStatusReply) {}
+}
+
+message UserId {
+  required string id = 1;
+}
+
+message ReferralCode {
+  required string code = 1;
+}
+
+message UpdateMemberRequest {
+  required string userId = 1;
+  required string description = 2;
+}
+
+message BindReferralRequest {
+  required string userId = 1;
+  required string referrerId = 2;
+}
+
+message ProcessStatusReply {
+  required string code = 1;
+  required string message = 2;
+  required bool success = 3;
+  required string processId = 4;
+}
+
+message MemberReply {
+  required string code = 1;
+  required string message = 2;
+  optional Member data = 3;
+}
+
+message MemberListReply {
+  required string code = 1;
+  required string message = 2;
+  repeated Member data = 3;
+}
+
+message Member {
+  required string userId = 1;
+  required string userName = 2;
+  required int32 hierarchy = 3;
+  required string description = 4;
+  required string createdAt = 5;
+}

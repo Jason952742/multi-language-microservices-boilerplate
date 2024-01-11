@@ -10,6 +10,8 @@ pub struct CreateBody {
     pub email: Option<String>,
     #[validate(length(min = 8, message = "password must be at least 8 characters"))]
     pub password:String,
+    #[serde(default)]
+    pub referral_code: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Validate)]

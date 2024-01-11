@@ -30,7 +30,7 @@ async fn get_channel() -> Result<(MetadataValue<Ascii>, Timeout<Channel>), Box<d
     Ok((token, timeout_channel))
 }
 
-#[tracing::instrument]
+// #[tracing::instrument]
 async fn get_transaction_by_id(id: Uuid) -> Result<TransactionReply, Box<dyn std::error::Error>> {
     let (token, timeout_channel) = get_channel().await?;
     let mut client = EventflowClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
@@ -44,8 +44,8 @@ async fn get_transaction_by_id(id: Uuid) -> Result<TransactionReply, Box<dyn std
     Ok(response.into_inner())
 }
 
-#[tracing::instrument]
-pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<String>, referrer_code: Option<String>) -> Result<UserCreatedReply, Box<dyn std::error::Error>> {
+// #[tracing::instrument]
+pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<Uuid>, referrer_code: Option<String>) -> Result<UserCreatedReply, Box<dyn std::error::Error>> {
     let (token, timeout_channel) = get_channel().await?;
     let mut client = EventflowClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
         let token = token.clone();
@@ -53,8 +53,12 @@ pub async fn user_create(user_id: Uuid, user_name: String, referrer_id: Option<S
         Ok(req)
     });
 
-    let response = client.user_create(Request::new(UserCreateRequest { user_id: user_id.to_string(), user_name, referrer_id, referrer_code }))
-        .await?;
+    let response = client.user_create(Request::new(UserCreateRequest {
+        user_id: user_id.to_string(),
+        user_name,
+        referrer_id: referrer_id.map(|x| x.to_string()),
+        referrer_code
+    })).await?;
 
     Ok(response.into_inner())
 }

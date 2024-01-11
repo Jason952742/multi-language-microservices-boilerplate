@@ -4,7 +4,7 @@ use tokio::net::TcpListener;
 use axum::http::header;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
-use crate::application::rest::{health_routes, test_routes, settings_routes, jwt_routes, auth_routes};
+use crate::application::restful::{health_routes, test_routes, settings_routes, jwt_routes, auth_routes};
 use shared::config::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
 use tower_http::{

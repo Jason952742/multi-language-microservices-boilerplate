@@ -58,6 +58,9 @@ pub enum CustomError {
   RunSyncTask(#[from] JoinError),
 
   #[error("{0}")]
+  RedisError(#[from] redis::RedisError),
+
+  #[error("{0}")]
   HashPassword(#[from] BcryptError),
 
   #[error("Error version {0}")]
@@ -101,8 +104,9 @@ impl CustomError {
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
       CustomError::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50005),
       CustomError::HashPassword(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50006),
-      CustomError::BoxStdError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
-      CustomError::UnknownErr(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50008),
+      CustomError::RedisError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
+      CustomError::BoxStdError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50008),
+      CustomError::UnknownErr(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50009),
     }
   }
 
