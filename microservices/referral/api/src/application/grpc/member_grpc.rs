@@ -1,14 +1,14 @@
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::utils::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::refer_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, refer_member_server, ReferralCode, UpdateMemberRequest, UserId};
+use crate::application::grpc::member_grpc::referral_member_proto::{BindReferralRequest, Member, MemberListReply, MemberReply, ProcessStatusReply, referral_member_server, ReferralCode, UpdateMemberRequest, UserId};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::member;
 use crate::domain::handlers::{MemberActor, run_member_actor};
 use crate::domain::queries::member_qry::MemberQuery;
 
-pub mod refer_member_proto {
-    tonic::include_proto!("refer_member");
+pub mod referral_member_proto {
+    tonic::include_proto!("referral_member");
 }
 
 #[derive(Debug)]
@@ -26,7 +26,7 @@ impl MemberGrpc {
 }
 
 #[tonic::async_trait]
-impl refer_member_server::ReferMember for MemberGrpc {
+impl referral_member_server::ReferralMember for MemberGrpc {
 
     // #[tracing::instrument]
     async fn get_member_by_id(&self, request: Request<UserId>) -> Result<Response<MemberReply>, Status> {

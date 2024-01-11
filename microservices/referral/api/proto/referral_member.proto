@@ -1,8 +1,8 @@
 syntax = "proto2";
 
-package refer_member;
+package referral_member;
 
-service ReferMember {
+service ReferralMember {
   rpc GetMemberById(UserId) returns (MemberReply) {}
   rpc GetMemberByCode(ReferralCode) returns (MemberReply) {}
   rpc GetReferrer(UserId) returns (MemberReply) {}

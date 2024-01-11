@@ -8,8 +8,8 @@ use application::grpc::health_grpc::HealthIndicator;
 use application::events::subscribers::MemberSub;
 use shared::config::Config;
 use application::grpc::member_grpc::MemberGrpc;
-use application::grpc::member_grpc::refer_member_proto::refer_member_server::ReferMemberServer;
 use shared::datasource::neo4j::Neo4jPool;
+use application::grpc::member_grpc::referral_member_proto::referral_member_server::ReferralMemberServer;
 
 mod application;
 mod infra;
@@ -26,7 +26,7 @@ pub async fn start(config: &Config) -> anyhow::Result<()> {
 
     // Grpc Service
     let health_indicator = HealthIndicator::new().await;
-    let member_grpc = ReferMemberServer::with_interceptor(MemberGrpc::new(), check_auth);
+    let member_grpc = ReferralMemberServer::with_interceptor(MemberGrpc::new(), check_auth);
 
     let addr: SocketAddr = format!("{}:{}", config.host, config.port).parse()?;
     tracing::info!("ReferralGrpcServer listening on {}", &addr.to_string().color("magenta"));
