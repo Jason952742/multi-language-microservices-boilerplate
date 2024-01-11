@@ -7,11 +7,13 @@ use futures::prelude::*;
 pub async fn get_referral(code: &str) -> Result<Option<Uuid>, RedisError> {
     let client = DragonflyPool::client(1).await;
     let mut con = client.get_async_connection().await?;
-    let k: Option<String> = con.get(code).await?;
+    let key = format!("referral-{}", code);
 
-    match k {
-        Some(k) => {
-            let u: Uuid = Uuid::from_str(&k).unwrap();
+    let result: Option<String> = con.get(&key).await?;
+
+    match result {
+        Some(id) => {
+            let u: Uuid = Uuid::from_str(&id).unwrap();
             Ok(Some(u))
         }
         None => Ok(None),
@@ -22,9 +24,10 @@ pub async fn get_referral(code: &str) -> Result<Option<Uuid>, RedisError> {
 pub async fn set_referral(code: &str, user_id: Uuid) -> Result<Uuid, RedisError> {
     let client = DragonflyPool::client(1).await;
     let mut con = client.get_async_connection().await?;
+    let key = format!("referral-{}", code);
 
-    con.set(code, user_id.to_string()).await?;
-    con.expire(code, 60 * 60 * 24 * 30).await?;
+    con.set(&key, user_id.to_string()).await?;
+    con.expire(&key, 60 * 60 * 24 * 30).await?;
 
     Ok(user_id)
 }

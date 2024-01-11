@@ -20,7 +20,7 @@ use crate::application::restful::keycloak_client;
 use crate::application::services::referral_svc;
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::user::CacheUser;
-use crate::infra::cache::referral_cache;
+use crate::infra::cache::{referral_cache, user_cache};
 use crate::infra::dto::user::{AuthenticateResponse, AuthorizeBody, CreateBody};
 use crate::infra::dto::user_settings::{UserSettingsForm, UserSettingsItem};
 
@@ -69,15 +69,9 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
             ).await?;
             if (created_user.code == parse_code(tonic::Code::Ok)) {
                 let user = created_user.data;
-                // cache user's referral code
-                let _ = referral_cache::set_referral(&user.refer_code, to_uuid(&id)).await?;
-
-                // todo: cache user's info
-
                 let res = CacheUser {
                     user_id: to_uuid(&user.user_id),
                     user_name: user.user_name,
-                    email: body.email,
                     member_id: to_uuid(&user.member_id),
                     member_type: MemberType::from_str(&user.member_type).unwrap(),
                     member_status: MemberStatus::Created,
@@ -86,9 +80,11 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
                     account_balance: dec!(0),
                     referral_code: user.refer_code,
                     last_login_at: Utc::now(),
-                    created_at: Utc::now(),
-                    locked_at: None,
                 };
+                // cache referral code
+                let _ = referral_cache::set_referral(&user.refer_code, to_uuid(&id)).await?;
+                // cache user info
+                let _ = user_cache::set_user(res.clone()).await?;
 
                 let res = CustomResponseBuilder::new()
                     .body(res)

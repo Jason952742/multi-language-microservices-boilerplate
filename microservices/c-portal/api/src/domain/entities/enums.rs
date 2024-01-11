@@ -1,7 +1,7 @@
 use serde_derive::{Deserialize, Serialize};
 use strum_macros::{Display, EnumIter, EnumString};
 
-#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, Deserialize, Serialize)]
+#[derive(Default, Debug, Clone, PartialEq, Eq, EnumString, Deserialize, Serialize, Display)]
 pub enum MemberStatus {
     #[default]
     Created,

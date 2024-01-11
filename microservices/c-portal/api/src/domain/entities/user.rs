@@ -9,7 +9,6 @@ use crate::domain::entities::enums::{MemberStatus, MemberType};
 pub struct CacheUser {
   pub user_id: Uuid,
   pub user_name: String,
-  pub email: Option<String>,
   pub member_id: Uuid,
   pub member_type: MemberType,
   pub member_status: MemberStatus,
@@ -18,7 +17,5 @@ pub struct CacheUser {
   pub account_balance: Decimal,
   pub referral_code: String,
   pub last_login_at: DateTime<Utc>,
-  pub created_at: DateTime<Utc>,
-  pub locked_at: Option<DateTime<Utc>>,
 }
 
