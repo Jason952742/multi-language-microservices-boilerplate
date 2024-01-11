@@ -135,9 +135,9 @@ pub struct GroupRepresentation {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Token {
     pub access_token: String,
-    pub expires_in: i32,
+    pub expires_in: i64,
     pub refresh_token: String,
-    pub refresh_expires_in: i32,
+    pub refresh_expires_in: i64,
     pub token_type: String,
     pub session_state: String,
     pub scope: String,

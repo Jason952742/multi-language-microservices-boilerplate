@@ -7,9 +7,6 @@ use uuid::Uuid;
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct CacheToken {
   pub user_id: Uuid,
-  pub member_id: Uuid,
-  pub account_id: Uuid,
-  pub refresh_token: String,
   pub expires_date: DateTime<Utc>
 }
 
@@ -17,7 +14,5 @@ pub struct CacheToken {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct CacheRefreshToken {
   pub access_token: String,
-  pub expires_date: DateTime<Utc>,
   pub refresh_token: String,
-  pub refresh_expires_date: DateTime<Utc>
 }

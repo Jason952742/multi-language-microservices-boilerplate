@@ -12,7 +12,7 @@ use crate::domain::entities::cache_user::CacheUser;
 pub async fn get_user(user_id: Uuid) -> Result<CacheUser, RedisError> {
     let client = DragonflyPool::client(2).await;
     let mut con = client.get_async_connection().await?;
-    let key = format!("user-{}", user_id.to_string());
+    let key = format!("US-{}", user_id.to_string());
 
     let user_id: String = con.hget(&key, "user_id").await?;
     let user_name: String = con.hget(&key, "user_name").await?;
@@ -45,7 +45,7 @@ pub async fn get_user(user_id: Uuid) -> Result<CacheUser, RedisError> {
 pub async fn set_user(user: CacheUser) -> Result<(), RedisError> {
     let client = DragonflyPool::client(2).await;
     let mut con = client.get_async_connection().await?;
-    let key = format!("user-{}", &user.user_id.to_string());
+    let key = format!("US-{}", &user.user_id.to_string());
 
     con.hset(&key, "user_id", user.user_id.to_string()).await?;
     con.hset(&key, "user_name", user.user_name).await?;
@@ -57,6 +57,8 @@ pub async fn set_user(user: CacheUser) -> Result<(), RedisError> {
     con.hset(&key, "account_balance", user.account_balance.to_f64()).await?;
     con.hset(&key, "referral_code", user.referral_code.to_string()).await?;
     con.hset(&key, "last_login_at", user.last_login_at.to_string()).await?;
+
+    con.expire(&key, 60 * 60 * 24 * 90).await?;
 
     Ok(())
 }
