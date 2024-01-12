@@ -1,10 +1,11 @@
 use std::str::FromStr;
+use chrono::Utc;
 use rust_decimal::prelude::ToPrimitive;
 use sea_orm::ActiveEnum;
 use tokio::sync::{mpsc, oneshot};
 use tonic::{Code, Request, Response, Status};
 use shared::utils::{parse_code, to_uuid};
-use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, MemberId, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest};
+use crate::application::grpc::member_grpc::member_proto::{AddMemberRequest, MemberId, ListRequest, member_server, MemberInfo, MemberListReply, MemberReply, ProcessStatusReply, UpdateMemberRequest, UserId};
 use crate::domain::commands::member_cmd::{MemberCommand, MemberEvent};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::member;
@@ -41,6 +42,7 @@ impl member_server::Member for MemberGrpc {
             id: to_uuid(&request.id),
             user_id: to_uuid(&request.user_id),
             user_name: request.user_name,
+            sub_end_date: Utc::now(),
             resp: resp_tx,
         };
         if self.tx.send(command).await.is_err() {
@@ -117,12 +119,12 @@ impl member_server::Member for MemberGrpc {
         Ok(to_member_list_reply(res.0, res.1))
     }
 
-    #[tracing::instrument]
-    async fn get_member_by_user_id(&self, request: Request<MemberId>) -> Result<Response<MemberReply>, Status> {
+    // #[tracing::instrument]
+    async fn get_member_by_user_id(&self, request: Request<UserId>) -> Result<Response<MemberReply>, Status> {
         let request = request.into_inner();
-        tracing::info!("get members: {:?}", &request);
+        tracing::info!("get member by user_id: {:?}", &request);
 
-        match MemberQuery::get_member_by_id(to_uuid(&request.id)).await? {
+        match MemberQuery::get_member_by_user_id(to_uuid(&request.id)).await? {
             None => Err(Status::not_found(request.id)),
             Some(m) => Ok(to_member_reply(m))
         }
@@ -152,6 +154,7 @@ impl Into<MemberInfo> for member::Model {
             user_name: self.user_name,
             status: self.status.to_value(),
             member_type: self.member_type.to_value(),
+            sub_end_date: self.sub_end_date.to_string(),
             credit_score: self.credit_score.to_i32().unwrap(),
             point: self.point,
             level: self.level,

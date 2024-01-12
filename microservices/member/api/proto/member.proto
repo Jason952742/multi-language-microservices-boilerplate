@@ -7,10 +7,14 @@ service Member {
   rpc DisableMember(MemberId) returns (ProcessStatusReply) {}
   rpc UpdateMember(UpdateMemberRequest) returns (ProcessStatusReply) {}
   rpc GetMembers(ListRequest) returns (MemberListReply) {}
-  rpc GetMemberByUserId(MemberId) returns (MemberReply) {}
+  rpc GetMemberByUserId(UserId) returns (MemberReply) {}
 }
 
 message MemberId {
+  required string id = 1;
+}
+
+message UserId {
   required string id = 1;
 }
 
@@ -55,12 +59,13 @@ message MemberInfo {
   required string userName = 3;
   required string status = 4;
   required string memberType = 5;
-  required int32 creditScore = 6;
-  required int32 point = 7;
-  required int32 level = 8;
-  required bool active = 9;
-  required string description = 10;
-  required string createdAt = 11;
+  required string subEndDate = 6;
+  required int32 creditScore = 7;
+  required int32 point = 8;
+  required int32 level = 9;
+  required bool active = 10;
+  required string description = 11;
+  required string createdAt = 12;
 }
 
 message MemberListReply {

@@ -1,6 +1,6 @@
 use uuid::Uuid;
 use sea_orm::*;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 use shared::datasource::mariadb::MariaPool;
 use crate::domain::entities::enums::MemberType;
 use crate::domain::entities::member;
@@ -12,6 +12,16 @@ impl MemberOrmMutation {
         let db: &DbConn = MariaPool::conn().await;
         let inserted = create(form_data.clone()).insert(db).await.expect("model save failed");
         Ok(inserted.id)
+    }
+
+    pub async fn subscribe(user_id: Uuid, sub_end_date: DateTime<Utc>) -> Result<member::Model, DbErr> {
+        let db: &DbConn = MariaPool::conn().await;
+        let active_model = update(user_id).await?;
+
+        member::ActiveModel {
+            sub_end_date: Set(sub_end_date.to_owned()),
+            ..active_model
+        }.update(db).await
     }
 
     pub async fn update_member(user_id: Uuid, member_type: MemberType, level: i32, active: bool, description: String) -> Result<member::Model, DbErr> {

@@ -2,12 +2,11 @@ use futures::TryStreamExt;
 use futures_lite::StreamExt;
 use lapin::options::{BasicAckOptions};
 use tokio::sync::{mpsc, oneshot};
-use uuid::Uuid;
 use shared::lapin;
 use shared::datasource::rabbitmq::RabbitPool;
 use crate::domain::commands::member_cmd::{MemberCommand};
 use crate::domain::handlers::{MemberActor, run_member_actor};
-use crate::domain::messages::UserCreatedEvent;
+use crate::domain::messages::MemberCreatedMsg;
 
 #[derive(Clone)]
 pub struct MemberSub;
@@ -28,20 +27,26 @@ impl MemberSub {
         let event_name = "member_created";
         let connection = RabbitPool::connection().await;
         let channel = RabbitPool::channel(&connection).await;
-        let _queue = RabbitPool::queue(&channel, &event_name, "member", "created").await;
-        let consumer = RabbitPool::consumer(&channel, &event_name, "referral-member").await;
+        let _queue = RabbitPool::queue(&channel, &event_name, "multi_lang", "member").await;
+        let consumer = RabbitPool::consumer(&channel, &event_name, "member-consumer").await;
         let mut consumer_stream = consumer.into_stream();
 
         tokio::task::spawn(async move {
             while let Some(delivery) = consumer_stream.next().await {
                 if let Ok(delivery) = delivery {
                     // Do something with the delivery data (The message payload)
-                    let payload = UserCreatedEvent::from(delivery.data.as_ref());
+                    let payload = MemberCreatedMsg::from(delivery.data.as_ref());
                     tracing::info!("Receive {:?} Event: {:?}", &event_name, &payload);
                     let user_id = payload.clone().user_id.to_string();
 
                     let (resp_tx, resp_rx) = oneshot::channel();
-                    let command = MemberCommand::Create { id: Uuid::new_v4(), user_id: payload.user_id, user_name: payload.user_name, resp: resp_tx };
+                    let command = MemberCommand::Create {
+                        id: payload.member_id,
+                        user_id: payload.user_id,
+                        user_name: payload.user_name,
+                        sub_end_date: payload.sub_end_date,
+                        resp: resp_tx,
+                    };
 
                     if tx.send(command).await.is_err() {
                         tracing::info!("{:?} - {:?} failed", &event_name, &user_id);

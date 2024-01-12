@@ -16,6 +16,7 @@ pub struct Model {
     
     pub status: MemberStatus,
     pub member_type: MemberType,
+    pub sub_end_date: DateTimeUtc,
     pub credit_score: Decimal,
     pub point: i32,
     pub level: i32,

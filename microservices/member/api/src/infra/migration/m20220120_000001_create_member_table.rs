@@ -16,6 +16,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Members::UserName).string().not_null())
                     .col(ColumnDef::new(Members::Status).string().not_null())
                     .col(ColumnDef::new(Members::MemberType).string().not_null())
+                    .col(ColumnDef::new(Members::SubEndDate).timestamp().not_null())
                     .col(ColumnDef::new(Members::CreditScore).decimal_len(20, 8).not_null())
                     .col(ColumnDef::new(Members::Point).integer().not_null())
                     .col(ColumnDef::new(Members::Level).integer().not_null())
@@ -52,6 +53,7 @@ enum Members {
     UserName,
     Status,
     MemberType,
+    SubEndDate,
     CreditScore,
     Point,
     Level,

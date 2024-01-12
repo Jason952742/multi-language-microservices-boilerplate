@@ -1,3 +1,3 @@
-pub mod member_evt;
+pub mod member_msg;
 
-pub use member_evt::*;
+pub use member_msg::*;

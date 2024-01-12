@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use tonic::Status;
 use uuid::Uuid;
 use shared::utils::GrpcStatusTool;
@@ -10,16 +11,26 @@ use crate::infra::repositories::member_query::{MemberOrmQuery};
 pub struct MemberService;
 
 impl MemberService {
-    pub async fn create_member(id: Uuid, user_id: Uuid, user_name: String) -> Result<MemberEvent, Status> {
+    pub async fn create_member(id: Uuid, user_id: Uuid, user_name: String, sub_end_date: DateTime<Utc>) -> Result<MemberEvent, Status> {
         match MemberOrmQuery::get_member_by_id(id).await.map_err(|e| GrpcStatusTool::db_error(e))? {
             Some(_) => Err(Status::already_exists("member already exists")),
             None => {
-                let form_data: member::Model = member::Model { id, user_id, user_name, ..Default::default() };
+                let form_data: member::Model = member::Model { id, user_id, user_name, sub_end_date, ..Default::default() };
                 match MemberOrmMutation::create_member(form_data).await {
                     Ok(id) => Ok(MemberEvent::Created { id }),
                     Err(_) => Err(Status::internal("Failed to create"))
                 }
             }
+        }
+    }
+
+    pub async fn subscribe(id: Uuid, user_id: Uuid, sub_end_date: DateTime<Utc>) -> Result<MemberEvent, Status> {
+        match MemberOrmQuery::get_member_by_id(id).await.map_err(|e| GrpcStatusTool::db_error(e))? {
+            Some(member) => {
+                let _ = MemberOrmMutation::subscribe(user_id, sub_end_date).await.map_err(|e| GrpcStatusTool::db_error(e))?;
+                Ok(MemberEvent::Subscribed)
+            }
+            None => Err(Status::not_found("member not found"))
         }
     }
 
