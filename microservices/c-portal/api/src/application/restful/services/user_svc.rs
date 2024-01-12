@@ -13,7 +13,7 @@ use shared::utils::{parse_code, to_datetime, to_uuid};
 use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson, ValidatedPath};
 use crate::application::grpc::eventflow_client;
 use crate::application::restful::keycloak_client;
-use crate::application::services::referral_svc;
+use crate::application::services::referral_refresh_svc;
 use crate::domain::entities::cache_token::{CacheRefreshToken, CacheToken};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::cache_user::CacheUser;
@@ -47,7 +47,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
         None => {
             // check referrer
             let referrer_id = if body.referral_code.is_some() {
-                referral_svc::get_referral(&body.referral_code.clone().unwrap()).await?
+                referral_refresh_svc::get_or_refresh(&body.referral_code.clone().unwrap()).await?
             } else { None };
             // keycloak create user
             let id = keycloak_client::create_user(&body.identifier, &body.password, &admin_token.access_token).await?.unwrap();

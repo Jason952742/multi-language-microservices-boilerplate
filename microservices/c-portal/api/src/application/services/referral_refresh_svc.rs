@@ -3,7 +3,7 @@ use shared::utils::{CustomError, to_uuid};
 use crate::application::grpc::referral_client;
 use crate::infra::cache::referral_cache;
 
-pub async fn get_referral(code: &str) -> Result<Option<Uuid>, CustomError> {
+pub async fn get_or_refresh(code: &str) -> Result<Option<Uuid>, CustomError> {
     let user_id = referral_cache::get_referral(code).await?;
     if let Some(id) = user_id {
         Ok(Some(id))
@@ -13,7 +13,7 @@ pub async fn get_referral(code: &str) -> Result<Option<Uuid>, CustomError> {
             None => Ok(None),
             Some(user) => {
                 let id = to_uuid(&user.user_id);
-                referral_cache::set_referral(code, id.clone()).await?;
+                let _ = referral_cache::set_referral(code, id.clone()).await?;
                 Ok(Some(id))
             }
         }
@@ -22,7 +22,7 @@ pub async fn get_referral(code: &str) -> Result<Option<Uuid>, CustomError> {
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let result = get_referral("N43kHRwcSjSLmUA7duGucA").await?;
+    let result = get_or_refresh("N43kHRwcSjSLmUA7duGucA").await?;
 
     print!("{:?}", result);
 
