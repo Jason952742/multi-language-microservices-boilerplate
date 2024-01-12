@@ -3,8 +3,9 @@ use chrono::Utc;
 use std::env;
 use shared::keycloak_api;
 use shared::keycloak_api::model::CredentialRepresentation;
-use shared::keycloak_api::{Token, TokenRequestBody, UserRepresentation};
+use shared::keycloak_api::{Token, TokenRequestBody, UserClaim, UserRepresentation};
 use once_cell::sync::Lazy;
+use uuid::Uuid;
 
 static BASE_URL: Lazy<String> = Lazy::new(|| {
     env::var("KEYCLOAK_HOST").expect("KEYCLOAK_HOST must be set")
@@ -40,9 +41,15 @@ pub async fn get_user_token(username: &str, password: &str) -> Result<Token, req
     Ok(access_token)
 }
 
-pub async fn get_user(username: &str, admin_token: &str) -> Result<Option<UserRepresentation>, reqwest::Error> {
+pub async fn get_user_by_name(username: &str, admin_token: &str) -> Result<Option<UserRepresentation>, reqwest::Error> {
     let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
     let user = keycloak_api::admin::get_user_by_name(&**BASE_URL, &realm, username, admin_token).await?;
+    Ok(user)
+}
+
+pub async fn get_user_by_token(user_token: &str) -> Result<UserClaim, reqwest::Error> {
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    let user = keycloak_api::openid::user_info(&**BASE_URL, &realm, user_token).await?;
     Ok(user)
 }
 
@@ -72,27 +79,25 @@ pub async fn create_user(username: &str, password: &str, admin_token: &str) -> R
     Ok(result)
 }
 
-pub async fn change_password(id: String, new_password: String, admin_token: &str) -> Result<(), reqwest::Error> {
+pub async fn change_password(id: Uuid, new_password: &str, admin_token: &str) -> Result<(), reqwest::Error> {
     let credential = CredentialRepresentation {
         r#type: Some("password".to_string()),
-        value: Some(new_password),
+        value: Some(new_password.to_string()),
         temporary: Some(false),
         ..Default::default()
     };
 
     let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
-    keycloak_api::admin::change_password(&**BASE_URL, &*id, &credential, &realm, admin_token).await?;
+    keycloak_api::admin::change_password(&**BASE_URL, &*id.to_string(), &credential, &realm, admin_token).await?;
 
     Ok(())
 }
 
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let token = get_admin_token().await?;
+    let token = get_user_token("kk", "456").await?;
 
-    change_password("4cc2477a-b2a4-428e-817e-66c561e7237d".to_string(), "456".to_string(), &token.access_token).await?;
-
-    // println!("{:?}", user);
+    let user = get_user_by_token(&token.access_token).await?;
 
     Ok(())
 }

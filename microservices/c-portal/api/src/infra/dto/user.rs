@@ -24,7 +24,7 @@ pub struct AuthorizeBody {
     pub remember_me: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct AuthenticateResponse {
     pub access_token: String,
     pub user: CacheUser,

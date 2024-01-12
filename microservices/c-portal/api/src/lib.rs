@@ -4,12 +4,10 @@ use tokio::net::TcpListener;
 use axum::http::header;
 use tower_cookies::{CookieManagerLayer};
 use tower_http::services::ServeDir;
-use crate::application::restful::{health_routes, test_routes, settings_routes, jwt_routes, auth_routes};
+use crate::application::restful::{health_routes, test_routes, settings_routes, jwt_routes, sessions_routes, credential_routes, user_routes};
 use shared::config::Config;
 use axum::{http::StatusCode, routing::{get_service}, Router};
-use tower_http::{
-    compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer,
-    sensitive_headers::SetSensitiveHeadersLayer, };
+use tower_http::{compression::CompressionLayer, cors::CorsLayer, propagate_header::PropagateHeaderLayer, sensitive_headers::SetSensitiveHeadersLayer, };
 
 
 mod infra;
@@ -44,7 +42,9 @@ fn api_router() -> Router {
             Router::new()
                 .merge(settings_routes())
                 .merge(jwt_routes())
-                .merge(auth_routes())
+                .merge(user_routes())
+                .merge(credential_routes())
+                .merge(sessions_routes())
         ))
         .nest_service(
             "/static",

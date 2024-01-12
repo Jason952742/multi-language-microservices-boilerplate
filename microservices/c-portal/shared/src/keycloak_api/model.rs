@@ -170,3 +170,9 @@ pub struct ClientTokenRequestBody {
     pub client_secret: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct UserClaim {
+    pub sub: String,
+    pub email_verified: bool,
+    pub preferred_username: String
+}
