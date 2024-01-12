@@ -29,6 +29,17 @@ pub async fn set_refresh_token(user_id: Uuid, token: CacheRefreshToken, expire_i
     Ok(())
 }
 
+pub async fn delete_refresh_token(user_id: Uuid) -> Result<(), RedisError> {
+    let client = DragonflyPool::client_02().await;
+    let mut con = client.get_async_connection().await?;
+    let key = format!("RT-{:?}", &user_id);
+
+    con.hdel(&key, "access_token").await?;
+    con.hdel(&key, "refresh_token").await?;
+
+    Ok(())
+}
+
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())

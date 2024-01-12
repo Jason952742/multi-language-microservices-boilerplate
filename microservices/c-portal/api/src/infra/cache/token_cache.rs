@@ -33,6 +33,17 @@ pub async fn set_token(access_token: &str, token: CacheToken, expire_in: i64) ->
     Ok(())
 }
 
+pub async fn delete_token(access_token: &str) -> Result<(), RedisError> {
+    let client = DragonflyPool::client_01().await;
+    let mut con = client.get_async_connection().await?;
+    let key = format!("AT-{}", access_token);
+
+    con.hdel(&key, "user_id").await?;
+    con.hdel(&key, "expires_date").await?;
+
+    Ok(())
+}
+
 #[tokio::test]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
