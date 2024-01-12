@@ -1,13 +1,10 @@
-use std::ops::Add;
 use axum::{Json, Router};
+use axum::http::StatusCode;
 use axum::routing::{delete, post};
-use chrono::{Duration, Utc};
-use shared::utils::{AuthError, CustomResponse, to_uuid, ValidatedPath};
+use shared::utils::{AuthError, CustomResponse, CustomResponseBuilder, to_uuid, ValidatedPath};
 use shared::utils::{CustomError, ValidatedJson};
 use crate::application::restful::keycloak_client;
-use crate::application::services::user_refresh_svc;
-use crate::domain::entities::cache_token::{CacheRefreshToken, CacheToken};
-use crate::infra::cache::{refresh_cache, token_cache};
+use crate::application::services::{token_refresh_svc, user_refresh_svc};
 use crate::infra::dto::user::{AuthenticateResponse, AuthorizeBody};
 
 pub fn sessions_routes() -> Router<> {
@@ -23,26 +20,7 @@ async fn authenticate(ValidatedJson(body): ValidatedJson<AuthorizeBody>) -> Resu
             let user_id = to_uuid(&claim.sub);
 
             let user = user_refresh_svc::get_or_refresh(user_id, claim).await?;
-
-            // cache access token
-            let _ = token_cache::set_token(
-                &user_token.access_token,
-                CacheToken {
-                    user_id: user_id.clone(),
-                    expires_date: Utc::now().add(Duration::seconds(user_token.expires_in)),
-                },
-                user_token.refresh_expires_in,
-            ).await?;
-            // cache refresh token
-            let _ = refresh_cache::set_refresh_token(
-                user_id,
-                CacheRefreshToken {
-                    access_token: user_token.access_token.clone(),
-                    refresh_token: user_token.refresh_token,
-                },
-                user_token.refresh_expires_in,
-            ).await?;
-
+            let _ = token_refresh_svc::remove_and_refresh(user_id, user_token.clone()).await?;
 
             let res = AuthenticateResponse { user, access_token: user_token.access_token };
             Ok(Json(res))
@@ -53,7 +31,10 @@ async fn authenticate(ValidatedJson(body): ValidatedJson<AuthorizeBody>) -> Resu
 
 async fn unauthenticate(ValidatedPath(id): ValidatedPath<String>) -> Result<CustomResponse<()>, CustomError> {
     let user_id = to_uuid(&id);
+    let _ = token_refresh_svc::remove_tokens(user_id).await?;
 
-
-    todo!()
+    let res = CustomResponseBuilder::new()
+        .status_code(StatusCode::NO_CONTENT)
+        .build();
+    Ok(res)
 }

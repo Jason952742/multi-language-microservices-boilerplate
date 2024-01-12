@@ -1,10 +1,9 @@
-use std::ops::Add;
 use std::str::FromStr;
 use axum::{Json, Router};
 use axum::extract::Query;
 use axum::routing::{get, post, put};
 use axum::http::StatusCode;
-use chrono::{Duration, Utc};
+use chrono::{Utc};
 use rust_decimal_macros::dec;
 use serde_derive::Deserialize;
 use validator::Validate;
@@ -13,11 +12,10 @@ use shared::utils::{parse_code, to_datetime, to_uuid};
 use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson, ValidatedPath};
 use crate::application::grpc::eventflow_client;
 use crate::application::restful::keycloak_client;
-use crate::application::services::referral_refresh_svc;
-use crate::domain::entities::cache_token::{CacheRefreshToken, CacheToken};
+use crate::application::services::{referral_refresh_svc, token_refresh_svc};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::cache_user::CacheUser;
-use crate::infra::cache::{referral_cache, refresh_cache, token_cache, user_cache};
+use crate::infra::cache::{referral_cache, user_cache};
 use crate::infra::dto::user::{AuthenticateResponse, CreateBody};
 use crate::infra::dto::user_settings::{UserSettingsItem};
 
@@ -76,24 +74,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
                 let _ = referral_cache::set_referral(&user.refer_code, user_id.clone()).await?;
                 // cache user info
                 let _ = user_cache::set_user(cached_user.clone()).await?;
-                // cache access token
-                let _ = token_cache::set_token(
-                    &user_token.access_token,
-                    CacheToken {
-                        user_id: user_id.clone(),
-                        expires_date: Utc::now().add(Duration::seconds(user_token.expires_in)),
-                    },
-                    user_token.refresh_expires_in,
-                ).await?;
-                // cache refresh token
-                let _ = refresh_cache::set_refresh_token(
-                    user_id,
-                    CacheRefreshToken {
-                        access_token: user_token.access_token.clone(),
-                        refresh_token: user_token.refresh_token,
-                    },
-                    user_token.refresh_expires_in,
-                ).await?;
+                let _ = token_refresh_svc::remove_and_refresh(user_id.clone(), user_token.clone()).await?;
 
                 let res = CustomResponseBuilder::new()
                     .body(AuthenticateResponse {

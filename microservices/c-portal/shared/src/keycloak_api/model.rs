@@ -132,7 +132,7 @@ pub struct GroupRepresentation {
     pub path: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Token {
     pub access_token: String,
     pub expires_in: i64,
