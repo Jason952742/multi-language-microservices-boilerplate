@@ -8,7 +8,7 @@ pub async fn get_referral(code: &str) -> Result<Option<Uuid>, CustomError> {
     if let Some(id) = user_id {
         Ok(Some(id))
     } else {
-        let result = referral_client::get_referral(code.to_string()).await?;
+        let result = referral_client::get_referral_by_code(code.to_string()).await?;
         match result.data {
             None => Ok(None),
             Some(user) => {

@@ -7,13 +7,10 @@ use axum::http::StatusCode;
 use chrono::{Duration, Utc};
 use rust_decimal_macros::dec;
 use serde_derive::Deserialize;
-use tracing::debug;
 use validator::Validate;
 use shared::bson::doc;
-use shared::datasource::mongo::MongoPool;
-use shared::utils::{parse_code, to_datetime, to_object_id, to_uuid};
+use shared::utils::{parse_code, to_datetime, to_uuid};
 use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson, ValidatedPath};
-use crate::infra::repositories::{SettingsDbQuery};
 use crate::application::grpc::eventflow_client;
 use crate::application::restful::keycloak_client;
 use crate::application::services::referral_svc;
@@ -117,20 +114,5 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
 }
 
 async fn bind_email(ValidatedPath(id): ValidatedPath<String>) -> Result<Json<UserSettingsItem>, CustomError> {
-    let oid = to_object_id(id.clone()).map_err(|_| CustomError::ParseObjectID(id))?;
-    let conn = MongoPool::conn().await;
-
-    let opt = SettingsDbQuery::find_settings_by_id(conn, oid)
-        .await.map_err(|e| CustomError::Mongo(e))?;
-
-    match opt {
-        Some(x) => {
-            debug!("Returning settings");
-            Ok(Json(UserSettingsItem::from(x)))
-        }
-        None => {
-            debug!("Cat not found, returning 404 status code");
-            return Err(CustomError::not_found());
-        }
-    }
+    todo!()
 }

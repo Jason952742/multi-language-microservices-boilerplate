@@ -51,7 +51,8 @@ message MemberListReply {
 message Member {
   required string userId = 1;
   required string userName = 2;
-  required int32 hierarchy = 3;
-  required string description = 4;
-  required string createdAt = 5;
+  required string referralCode = 3;
+  required int32 hierarchy = 4;
+  required string description = 5;
+  required string createdAt = 6;
 }
