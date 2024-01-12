@@ -136,6 +136,7 @@ impl Into<Member> for member::Model {
         Member {
             user_id: self.user_id.to_string(),
             user_name: self.user_name,
+            referral_code: self.referral_code,
             hierarchy: self.hierarchy,
             description: self.description,
             created_at: self.created_at.to_string(),
