@@ -24,7 +24,7 @@ async fn get_channel() -> Result<(MetadataValue<Ascii>, Timeout<Channel>), Box<d
 }
 
 // #[tracing::instrument]
-async fn get_transaction_by_id(id: Uuid) -> Result<TransactionReply, Box<dyn std::error::Error>> {
+async fn _get_transaction_by_id(id: Uuid) -> Result<TransactionReply, Box<dyn std::error::Error>> {
     let (token, timeout_channel) = get_channel().await?;
     let mut client = EventflowClient::with_interceptor(timeout_channel, move |mut req: Request<()>| {
         let token = token.clone();

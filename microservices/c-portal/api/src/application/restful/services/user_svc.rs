@@ -94,6 +94,6 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
     }
 }
 
-async fn bind_email(ValidatedPath(id): ValidatedPath<String>) -> Result<Json<UserSettingsItem>, CustomError> {
+async fn bind_email(ValidatedPath(_id): ValidatedPath<String>) -> Result<Json<UserSettingsItem>, CustomError> {
     todo!()
 }

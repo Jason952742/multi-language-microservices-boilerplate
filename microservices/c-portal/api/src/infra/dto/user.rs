@@ -26,8 +26,8 @@ pub struct AuthorizeBody {
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 pub struct PasswordBody {
-    #[validate(length(min = 8, message = "password must be at least 8 characters"))]
-    pub old_password:String,
+    #[validate(length(min = 3, message = "username must be at least 3 characters"))]
+    pub identifier:String,
     #[validate(length(min = 8, message = "password must be at least 8 characters"))]
     pub new_password:String,
 }
@@ -36,4 +36,9 @@ pub struct PasswordBody {
 pub struct AuthenticateResponse {
     pub access_token: String,
     pub user: CacheUser,
+}
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+pub struct PasswordResponse {
+    pub access_token: String,
 }
