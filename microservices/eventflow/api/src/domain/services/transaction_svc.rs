@@ -1,15 +1,16 @@
-use chrono::Utc;
+use std::ops::Add;
+use chrono::{Duration, Utc};
 use tonic::Status;
 use uuid::Uuid;
 use shared::utils::{GrpcStatusTool, uuid_to_base64};
-use crate::application::events::publishers::ReferralPub;
+use crate::application::events::publishers::{MemberPub, ReferralPub};
 use crate::domain::aggregates::account_ar::{Account};
 use crate::domain::aggregates::member_ar::Member;
 use crate::domain::commands::eventflow_cmd::EventflowEvent;
 use crate::domain::entities::enums::{TransactionStatus, TransactionType};
 use crate::domain::entities::{transaction};
 use crate::domain::entities::valobj::{Payment, User};
-use crate::domain::messages::MemberReferralMsg;
+use crate::domain::messages::{MemberCreatedMsg, MemberReferralMsg};
 use crate::domain::queries::account_qry::AccountQuery;
 use crate::domain::queries::member_qry::MemberQuery;
 use crate::domain::queries::referral_qry::ReferralQuery;
@@ -48,7 +49,7 @@ impl TransactionService {
         let referral_es = ReferralServices::create_referral_event(&user_id, &referral_code, &referrer_id, referrer_code, &txn_id).await;
         events.push(referral_es);
         if let Some(id) = referrer_id.clone() {
-            let referrer =  ReferralQuery::load(id).await?;
+            let referrer = ReferralQuery::load(id).await?;
             if let Some(r) = referrer {
                 let referrer_es = ReferralServices::user_registered_event(&r, user_id).await;
                 events.push(referrer_es);
@@ -63,17 +64,22 @@ impl TransactionService {
                 TransactionDbMutation::update_transaction(txn_id, TransactionStatus::Completed, event_ids, None)
                     .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
-                let sub_end_date = Utc::now();
-                let user = User { user_id, user_name: user_name.clone(), member_id, sub_end_date, account_id, referral_code: referral_code.clone(), ..Default::default() };
+                let sub_end_date = Utc::now().add(Duration::hours(24));
+                let user = User {
+                    user_id,
+                    user_name: user_name.clone(),
+                    member_id,
+                    sub_end_date: sub_end_date.clone(),
+                    account_id,
+                    referral_code: referral_code.clone(),
+                    ..Default::default()
+                };
 
                 // publish mq messages
-                ReferralPub::publish_member(MemberReferralMsg {
-                    user_id,
-                    user_name,
-                    member_id,
-                    referral_code,
-                    referrer_id,
-                }).await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+                ReferralPub::publish_member(MemberReferralMsg { user_id, user_name: user_name.clone(), member_id, referral_code, referrer_id })
+                    .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+                MemberPub::publish_member(MemberCreatedMsg { user_id, user_name, member_id, sub_end_date })
+                    .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
                 Ok(EventflowEvent::Created { user })
             }
