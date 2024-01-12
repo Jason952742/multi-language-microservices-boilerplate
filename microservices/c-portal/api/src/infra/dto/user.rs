@@ -24,6 +24,14 @@ pub struct AuthorizeBody {
     pub remember_me: bool,
 }
 
+#[derive(Debug, Deserialize, Serialize, Validate)]
+pub struct PasswordBody {
+    #[validate(length(min = 8, message = "password must be at least 8 characters"))]
+    pub old_password:String,
+    #[validate(length(min = 8, message = "password must be at least 8 characters"))]
+    pub new_password:String,
+}
+
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct AuthenticateResponse {
     pub access_token: String,
