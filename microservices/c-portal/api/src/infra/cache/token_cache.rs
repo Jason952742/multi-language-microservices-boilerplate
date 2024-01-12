@@ -1,13 +1,10 @@
 use shared::datasource::dragonfly::DragonflyPool;
 use shared::redis::{AsyncCommands, RedisError};
-use futures::prelude::*;
 use shared::utils::{to_datetime, to_uuid};
 use crate::domain::entities::cache_token::CacheToken;
 
-const DB: i32 = 1;
-
 pub async fn get_token(access_token: &str) -> Result<CacheToken, RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_01().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("AT-{}", access_token);
 
@@ -24,7 +21,7 @@ pub async fn get_token(access_token: &str) -> Result<CacheToken, RedisError> {
 }
 
 pub async fn set_token(access_token: &str, token: CacheToken, expire_in: i64) -> Result<(), RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_01().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("AT-{}", access_token);
 

@@ -1,19 +1,12 @@
 use std::str::FromStr;
 use std::time::Duration;
-use http::{
-    uri::{InvalidUri, Uri},
-};
+use http::{uri::{Uri}};
 use tower::timeout::Timeout;
-use tonic::{
-    codegen::InterceptedService,
-    service::Interceptor,
-    transport::{Channel, Endpoint},
-    Request, Status,
-};
+use tonic::{transport::{Channel}, Request};
 use tonic::metadata::{Ascii, MetadataValue};
 use uuid::Uuid;
 use shared::consul_api::ServiceName;
-use eventflow_proto::{AccountTransferRequest, AccountTransactionReply, eventflow_server, ListRequest, MemberSubscriptionReply, MemberSubscriptionRequest, TransactionId, TransactionInfo, TransactionListReply, TransactionReply, UserCreatedReply, UserCreateRequest, UserInfo};
+use eventflow_proto::{TransactionId, TransactionReply, UserCreatedReply, UserCreateRequest};
 use crate::application::grpc::eventflow_client::eventflow_proto::eventflow_client::EventflowClient;
 use crate::infra::discovery;
 
@@ -57,7 +50,7 @@ pub async fn user_create(user_id: Uuid, user_name: &str, referrer_id: Option<Uui
         user_id: user_id.to_string(),
         user_name: user_name.to_string(),
         referrer_id: referrer_id.map(|x| x.to_string()),
-        referrer_code
+        referrer_code,
     })).await?;
 
     Ok(response.into_inner())

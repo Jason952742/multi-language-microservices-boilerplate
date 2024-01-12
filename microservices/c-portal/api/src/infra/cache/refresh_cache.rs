@@ -1,13 +1,10 @@
 use shared::datasource::dragonfly::DragonflyPool;
 use shared::redis::{AsyncCommands, RedisError};
-use futures::prelude::*;
 use uuid::Uuid;
 use crate::domain::entities::cache_token::{CacheRefreshToken};
 
-const DB: i32 = 2;
-
 pub async fn get_refresh_token(user_id: Uuid) -> Result<CacheRefreshToken, RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_02().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("RT-{:?}", user_id);
 
@@ -20,7 +17,7 @@ pub async fn get_refresh_token(user_id: Uuid) -> Result<CacheRefreshToken, Redis
 }
 
 pub async fn set_refresh_token(user_id: Uuid, token: CacheRefreshToken, expire_in: i64) -> Result<(), RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_02().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("RT-{:?}", &user_id);
 

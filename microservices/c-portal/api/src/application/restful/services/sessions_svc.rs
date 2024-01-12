@@ -10,14 +10,15 @@ use uuid::Uuid;
 use validator::Validate;
 use shared::bson::doc;
 use shared::datasource::mongo::MongoPool;
-use shared::utils::{AuthError, to_uuid};
+use shared::utils::{AuthError, to_datetime, to_uuid};
 use shared::utils::{CustomError, CustomResponseBuilder, ValidatedForm, ValidatedJson};
 use shared::utils::CustomResponseResult as Response;
+use crate::application::grpc::member_client;
 use crate::infra::repositories::{SettingsDbMutation, SettingsDbQuery};
 use crate::application::restful::keycloak_client;
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::cache_user::CacheUser;
-use crate::infra::dto::user::{AuthenticateResponse, AuthorizeBody, CreateBody};
+use crate::infra::dto::user::{AuthenticateResponse, AuthorizeBody};
 use crate::infra::dto::user_settings::{UserSettingsForm, UserSettingsItem};
 
 pub fn sessions_routes() -> Router<> {
@@ -31,21 +32,21 @@ struct CheckParm {
     username: String,
 }
 
-
 async fn authenticate_user(ValidatedJson(body): ValidatedJson<AuthorizeBody>) -> Result<Json<AuthenticateResponse>, CustomError> {
-    let admin_token = keycloak_client::get_admin_token().await?;
     match keycloak_client::get_user_token(&body.identifier, &body.password).await {
         Ok(token) => {
             let claim = keycloak_client::get_user_by_token(&token.access_token).await?;
-            // TODO: get member / account / referral info
-            // let member = ???
+            let user_id = to_uuid(&claim.sub);
+            // TODO: get account / referral info
+            let member = member_client::get_member(user_id.clone()).await?.data.unwrap();
+
             let cached_user = CacheUser {
                 user_id: to_uuid(&claim.sub),
                 user_name: claim.preferred_username,
-                member_id: Uuid::default(),
-                member_type: MemberType::Wood,
-                member_status: MemberStatus::Created,
-                sub_end_date: Utc::now(),
+                member_id: to_uuid(&member.id),
+                member_type: MemberType::from_str(&member.member_type).unwrap(),
+                member_status: MemberStatus::from_str(&member.status).unwrap(),
+                sub_end_date: to_datetime(&member.sub_end_date),
                 account_id: Uuid::default(),
                 account_balance: dec!(0),
                 referral_code: "".to_string(),
@@ -58,9 +59,7 @@ async fn authenticate_user(ValidatedJson(body): ValidatedJson<AuthorizeBody>) ->
             };
             Ok(Json(res))
         }
-        Err(e) => {
-            Err(CustomError::Authenticate(AuthError::WrongCredentials))
-        }
+        Err(_) => Err(CustomError::Authenticate(AuthError::WrongCredentials))
     }
 }
 

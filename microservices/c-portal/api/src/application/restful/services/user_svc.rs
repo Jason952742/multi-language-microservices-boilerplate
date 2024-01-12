@@ -12,7 +12,7 @@ use validator::Validate;
 use shared::bson::doc;
 use shared::datasource::mongo::MongoPool;
 use shared::utils::{parse_code, to_datetime, to_object_id, to_uuid};
-use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ResponsePagination, ValidatedForm, ValidatedJson, ValidatedPath};
+use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson, ValidatedPath};
 use crate::infra::repositories::{SettingsDbQuery};
 use crate::application::grpc::eventflow_client;
 use crate::application::restful::keycloak_client;
@@ -49,7 +49,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
     match keycloak_client::get_user_by_name(&body.identifier, &admin_token.access_token).await? {
         None => {
             // check referrer
-            let referrer_id = if (body.referral_code.is_some()) {
+            let referrer_id = if body.referral_code.is_some() {
                 referral_svc::get_referral(&body.referral_code.clone().unwrap()).await?
             } else { None };
             // keycloak create user
@@ -60,7 +60,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
             let created_user = eventflow_client::user_create(user_id.clone(), &body.identifier, referrer_id, body.referral_code).await?;
 
             // event flow success
-            if (created_user.code == parse_code(tonic::Code::Ok)) {
+            if created_user.code == parse_code(tonic::Code::Ok) {
                 let user = created_user.data;
                 let cached_user = CacheUser {
                     user_id: user_id.clone(),
@@ -87,7 +87,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
                         expires_date: Utc::now().add(Duration::seconds(user_token.expires_in)),
                     },
                     user_token.refresh_expires_in,
-                );
+                ).await?;
                 // cache refresh token
                 let _ = refresh_cache::set_refresh_token(
                     user_id,
@@ -96,7 +96,7 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
                         refresh_token: user_token.refresh_token,
                     },
                     user_token.refresh_expires_in,
-                );
+                ).await?;
 
                 let res = CustomResponseBuilder::new()
                     .body(AuthenticateResponse {

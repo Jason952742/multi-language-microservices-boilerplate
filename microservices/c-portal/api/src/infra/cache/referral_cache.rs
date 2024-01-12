@@ -2,12 +2,9 @@ use std::str::FromStr;
 use uuid::Uuid;
 use shared::datasource::dragonfly::DragonflyPool;
 use shared::redis::{AsyncCommands, RedisError};
-use futures::prelude::*;
-
-const DB: i32 = 4;
 
 pub async fn get_referral(code: &str) -> Result<Option<Uuid>, RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_04().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("RF-{}", code);
 
@@ -24,7 +21,7 @@ pub async fn get_referral(code: &str) -> Result<Option<Uuid>, RedisError> {
 }
 
 pub async fn set_referral(code: &str, user_id: Uuid) -> Result<Uuid, RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_04().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("RF-{}", code);
 

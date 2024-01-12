@@ -2,17 +2,14 @@ use std::str::FromStr;
 use uuid::Uuid;
 use shared::datasource::dragonfly::DragonflyPool;
 use shared::redis::{AsyncCommands, RedisError};
-use futures::prelude::*;
 use rust_decimal::Decimal;
 use rust_decimal::prelude::ToPrimitive;
 use shared::utils::{to_datetime, to_uuid};
 use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::domain::entities::cache_user::CacheUser;
 
-const DB: i32 = 3;
-
 pub async fn get_user(user_id: Uuid) -> Result<CacheUser, RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_03().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("US-{}", user_id.to_string());
 
@@ -45,7 +42,7 @@ pub async fn get_user(user_id: Uuid) -> Result<CacheUser, RedisError> {
 }
 
 pub async fn set_user(user: CacheUser) -> Result<(), RedisError> {
-    let client = DragonflyPool::client(DB).await;
+    let client = DragonflyPool::client_03().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("US-{}", &user.user_id.to_string());
 
