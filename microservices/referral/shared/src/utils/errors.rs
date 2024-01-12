@@ -8,13 +8,12 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json::json;
 use tokio::task::JoinError;
 use bson;
-use mongodb::error::Error as MongoError;
 
 
 #[derive(thiserror::Error, Debug)]
 pub enum CustomError {
   #[error("{0}")]
-  Mongo(#[from] MongoError),
+  Mongo(#[from] mongodb::error::Error),
 
   #[error("Error parsing ObjectID: {0}")]
   ParseObjectID(String),
@@ -59,10 +58,19 @@ pub enum CustomError {
   RunSyncTask(#[from] JoinError),
 
   #[error("{0}")]
+  RedisError(#[from] redis::RedisError),
+
+  #[error("{0}")]
   HashPassword(#[from] BcryptError),
 
   #[error("Error version {0}")]
   BadVersion(String),
+
+  #[error("Error {0}")]
+  BoxStdError(#[from] Box<dyn std::error::Error>),
+
+  #[error("Error {0}")]
+  UnknownErr(&'static str),
 }
 
 impl CustomError {
@@ -96,6 +104,9 @@ impl CustomError {
       CustomError::SerializeMongoResponse(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50004),
       CustomError::RunSyncTask(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50005),
       CustomError::HashPassword(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50006),
+      CustomError::RedisError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50007),
+      CustomError::BoxStdError(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50008),
+      CustomError::UnknownErr(_) => (StatusCode::INTERNAL_SERVER_ERROR, 50009),
     }
   }
 

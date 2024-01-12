@@ -135,6 +135,9 @@ pub struct GroupRepresentation {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Token {
     pub access_token: String,
+    pub expires_in: i64,
+    pub refresh_token: String,
+    pub refresh_expires_in: i64,
     pub token_type: String,
     pub session_state: String,
     pub scope: String,
@@ -167,3 +170,9 @@ pub struct ClientTokenRequestBody {
     pub client_secret: String,
 }
 
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct UserClaim {
+    pub sub: String,
+    pub email_verified: bool,
+    pub preferred_username: String
+}

@@ -26,7 +26,7 @@ impl MemberService {
 
     pub async fn subscribe(id: Uuid, user_id: Uuid, sub_end_date: DateTime<Utc>) -> Result<MemberEvent, Status> {
         match MemberOrmQuery::get_member_by_id(id).await.map_err(|e| GrpcStatusTool::db_error(e))? {
-            Some(member) => {
+            Some(_) => {
                 let _ = MemberOrmMutation::subscribe(user_id, sub_end_date).await.map_err(|e| GrpcStatusTool::db_error(e))?;
                 Ok(MemberEvent::Subscribed)
             }

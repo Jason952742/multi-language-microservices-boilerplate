@@ -1,17 +1,16 @@
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use serde_json::json;
-use crate::keycloak_api::{client, ClientTokenRequestBody, RefreshTokenRequestBody, Token, TokenRequestBody};
+use crate::keycloak_api::{client, ClientTokenRequestBody, RefreshTokenRequestBody, Token, TokenRequestBody, UserClaim};
 use crate::keycloak_api::urls::OpenIdUrl;
 
-pub async fn user_info(base_url: &str, realm_name: &str, token: &str) -> Result<serde_json::Value, reqwest::Error> {
+pub async fn user_info(base_url: &str, realm_name: &str, token: &str) -> Result<UserClaim, reqwest::Error> {
     let url = OpenIdUrl::UrlUserinfo { realm_name };
-
     let k_res = client().await
-        .post(format!("{base_url}/{url}"))
+        .get(format!("{base_url}/{url}"))
         .bearer_auth(token)
         .send().await?
         .error_for_status()?;
-    Ok(json!(k_res.json().await?))
+    k_res.json().await
 }
 
 pub async fn well_known(base_url: &str, realm_name: &str) -> Result<String, reqwest::Error> {
@@ -35,8 +34,7 @@ pub async fn password_token(base_url: &str, payload: TokenRequestBody, realm_nam
             ("client_secret", payload.client_secret.map_or("".to_string(), |x| x)),
             ("username", payload.username),
             ("password", payload.password),
-            ("code", payload.code.map_or("".to_string(), |x| x)),
-            ("redirect_uri", payload.redirect_uri.map_or("".to_string(), |x| x)),
+            ("scope", payload.scope.map_or("openid".to_string(), |x| x)),
         ])
         .send().await?
         .error_for_status()?;

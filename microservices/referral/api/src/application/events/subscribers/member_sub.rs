@@ -28,7 +28,7 @@ impl MemberSub {
         let connection = RabbitPool::connection().await;
         let channel = RabbitPool::channel(&connection).await;
         let _queue = RabbitPool::queue(&channel, &event_name, "multi_lang", "referral").await;
-        let consumer = RabbitPool::consumer(&channel, &event_name, "referral-member").await;
+        let consumer = RabbitPool::consumer(&channel, &event_name, "referral-consumer").await;
         let mut consumer_stream = consumer.into_stream();
 
         tokio::task::spawn(async move {

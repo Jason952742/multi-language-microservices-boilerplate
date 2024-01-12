@@ -8,22 +8,97 @@ use tracing::info;
 pub struct DragonflyPool;
 
 static CLIENT: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_01: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_02: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_03: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_04: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_05: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_06: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_07: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_08: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_09: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_10: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_11: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_12: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_13: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_14: OnceCell<Client> = OnceCell::const_new();
+static CLIENT_15: OnceCell<Client> = OnceCell::const_new();
 
 impl DragonflyPool {
-    pub async fn client(db: i32) -> &'static Client {
-        CLIENT
-            .get_or_init(|| async {
-                dotenvy::dotenv().ok();
-                let host = env::var("REDIS_HOST").expect("REDIS_HOST must be set");
-                let port = env::var("REDIS_PORT").expect("REDIS_PORT must be set");
-                let requirepass = env::var("REDIS_PASSWORD").expect("REDIS_PASSWORD must be set");
-                let redis_url = format!("redis://:{requirepass}@{host}:{port}/{db}");
-                let client = Client::open(redis_url).expect("Dragonfly connection failed");
-                info!("{}", "DRAGONFLY CONNECTED".color("magenta"));
-                client
-            })
-            .await
+    pub async fn client() -> &'static Client {
+        CLIENT.get_or_init(|| async { get_client(0).await }).await
     }
+
+    pub async fn client_01() -> &'static Client {
+        CLIENT_01.get_or_init(|| async { get_client(1).await }).await
+    }
+
+    pub async fn client_02() -> &'static Client {
+        CLIENT_02.get_or_init(|| async { get_client(2).await }).await
+    }
+
+    pub async fn client_03() -> &'static Client {
+        CLIENT_03.get_or_init(|| async { get_client(3).await }).await
+    }
+
+    pub async fn client_04() -> &'static Client {
+        CLIENT_04.get_or_init(|| async { get_client(4).await }).await
+    }
+
+    pub async fn client_05() -> &'static Client {
+        CLIENT_05.get_or_init(|| async { get_client(5).await }).await
+    }
+
+    pub async fn client_06() -> &'static Client {
+        CLIENT_06.get_or_init(|| async { get_client(6).await }).await
+    }
+
+    pub async fn client_07() -> &'static Client {
+        CLIENT_07.get_or_init(|| async { get_client(7).await }).await
+    }
+
+    pub async fn client_08() -> &'static Client {
+        CLIENT_08.get_or_init(|| async { get_client(8).await }).await
+    }
+
+    pub async fn client_09() -> &'static Client {
+        CLIENT_09.get_or_init(|| async { get_client(9).await }).await
+    }
+
+    pub async fn client_10() -> &'static Client {
+        CLIENT_10.get_or_init(|| async { get_client(10).await }).await
+    }
+
+    pub async fn client_11() -> &'static Client {
+        CLIENT_11.get_or_init(|| async { get_client(11).await }).await
+    }
+
+    pub async fn client_12() -> &'static Client {
+        CLIENT_12.get_or_init(|| async { get_client(12).await }).await
+    }
+
+    pub async fn client_13() -> &'static Client {
+        CLIENT_13.get_or_init(|| async { get_client(13).await }).await
+    }
+
+    pub async fn client_14() -> &'static Client {
+        CLIENT_14.get_or_init(|| async { get_client(14).await }).await
+    }
+
+    pub async fn client_15() -> &'static Client {
+        CLIENT_15.get_or_init(|| async { get_client(15).await }).await
+    }
+}
+
+async fn get_client(db: i32) -> Client {
+    dotenvy::dotenv().ok();
+    let host = env::var("REDIS_HOST").expect("REDIS_HOST must be set");
+    let port = env::var("REDIS_PORT").expect("REDIS_PORT must be set");
+    let requirepass = env::var("REDIS_PASSWORD").expect("REDIS_PASSWORD must be set");
+    let redis_url = format!("redis://:{requirepass}@{host}:{port}/{db}");
+    let client = Client::open(redis_url).expect("Dragonfly connection failed");
+    info!("{} {}", "DRAGONFLY CONNECTED".color("magenta"), db);
+    client
 }
 
 
@@ -57,9 +132,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     use redis::AsyncCommands;
-    // use std::collections::HashMap;
 
-    let client = DragonflyPool::client(15).await;
+    let client = DragonflyPool::client().await;
     let mut con = client.get_async_connection().await?;
 
     let _ = con.set("hello", "world").await?;
@@ -74,34 +148,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // con.set("key1", b"foo").await?;
-
-    // redis::cmd("SET").arg(&["key2", "bar"]).query_async(&mut con).await?;
-    //
-    // let result = redis::cmd("MGET").arg(&["key1", "key2"]).query_async(&mut con).await;
-    //
-    // let hello = Payload { foo: "nima".to_string(), bar: 96 };
-    //
-    // redis::cmd("HSET").arg(&["myhash", "foo", &hello.foo, "bar", &hello.bar.to_string()]).query_async(&mut con).await?;
-    //
-    // redis::cmd("HSET").arg(&["my-hash", "foo", &hello.foo]).query_async(&mut con).await?;
-    // redis::cmd("HSET").arg(&["my-hash", "bar", &hello.bar.to_string()]).query_async(&mut con).await?;
-    //
-    // redis::cmd("SET").arg("my_key").arg(42i32).query_async(&mut con).await?;
-
-    // let count: i32 = con.get("my_key").await?;
-    // println!("{:?}", count);
-
-    // con.hset("nunu", "foo", "wocao").await?;
-    // con.hset("nunu", "bar", 47u32.to_string()).await?;
-
-    // let map: HashMap<String, String> = con.hgetall("nunu").await?;
-    // println!("{:}", map.get("foo").unwrap());
-
-    // let payload = Payload { foo: map.get("foo").unwrap().to_string(), bar: map.get("bar").parse().unwrap() };
-
-    // println!("{:?}", payload);
-
-    // assert_eq!(result, Ok(("foo".to_string(), b"bar".to_vec())));
     Ok(())
 }
