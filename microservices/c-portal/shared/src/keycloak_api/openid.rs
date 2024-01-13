@@ -31,10 +31,10 @@ pub async fn password_token(base_url: &str, payload: TokenRequestBody, realm_nam
         .form(&[
             ("grant_type", payload.grant_type),
             ("client_id", payload.client_id),
-            ("client_secret", payload.client_secret.map_or("".to_string(), |x| x)),
+            ("client_secret", payload.client_secret),
             ("username", payload.username),
             ("password", payload.password),
-            ("scope", payload.scope.map_or("openid".to_string(), |x| x)),
+            ("scope", payload.scope),
         ])
         .send().await?
         .error_for_status()?;
@@ -62,6 +62,25 @@ pub async fn client_token(base_url: &str, realm_name: &str, client_id: &str, cli
     k_res.json().await
 }
 
+pub async fn refresh_token(base_url: &str, payload: RefreshTokenRequestBody, realm_name:&str) -> Result<Token, reqwest::Error> {
+    let url = OpenIdUrl::UrlToken { realm_name }.to_string();
+
+    let k_res = client().await
+        .post(format!("{base_url}/{url}"))
+        .header(CONTENT_TYPE, HeaderValue::from_static("application/x-www-form-urlencoded"))
+        .form(&[
+            ("grant_type", payload.grant_type),
+            ("client_id", payload.client_id),
+            ("client_secret", payload.client_secret),
+            ("refresh_token", payload.refresh_token),
+            ("scope", payload.scope),
+        ])
+        .send()
+        .await?.error_for_status()?;
+
+    k_res.json().await
+}
+
 pub async fn introspect(base_url: &str, realm_name: &str, data: serde_json::Value) -> Result<String, reqwest::Error> {
     let url = OpenIdUrl::UrlIntrospect { realm_name }.to_string();
     let payload = json!({
@@ -77,24 +96,4 @@ pub async fn introspect(base_url: &str, realm_name: &str, data: serde_json::Valu
         .send()
         .await?.error_for_status()?;
     k_res.text().await
-}
-
-pub async fn refresh_token(base_url: &str, payload: RefreshTokenRequestBody, realm_name:&str) -> Result<String, reqwest::Error> {
-    let url = OpenIdUrl::UrlToken { realm_name }.to_string();
-
-    let k_res = client().await
-        .post(format!("{base_url}/{url}"))
-        .header(CONTENT_TYPE, HeaderValue::from_static("application/x-www-form-urlencoded"))
-        .form(&[
-            ("grant_type", payload.grant_type),
-            ("client_id", payload.client_id),
-            ("refresh_token", payload.refresh_token),
-        ])
-        .send()
-        .await?.error_for_status()?;
-    let res: Token = k_res.json().await?;
-
-    let d = json!(res);
-    let token = d["access_token"].to_string();
-    Ok(token)
 }

@@ -3,7 +3,7 @@ use chrono::Utc;
 use std::env;
 use shared::keycloak_api;
 use shared::keycloak_api::model::CredentialRepresentation;
-use shared::keycloak_api::{Token, TokenRequestBody, UserClaim, UserRepresentation};
+use shared::keycloak_api::{RefreshTokenRequestBody, Token, TokenRequestBody, UserClaim, UserRepresentation};
 use once_cell::sync::Lazy;
 use uuid::Uuid;
 
@@ -18,7 +18,7 @@ pub async fn get_admin_token() -> Result<Token, reqwest::Error> {
         password: env::var("KEYCLOAK_ADMIN_PASSWORD").expect("KEYCLOAK_ADMIN_PASSWORD must be set"),
         client_id: env::var("KEYCLOAK_ADMIN_CLIENT").expect("KEYCLOAK_ADMIN_CLIENT must be set"),
         grant_type: "password".to_string(),
-        scope: Some("openid".to_string()),
+        scope: "openid".to_string(),
         ..Default::default()
     };
     let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, "master").await?;
@@ -31,13 +31,27 @@ pub async fn get_user_token(username: &str, password: &str) -> Result<Token, req
         username: username.to_string(),
         password: password.to_string(),
         client_id: env::var("KEYCLOAK_USER_CLIENT").expect("KEYCLOAK_USER_CLIENT must be set"),
-        client_secret: Some(env::var("KEYCLOAK_USER_CLIENT_SECRET").expect("KEYCLOAK_USER_CLIENT_SECRET must be set")),
+        client_secret: env::var("KEYCLOAK_USER_CLIENT_SECRET").expect("KEYCLOAK_USER_CLIENT_SECRET must be set"),
         grant_type: "password".to_string(),
-        scope: Some("openid".to_string()),
+        scope: "openid".to_string(),
         ..Default::default()
     };
     let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
     let access_token = keycloak_api::openid::password_token(&**BASE_URL, payload, &realm).await?;
+    Ok(access_token)
+}
+
+pub async fn get_refresh_token(token: &str) -> Result<Token, reqwest::Error> {
+    dotenvy::dotenv().ok();
+    let payload = RefreshTokenRequestBody {
+        client_id: env::var("KEYCLOAK_USER_CLIENT").expect("KEYCLOAK_USER_CLIENT must be set"),
+        client_secret: env::var("KEYCLOAK_USER_CLIENT_SECRET").expect("KEYCLOAK_USER_CLIENT_SECRET must be set"),
+        grant_type: "refresh_token".to_string(),
+        refresh_token: token.to_string(),
+        scope: "openid".to_string(),
+    };
+    let realm = env::var("KEYCLOAK_USER_REALM").expect("KEYCLOAK_USER_REALM must be set");
+    let access_token = keycloak_api::openid::refresh_token(&**BASE_URL, payload, &realm).await?;
     Ok(access_token)
 }
 
@@ -97,7 +111,12 @@ pub async fn change_password(id: Uuid, new_password: &str, admin_token: &str) ->
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let token = get_user_token("kk", "456").await?;
 
-    let user = get_user_by_token(&token.access_token).await?;
+    println!("old tokn: \n {:?} \n", token);
+
+    let refresh_token = get_refresh_token(&token.refresh_token).await?;
+
+    println!("new tokn: \n {:?}", refresh_token);
+
 
     Ok(())
 }
