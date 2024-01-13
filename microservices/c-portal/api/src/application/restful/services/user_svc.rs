@@ -6,6 +6,7 @@ use crate::domain::entities::enums::{MemberStatus, MemberType};
 use crate::infra::cache::{referral_cache, user_cache};
 use crate::infra::dto::user::{AuthenticateResponse, CreateBody};
 use crate::infra::dto::user_settings::UserSettingsItem;
+use crate::infra::requests::token_validate::ValidateToken;
 use axum::extract::Query;
 use axum::http::StatusCode;
 use axum::routing::{get, post, put};
@@ -15,15 +16,12 @@ use rust_decimal_macros::dec;
 use serde_derive::Deserialize;
 use shared::bson::doc;
 use shared::utils::{parse_code, to_datetime, to_uuid};
-use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson, ValidatedPath};
+use shared::utils::{CustomError, CustomResponse, CustomResponseBuilder, ValidatedJson};
 use std::str::FromStr;
 use validator::Validate;
 
 pub fn user_routes() -> Router {
-  Router::new()
-    .route("/users", get(check_user))
-    .route("/users", post(create_user))
-    .route("/users/{id}/email", put(bind_email))
+  Router::new().route("/users", get(check_user)).route("/users", post(create_user)).route("/users/email", put(bind_email))
 }
 
 #[derive(Debug, Default, Clone, Deserialize, Validate)]
@@ -89,6 +87,6 @@ async fn create_user(ValidatedJson(body): ValidatedJson<CreateBody>) -> Result<C
   }
 }
 
-async fn bind_email(ValidatedPath(_id): ValidatedPath<String>) -> Result<Json<UserSettingsItem>, CustomError> {
+async fn bind_email(_token: ValidateToken) -> Result<Json<UserSettingsItem>, CustomError> {
   todo!()
 }

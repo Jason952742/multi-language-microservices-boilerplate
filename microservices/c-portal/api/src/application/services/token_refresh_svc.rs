@@ -7,7 +7,7 @@ use std::ops::Add;
 use uuid::Uuid;
 
 pub async fn remove_and_refresh(user_id: &Uuid, user_token: Token) -> Result<(), CustomError> {
-  remove_access_token(user_id.clone()).await?;
+  remove_access_token(user_id).await?;
 
   // cache access token
   let cache_token = CacheToken { user_id: user_id.clone(), expires_date: Utc::now().add(Duration::seconds(user_token.expires_in)) };
@@ -18,7 +18,7 @@ pub async fn remove_and_refresh(user_id: &Uuid, user_token: Token) -> Result<(),
   Ok(())
 }
 
-pub async fn remove_access_token(user_id: Uuid) -> Result<(), CustomError> {
+pub async fn remove_access_token(user_id: &Uuid) -> Result<(), CustomError> {
   // remove old access token and refresh token
   match refresh_cache::get_refresh_token(&user_id).await {
     Ok(token) => {
@@ -29,7 +29,7 @@ pub async fn remove_access_token(user_id: Uuid) -> Result<(), CustomError> {
   Ok(())
 }
 
-pub async fn remove_refresh_token(user_id: Uuid) -> Result<(), CustomError> {
+pub async fn remove_refresh_token(user_id: &Uuid) -> Result<(), CustomError> {
   refresh_cache::delete_refresh_token(user_id.clone()).await?;
   Ok(())
 }
