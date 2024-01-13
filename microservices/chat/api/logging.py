@@ -57,7 +57,11 @@ def configure_logging() -> None:  # pragma: no cover
 
     # set logs output, level and format
     logger.remove()
+
+    log_filter = lambda record: "/health" not in record['message']
+
     logger.add(
         sys.stdout,
         level=settings.log_level.value,
+        filter=log_filter,
     )
