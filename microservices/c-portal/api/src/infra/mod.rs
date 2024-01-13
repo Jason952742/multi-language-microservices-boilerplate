@@ -3,6 +3,7 @@ use shared::consul_api;
 pub mod repositories;
 pub mod dto;
 pub mod cache;
+pub mod requests;
 
 pub async fn discovery(service_name: &str) -> Result<String, String> {
     let opt = consul_api::ConsulOption::default();

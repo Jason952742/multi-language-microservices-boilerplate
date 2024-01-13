@@ -20,7 +20,7 @@ pub async fn get_token(access_token: &str) -> Result<CacheToken, RedisError> {
 
 }
 
-pub async fn set_token(access_token: &str, token: CacheToken, expire_in: i64) -> Result<(), RedisError> {
+pub async fn set_token(access_token: &str, token: CacheToken, expire_in: &i64) -> Result<(), RedisError> {
     let client = DragonflyPool::client_01().await;
     let mut con = client.get_async_connection().await?;
     let key = format!("AT-{}", access_token);
@@ -28,7 +28,7 @@ pub async fn set_token(access_token: &str, token: CacheToken, expire_in: i64) ->
     con.hset(&key, "user_id", token.user_id.to_string()).await?;
     con.hset(&key, "expires_date", token.expires_date.to_string()).await?;
 
-    con.expire(&key, expire_in).await?;
+    con.expire(&key, *expire_in).await?;
 
     Ok(())
 }

@@ -31,7 +31,8 @@ async fn authenticate(ValidatedJson(body): ValidatedJson<AuthorizeBody>) -> Resu
 
 async fn unauthenticate(ValidatedPath(id): ValidatedPath<String>) -> Result<CustomResponse<()>, CustomError> {
     let user_id = to_uuid(&id);
-    let _ = token_refresh_svc::remove_tokens(user_id).await?;
+    let _ = token_refresh_svc::remove_tokens(user_id.clone()).await?;
+    let _ = token_refresh_svc::remove_refresh_token(user_id).await?;
 
     let res = CustomResponseBuilder::new()
         .status_code(StatusCode::NO_CONTENT)
