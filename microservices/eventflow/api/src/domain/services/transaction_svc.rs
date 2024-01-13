@@ -3,14 +3,14 @@ use chrono::{Duration, Utc};
 use tonic::Status;
 use uuid::Uuid;
 use shared::utils::{GrpcStatusTool, uuid_to_base64};
-use crate::application::events::publishers::{MemberPub, ReferralPub};
+use crate::application::events::publishers::{AccountPub, MemberPub, ReferralPub};
 use crate::domain::aggregates::account_ar::{Account};
 use crate::domain::aggregates::member_ar::Member;
 use crate::domain::commands::eventflow_cmd::EventflowEvent;
-use crate::domain::entities::enums::{TransactionStatus, TransactionType};
+use crate::domain::entities::enums::{CurrencyType, TransactionStatus, TransactionType};
 use crate::domain::entities::{transaction};
 use crate::domain::entities::valobj::{Payment, User};
-use crate::domain::messages::{MemberCreatedMsg, MemberReferralMsg};
+use crate::domain::messages::{AccountCreatedMsg, MemberCreatedMsg, MemberReferralMsg};
 use crate::domain::queries::account_qry::AccountQuery;
 use crate::domain::queries::member_qry::MemberQuery;
 use crate::domain::queries::referral_qry::ReferralQuery;
@@ -76,9 +76,11 @@ impl TransactionService {
                 };
 
                 // publish mq messages
-                ReferralPub::publish_member(MemberReferralMsg { user_id, user_name: user_name.clone(), member_id, referral_code, referrer_id })
+                ReferralPub::publish_referral(MemberReferralMsg { user_id, user_name: user_name.clone(), member_id, referral_code, referrer_id })
                     .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
                 MemberPub::publish_member(MemberCreatedMsg { user_id, user_name, member_id, sub_end_date })
+                    .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
+                AccountPub::publish_account(AccountCreatedMsg { user_id, account_id, ccy_type: CurrencyType::EUR })
                     .await.map_err(|e| GrpcStatusTool::invalid(e.to_string().as_str()))?;
 
                 Ok(EventflowEvent::Created { user })

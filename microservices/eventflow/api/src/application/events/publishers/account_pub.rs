@@ -1,25 +1,25 @@
 use tracing::log;
 use shared::{lapin};
 use shared::datasource::rabbitmq::RabbitPool;
-use crate::domain::messages::MemberReferralMsg;
+use crate::domain::messages::{AccountCreatedMsg};
 
 #[derive(Debug)]
-pub struct ReferralPub;
+pub struct AccountPub;
 
-impl ReferralPub {
-    pub async fn publish_referral(msg: MemberReferralMsg) -> Result<(), lapin::Error> {
-        let event_name = "member_referral";
+impl AccountPub {
+    pub async fn publish_account(msg: AccountCreatedMsg) -> Result<(), lapin::Error> {
+        let event_name = "account_created";
         let connection = RabbitPool::connection().await;
         let channel = RabbitPool::channel(&connection).await;
-        let _queue = RabbitPool::queue(&channel, &event_name, "multi_lang", "referral").await;
+        let _queue = RabbitPool::queue(&channel, &event_name, "multi_lang", "account").await;
 
         tokio::task::spawn({
             async move {
                 let bytes: Vec<u8> = msg.into();
-                let confirm = RabbitPool::send(&channel, "multi_lang", "referral", bytes.as_slice()).await;
+                let confirm = RabbitPool::send(&channel, "multi_lang", "account", bytes.as_slice()).await;
 
                 match confirm.take_message() {
-                    None => println!("Member Referral Message Received!"),
+                    None => println!("Member Created Message Received!"),
                     Some(message) => {
                         let error = message.error();
 
