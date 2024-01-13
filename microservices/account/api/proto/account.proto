@@ -1,0 +1,72 @@
+syntax = "proto2";
+
+package account;
+
+service Account {
+  rpc AddAccount(AddAccountRequest) returns (ProcessStatusReply) {}
+  rpc DisableAccount(AccountId) returns (ProcessStatusReply) {}
+  rpc UpdateAccount(UpdateAccountRequest) returns (ProcessStatusReply) {}
+  rpc GetAccounts(ListRequest) returns (AccountListReply) {}
+  rpc GetAccountsByUserId(UserId) returns (AccountListReply) {}
+  rpc GetAccountById(AccountId) returns (AccountReply) {}
+}
+
+message AccountId {
+  required string id = 1;
+}
+
+message UserId {
+  required string id = 1;
+}
+
+message AddAccountRequest {
+  required string id = 1;
+  required string userId = 2;
+  required string ccyType = 3;
+}
+
+message UpdateAccountRequest {
+  required string id = 1;
+  required string accountType = 2;
+  required string accountName = 3;
+  required string description = 4;
+}
+
+message ListRequest {
+  required uint64 page = 1;
+  required uint64 perPage = 2;
+  optional string status = 3;
+  optional string ccyType = 4;
+  optional string accountType = 5;
+}
+
+message ProcessStatusReply {
+  required string code = 1;
+  required string message = 2;
+  required bool success = 3;
+  required string processId = 4;
+}
+
+message AccountReply {
+  required string code = 1;
+  required string message = 2;
+  optional AccountInfo data = 3;
+}
+
+message AccountInfo {
+  required string userId = 1;
+  required string accountId = 2;
+  required string accountName = 3;
+  required string status = 4;
+  required string accountType = 5;
+  required string ccyType = 6;
+  required double frozenAmount = 7;
+  required double balance = 8;
+}
+
+message AccountListReply {
+  required string code = 1;
+  required string message = 2;
+  repeated AccountInfo data = 3;
+  required uint64 numPages = 4;
+}

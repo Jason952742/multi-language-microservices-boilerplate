@@ -2,25 +2,33 @@ use sea_orm::entity::prelude::*;
 use rust_decimal::Decimal;
 use uuid::Uuid;
 use serde::{Deserialize, Serialize};
-use crate::domain::entities::enums::{MemberStatus, MemberType};
+use crate::domain::entities::enums::{AccountStatus, AccountType, CurrencyType};
 
 #[derive(Default, Clone, Debug, PartialEq, DeriveEntityModel, Deserialize, Serialize)]
-#[sea_orm(table_name = "members")]
+#[sea_orm(table_name = "accounts")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: Uuid,
     #[sea_orm(indexed, unique)]
     pub user_id: Uuid,
     #[sea_orm(indexed, unique)]
-    pub user_name: String,
-    
-    pub status: MemberStatus,
-    pub member_type: MemberType,
-    pub sub_end_date: DateTimeUtc,
-    pub credit_score: Decimal,
-    pub point: i32,
-    pub level: i32,
-    pub active: bool,
+    pub account_name: String,
+
+    pub status: AccountStatus,
+    pub account_type: AccountType,
+    pub ccy_type: CurrencyType,
+    pub deposit_count: i32,
+    pub total_deposit: Decimal,
+    pub withdraw_count: i32,
+    pub total_withdraw: Decimal,
+    pub earn_count: i32,
+    pub total_earn: Decimal,
+    pub spend_count: i32,
+    pub total_spend: Decimal,
+    pub commission_count: i32,
+    pub total_commission: Decimal,
+    pub frozen_amount: Decimal,
+    pub balance: Decimal,
     pub description: String,
 
     #[serde(skip_deserializing)]

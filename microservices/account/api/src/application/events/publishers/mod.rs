@@ -1,3 +1,3 @@
-pub mod member_pub;
+pub mod account_pub;
 
-pub use member_pub::*;
+pub use account_pub::*;

@@ -2,9 +2,9 @@ use shared::{lapin};
 use shared::datasource::rabbitmq::RabbitPool;
 
 #[derive(Debug)]
-pub struct MemberPub;
+pub struct AccountPub;
 
-impl MemberPub {
+impl AccountPub {
     pub async fn _publish() -> Result<(), Box<dyn std::error::Error>> {
         tokio::task::spawn({
             async move {

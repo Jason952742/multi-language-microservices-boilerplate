@@ -10,6 +10,8 @@ pub enum MemberStatus {
     Created,
     #[sea_orm(string_value = "Enabled")]
     Enabled, // If in use, cannot delete
+    #[sea_orm(string_value = "Frozen")]
+    Frozen,
     #[sea_orm(string_value = "Blocked")]
     Blocked,
     #[sea_orm(string_value = "Disabled")]

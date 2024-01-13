@@ -47,9 +47,9 @@ async  fn main() -> anyhow::Result<()> {
 // register consul service
 async fn consul_register(host: &str, port: &i32) {
     let cs = consul_api::Consul::new(consul_api::ConsulOption::default()).unwrap();
-    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuMember, host, *port, true);
+    let reg = consul_api::Registration::simple(consul_api::ServiceName::MuAccount, host, *port, true);
     cs.register(&reg).await.unwrap();
-    info!("{} Successfully Registered", consul_api::ServiceName::MuMember.to_string().color("cyan"));
+    info!("{} Successfully Registered", consul_api::ServiceName::MuAccount.to_string().color("cyan"));
     tokio::spawn(async move {
         cs.discover_service().await.expect("discover_service failed");
     });

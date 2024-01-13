@@ -8,6 +8,7 @@ pub enum MemberStatus {
     #[default]
     Created,
     Enabled, // If in use, cannot delete
+    Frozen,
     Blocked,
     Disabled,
     Deleted, // Soft deletes
