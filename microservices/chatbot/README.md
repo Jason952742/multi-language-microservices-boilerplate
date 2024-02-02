@@ -2,6 +2,18 @@
 
 This project was generated using fastapi_template.
 
+## Build proto
+
+You need to install `grpcio-tools` to use `grpc_tools.protoc` command. then:
+
+```bash
+python -m grpc_tools.protoc -I./api/proto --python_out=./api/proto/pb2 --pyi_out=./api/proto/pb2 --grpc_python_out=./api/proto/pb2 ./api/proto/helloworld.proto
+```
+
+***note:*** need change *from api.proto.pb2 import helloworld_pb2 as helloworld__pb2* in helloworld_pb2_grpc.py.
+
+```bash
+
 ## Poetry
 
 This project uses poetry. It's a modern dependency management
@@ -44,27 +56,6 @@ But you have to rebuild image every time you modify `poetry.lock` or `pyproject.
 
 ```bash
 docker-compose -f deploy/docker-compose.yml --project-directory . dist
-```
-
-## Project structure
-
-```bash
-$ tree "api"
-api
-├── conftest.py  # Fixtures for all tests.
-├── db  # module contains db configurations
-│   ├── dao  # Data Access Objects. Contains different classes to interact with database.
-│   └── models  # Package contains different models for ORMs.
-├── __main__.py  # Startup script. Starts uvicorn.
-├── infra  # Package for different external infra such as rabbit or redis etc.
-├── settings.py  # Main configuration settings for project.
-├── static  # Static content.
-├── tests  # Tests for project.
-└── web  # Package contains web server. Handlers, startup config.
-    ├── api  # Package with all handlers.
-    │   └── router.py  # Main router.
-    ├── application.py  # FastAPI application configuration.
-    └── lifetime.py  # Contains actions to perform on startup and shutdown.
 ```
 
 ## Configuration
