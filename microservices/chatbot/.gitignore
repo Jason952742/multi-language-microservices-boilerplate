@@ -140,3 +140,5 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+api/web/gradio/gradio_cached_examples

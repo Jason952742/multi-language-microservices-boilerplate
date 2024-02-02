@@ -1,41 +1,40 @@
-# Copyright 2015 gRPC authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""The Python implementation of the GRPC helloworld.Greeter server."""
+import os
+import shutil
 
-from concurrent import futures
-import logging
-
-import grpc
-import helloworld_pb2
-import helloworld_pb2_grpc
+from api.settings import settings
 
 
-class Greeter(helloworld_pb2_grpc.GreeterServicer):
-    def SayHello(self, request, context):
-        return helloworld_pb2.HelloReply(message="Hello, %s!" % request.name)
+def set_multiproc_dir() -> None:
+    """
+    Sets mutiproc_dir env variable.
+
+    This function cleans up the multiprocess directory
+    and recreates it. These actions are required by prometheus-client
+    to share metrics between processes.
+
+    After cleanup, it sets two variables.
+    Uppercase and lowercase because different
+    versions of the prometheus-client library
+    depend on different environment variables,
+    so I've decided to export all needed variables,
+    to avoid undefined behaviour.
+    """
+    shutil.rmtree(settings.prometheus_dir, ignore_errors=True)
+    os.makedirs(settings.prometheus_dir, exist_ok=True)
+    os.environ["prometheus_multiproc_dir"] = str(
+        settings.prometheus_dir.expanduser().absolute(),
+    )
+    os.environ["PROMETHEUS_MULTIPROC_DIR"] = str(
+        settings.prometheus_dir.expanduser().absolute(),
+    )
 
 
-def serve():
-    port = "50041"
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
-    server.add_insecure_port("[::]:" + port)
-    server.start()
-    print("Server started, listening on " + port)
-    server.wait_for_termination()
+def main() -> None:
+    """Entrypoint of the application."""
+    set_multiproc_dir()
+    # start grpc service
+    print("grpc service start...")
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
-    serve()
+    main()

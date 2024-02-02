@@ -39,13 +39,11 @@ class Settings(BaseSettings):
     environment: str = "dev"
 
     log_level: LogLevel = LogLevel.INFO
-    # Variables for the database
-    db_host: str = "localhost"
-    db_port: int = 5432
-    db_user: str = "postgres"
-    db_pass: str = "postgres"
-    db_base: str = "chat_test"
-    db_echo: bool = False
+
+    # mongodb
+    mongo_host: str = "localhost"
+    mongo_port: int = 27017
+    mongo_base: str = "chat_test"
 
     # Variables for Redis
     redis_host: str = "localhost"
@@ -69,19 +67,17 @@ class Settings(BaseSettings):
     prometheus_dir: Path = TEMP_DIR / "prom"
 
     @property
-    def db_url(self) -> URL:
+    def mongo_url(self) -> URL:
         """
         Assemble database URL from settings.
 
         :return: database URL.
         """
         return URL.build(
-            scheme="postgres",
-            host=self.db_host,
-            port=self.db_port,
-            user=self.db_user,
-            password=self.db_pass,
-            path=f"/{self.db_base}",
+            scheme="mongodb",
+            host=self.mongo_host,
+            port=self.mongo_port,
+            path=f"/{self.mongo_base}",
         )
 
     @property
