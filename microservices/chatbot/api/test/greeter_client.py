@@ -16,7 +16,7 @@
 from __future__ import print_function
 
 import logging
-
+from api.infra.settings import settings
 import grpc
 
 from api.proto.pb2 import helloworld_pb2_grpc, helloworld_pb2
@@ -27,7 +27,7 @@ def run():
     # used in circumstances in which the with statement does not fit the needs
     # of the code.
     print("Will try to greet world ...")
-    with grpc.insecure_channel("localhost:50041") as channel:
+    with grpc.insecure_channel(f"localhost:{settings.port}") as channel:
         stub = helloworld_pb2_grpc.GreeterStub(channel)
         response = stub.SayHello(helloworld_pb2.HelloRequest(name="you"))
     print("Greeter client received: " + response.message)
