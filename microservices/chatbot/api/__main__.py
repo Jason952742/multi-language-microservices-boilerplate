@@ -1,5 +1,6 @@
 import os
 import shutil
+from typing import Callable, Awaitable
 
 import grpc
 
@@ -40,9 +41,37 @@ def set_multiproc_dir() -> None:
 # Coroutines to be invoked when the event loop is shutting down.
 _cleanup_coroutines = []
 
+_AUTH_HEADER_KEY = "authorization"
+_AUTH_HEADER_VALUE = "Bearer example_oauth2_token"
+
+
+class SignatureValidationInterceptor(grpc.aio.ServerInterceptor):
+    def __init__(self):
+        def abort(ignored_request,  context: grpc.aio.ServicerContext):
+            context.abort(grpc.StatusCode.UNAUTHENTICATED, "Invalid signature")
+
+        self._abort_handler = grpc.unary_unary_rpc_method_handler(abort)
+
+    async def intercept_service(
+        self,
+        continuation: Callable[
+            [grpc.HandlerCallDetails], Awaitable[grpc.RpcMethodHandler]
+        ],
+        handler_call_details: grpc.HandlerCallDetails,
+    ) -> grpc.RpcMethodHandler:
+        # Example HandlerCallDetails object:
+        #     _HandlerCallDetails(
+        #       method=u'/helloworld.Greeter/SayHello',
+        #       invocation_metadata=...)
+        expected_metadata = (_AUTH_HEADER_KEY, _AUTH_HEADER_VALUE)
+        if expected_metadata in handler_call_details.invocation_metadata:
+            return await continuation(handler_call_details)
+        else:
+            return self._abort_handler
+
 
 async def serve() -> None:
-    server = grpc.aio.server()
+    server = grpc.aio.server(interceptors=(SignatureValidationInterceptor(),))
     helloworld_pb2_grpc.add_GreeterServicer_to_server(greeter_server.Greeter(), server)
     health_pb2_grpc.add_HealthServicer_to_server(health_server.HealthServicer(), server)
 
