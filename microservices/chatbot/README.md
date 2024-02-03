@@ -8,6 +8,7 @@ You need to install `grpcio-tools` to use `grpc_tools.protoc` command. then:
 
 ```bash
 python -m grpc_tools.protoc -I./api/proto --python_out=./api/proto/pb2 --pyi_out=./api/proto/pb2 --grpc_python_out=./api/proto/pb2 ./api/proto/helloworld.proto
+python -m grpc_tools.protoc -I./api/proto --python_out=./api/proto/pb2 --pyi_out=./api/proto/pb2 --grpc_python_out=./api/proto/pb2 ./api/proto/health.proto
 ```
 
 ***note:*** need change *from api.proto.pb2 import helloworld_pb2 as helloworld__pb2* in helloworld_pb2_grpc.py.

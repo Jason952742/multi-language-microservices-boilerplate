@@ -4,14 +4,13 @@ import consul
 def register_consul(service_name, ip, port):
     c = consul.Consul()
     service_id = f"{service_name}-{port}"
-    service_url = f"http://{ip}:{port}/health"
 
     result = c.agent.service.register(
         name=service_name,
         service_id=service_id,
         address=ip,
         port=port,
-        check=consul.Check.http(url=service_url, interval="10s")
+        check=consul.Check().tcp(ip, port, "10s", "30s", "30s")
     )
     if result:
         print("Service registration successful")

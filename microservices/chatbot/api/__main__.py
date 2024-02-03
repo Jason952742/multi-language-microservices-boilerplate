@@ -4,9 +4,9 @@ import shutil
 import grpc
 
 from api import lifetime
-from api.proto.pb2 import helloworld_pb2_grpc
+from api.proto.pb2 import helloworld_pb2_grpc, health_pb2_grpc
 
-from api.application.grpc import greeter_server
+from api.application.grpc import greeter_server, health_server
 from api.infra.settings import settings
 import asyncio
 import logging
@@ -44,6 +44,8 @@ _cleanup_coroutines = []
 async def serve() -> None:
     server = grpc.aio.server()
     helloworld_pb2_grpc.add_GreeterServicer_to_server(greeter_server.Greeter(), server)
+    health_pb2_grpc.add_HealthServicer_to_server(health_server.HealthServicer(), server)
+
     listen_addr = f"[::]:{settings.port}"
     server.add_insecure_port(listen_addr)
     logging.info("Starting server on %s", listen_addr)
