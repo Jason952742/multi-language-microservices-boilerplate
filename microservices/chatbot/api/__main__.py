@@ -3,6 +3,7 @@ import shutil
 
 from api.application.grpc import greeter_server
 from api.infra.settings import settings
+import asyncio
 import logging
 
 
@@ -34,10 +35,11 @@ def set_multiproc_dir() -> None:
 def main() -> None:
     """Entrypoint of the application."""
     set_multiproc_dir()
+
     # start grpc service
     print("grpc service start...")
-    logging.basicConfig()
-    greeter_server.serve()
+    logging.basicConfig(level=logging.INFO)
+    asyncio.run(greeter_server.serve())
 
 
 if __name__ == "__main__":
