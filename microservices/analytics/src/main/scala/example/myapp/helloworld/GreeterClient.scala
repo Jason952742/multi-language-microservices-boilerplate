@@ -17,7 +17,7 @@ object GreeterClient {
     implicit val ec: ExecutionContextExecutor = sys.dispatcher
 
     // Configure the client by code:
-    val clientSettings = GrpcClientSettings.connectToServiceAt("127.0.0.1", 50021).withTls(false)
+    val clientSettings = GrpcClientSettings.connectToServiceAt("127.0.0.1", 50036).withTls(false)
 
     // Or via application.conf:
     // val clientSettings = GrpcClientSettings.fromConfig(GreeterService.name)
