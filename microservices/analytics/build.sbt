@@ -2,7 +2,7 @@ name := "analytics"
 
 version := "1.0"
 
-scalaVersion := "2.13.12"
+scalaVersion := "3.3.1"
 
 lazy val akkaVersion = "2.9.0"
 lazy val akkaGrpcVersion = "2.4.0"
@@ -23,9 +23,9 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-discovery" % akkaVersion,
   "com.typesafe.akka" %% "akka-pki" % akkaVersion,
 
-  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  "ch.qos.logback" % "logback-classic" % "1.4.12",
 
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
-  "org.scalatest" %% "scalatest" % "3.2.12" % Test
+  "org.scalatest" %% "scalatest" % "3.2.15" % Test
 )
