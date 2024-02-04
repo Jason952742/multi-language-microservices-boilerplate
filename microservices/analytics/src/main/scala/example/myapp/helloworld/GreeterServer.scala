@@ -1,12 +1,12 @@
 package example.myapp.helloworld
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ HttpRequest, HttpResponse }
+import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.http.scaladsl.Http
 import com.typesafe.config.ConfigFactory
 import example.myapp.helloworld.grpc._
 
-import scala.concurrent.{ ExecutionContext, Future }
+import scala.concurrent.{ExecutionContext, Future}
 
 object GreeterServer {
   def main(args: Array[String]): Unit = {

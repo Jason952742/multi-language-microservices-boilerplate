@@ -11,11 +11,11 @@
 2. Run the server:
 
 ```bash
-./sbt "runMain com.example.helloworld.GreeterServer"
+sbt "runMain example.myapp.helloworld.GreeterServer"
 ```
 
 3. Run the client, open another console window and enter:
 
 ```bash
-./sbt "runMain com.example.helloworld.GreeterClient"
+sbt "runMain example.myapp.helloworld.GreeterClient"
 ```

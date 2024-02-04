@@ -16,7 +16,7 @@ trait GreeterService {
    * ////////////////////
    * Sends a greeting //
    * //////&#42;****&#47;////////
-   *      HELLO       //
+   * HELLO       //
    * //////&#42;****&#47;////////
    */
   def sayHello(in: example.myapp.helloworld.grpc.HelloRequest): scala.concurrent.Future[example.myapp.helloworld.grpc.HelloReply]
@@ -28,18 +28,17 @@ trait GreeterService {
   def itKeepsTalking(in: akka.stream.scaladsl.Source[example.myapp.helloworld.grpc.HelloRequest, akka.NotUsed]): scala.concurrent.Future[example.myapp.helloworld.grpc.HelloReply]
 
   /**
-   *  C style comments
+   * C style comments
    */
   def itKeepsReplying(in: example.myapp.helloworld.grpc.HelloRequest): akka.stream.scaladsl.Source[example.myapp.helloworld.grpc.HelloReply, akka.NotUsed]
 
   /**
    * C style comments
    * on several lines
-   * with non-empty heading/trailing line    */
+   * with non-empty heading/trailing line */
   def streamHellos(in: akka.stream.scaladsl.Source[example.myapp.helloworld.grpc.HelloRequest, akka.NotUsed]): akka.stream.scaladsl.Source[example.myapp.helloworld.grpc.HelloReply, akka.NotUsed]
 
 }
-
 
 
 @AkkaGrpcGenerated
@@ -50,6 +49,7 @@ object GreeterService extends akka.grpc.ServiceDescription {
     example.myapp.helloworld.grpc.HelloworldProto.javaDescriptor;
 
   object Serializers {
+
     import akka.grpc.scaladsl.ScalapbProtobufSerializer
 
     val HelloRequestSerializer = new ScalapbProtobufSerializer(example.myapp.helloworld.grpc.HelloRequest.messageCompanion)
@@ -61,6 +61,7 @@ object GreeterService extends akka.grpc.ServiceDescription {
   @ApiMayChange
   @AkkaGrpcGenerated
   object MethodDescriptors {
+
     import akka.grpc.internal.Marshaller
     import io.grpc.MethodDescriptor
     import Serializers._
@@ -70,7 +71,6 @@ object GreeterService extends akka.grpc.ServiceDescription {
       MethodDescriptor.newBuilder()
         .setType(
           MethodDescriptor.MethodType.UNARY
-
 
 
         )
@@ -111,7 +111,6 @@ object GreeterService extends akka.grpc.ServiceDescription {
     val streamHellosDescriptor: MethodDescriptor[example.myapp.helloworld.grpc.HelloRequest, example.myapp.helloworld.grpc.HelloReply] =
       MethodDescriptor.newBuilder()
         .setType(
-
 
 
           MethodDescriptor.MethodType.BIDI_STREAMING

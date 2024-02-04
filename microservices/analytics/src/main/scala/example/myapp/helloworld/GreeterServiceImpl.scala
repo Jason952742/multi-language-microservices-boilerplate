@@ -9,6 +9,7 @@ import com.google.protobuf.timestamp.Timestamp
 import example.myapp.helloworld.grpc._
 
 class GreeterServiceImpl(implicit mat: Materializer) extends GreeterService {
+
   import mat.executionContext
 
   override def sayHello(in: HelloRequest): Future[HelloReply] = {
