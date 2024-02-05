@@ -11,11 +11,11 @@
 2. Run the server:
 
 ```bash
-sbt "runMain Main"
+sbt "runMain api.Main"
 ```
 
 3. Run the client, open another console window and enter:
 
 ```bash
-sbt "runMain example.myapp.helloworld.GreeterClient"
+sbt "runMain api.infra.grpc.GreeterClient"
 ```

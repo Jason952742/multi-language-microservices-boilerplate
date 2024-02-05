@@ -1,13 +1,14 @@
+package api
+
 import akka.actor.ActorSystem
 import akka.grpc.scaladsl.ServiceHandler
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import api.application.grpc.{GreeterServiceImpl, HealthServiceImpl}
 import com.orbitz.consul.Consul
 import com.orbitz.consul.model.agent.{ImmutableRegistration, Registration}
 import com.typesafe.config.ConfigFactory
 import example.myapp.helloworld.grpc.*
-import example.myapp.helloworld.GreeterServiceImpl
-import io.grpc.health.v1.HealthServiceImpl
 
 import scala.concurrent.{ExecutionContext, Future}
 

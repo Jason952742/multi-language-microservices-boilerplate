@@ -1,4 +1,4 @@
-package io.grpc.health.v1
+package api.application.grpc
 
 import akka.NotUsed
 import akka.stream.Materializer

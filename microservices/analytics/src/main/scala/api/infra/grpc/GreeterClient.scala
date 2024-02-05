@@ -1,13 +1,13 @@
-package example.myapp.helloworld
+package api.infra.grpc
 
-import akka.{Done, NotUsed}
 import akka.actor.ActorSystem
 import akka.grpc.GrpcClientSettings
 import akka.stream.scaladsl.Source
+import akka.{Done, NotUsed}
 import example.myapp.helloworld.grpc.*
 
-import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.concurrent.duration.*
+import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.util.{Failure, Success}
 
 object GreeterClient {
