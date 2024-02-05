@@ -1,9 +1,10 @@
 package api
 
 import akka.actor.ActorSystem
-import akka.grpc.scaladsl.ServiceHandler
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
+import akka.http.scaladsl.server.{AuthorizationFailedRejection, Directive0, Directives}
+import akka.http.scaladsl.server.Directives.*
 import api.application.grpc.{GreeterServiceImpl, HealthServiceImpl}
 import com.orbitz.consul.Consul
 import com.orbitz.consul.model.agent.{ImmutableRegistration, Registration}
@@ -33,14 +34,26 @@ class Main(system: ActorSystem) {
     val greeterService: PartialFunction[HttpRequest, Future[HttpResponse]] =
       example.myapp.helloworld.grpc.GreeterServiceHandler.partial(new GreeterServiceImpl())
 
+    val greeterRoute = handle(greeterService)
+    val authorizationDirective: Directive0 =
+      headerValueByName("authorization").flatMap { token =>
+        if (token == "Bearer yourtoken") pass
+        else reject(AuthorizationFailedRejection)
+      }
+
     val healthService: PartialFunction[HttpRequest, Future[HttpResponse]] =
       io.grpc.health.v1.HealthHandler.partial(new HealthServiceImpl())
 
-    val serviceHandlers: HttpRequest => Future[HttpResponse] =
-      ServiceHandler.concatOrNotFound(greeterService, healthService)
+    val healthRoute = handle(healthService)
+
+    val route = Directives.concat(
+      healthRoute,
+      authorizationDirective {
+        greeterRoute
+      })
 
     // Bind service handler servers to localhost:8080/8081
-    val binding = Http().newServerAt("127.0.0.1", 50036).bind(serviceHandlers)
+    val binding = Http().newServerAt("127.0.0.1", 50036).bind(route)
 
     register()
 
@@ -58,15 +71,9 @@ class Main(system: ActorSystem) {
     val port = 50036
 
     val serviceId = f"$name-$port"
-    val service = ImmutableRegistration
-      .builder()
-      .id(serviceId)
-      .name(name)
-      .port(port)
-      .check(
-        Registration.RegCheck.grpc(f"host.docker.internal:$port", 10)
-      )
-      .build()
+    val service = ImmutableRegistration.builder().id(serviceId).name(name).port(port).check(
+      Registration.RegCheck.grpc(f"host.docker.internal:$port", 10)
+    ).build()
 
     agentClient.register(service)
   }
