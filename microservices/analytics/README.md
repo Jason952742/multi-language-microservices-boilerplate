@@ -11,7 +11,7 @@
 2. Run the server:
 
 ```bash
-sbt "runMain example.myapp.helloworld.GreeterServer"
+sbt "runMain Main"
 ```
 
 3. Run the client, open another console window and enter:

@@ -1,12 +1,12 @@
 package example.myapp.helloworld
 
-import scala.concurrent.Future
 import akka.NotUsed
 import akka.stream.Materializer
-import akka.stream.scaladsl.Sink
-import akka.stream.scaladsl.Source
+import akka.stream.scaladsl.{Sink, Source}
 import com.google.protobuf.timestamp.Timestamp
-import example.myapp.helloworld.grpc._
+import example.myapp.helloworld.grpc.*
+
+import scala.concurrent.Future
 
 class GreeterServiceImpl(implicit mat: Materializer) extends GreeterService {
 

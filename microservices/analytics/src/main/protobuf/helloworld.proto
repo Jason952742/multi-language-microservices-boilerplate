@@ -2,11 +2,11 @@ syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
 
-option java_multiple_files = true;
-option java_package = "example.myapp.helloworld.grpc";
-option java_outer_classname = "HelloWorldProto";
-
 package helloworld;
+
+option java_multiple_files = true;
+option java_outer_classname = "HelloWorldProto";
+option java_package = "example.myapp.helloworld.grpc";
 
 ////////////////////////////////////// The greeting service definition.
 service GreeterService {

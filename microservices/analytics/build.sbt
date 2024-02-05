@@ -15,7 +15,10 @@ enablePlugins(AkkaGrpcPlugin)
 // sbt tasks, consider https://github.com/spray/sbt-revolver/
 fork := true
 
-resolvers += "Akka library repository".at("https://repo.akka.io/maven")
+resolvers ++= Seq(
+  "Akka library repository".at("https://repo.akka.io/maven"),
+  // "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+)
 
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -24,7 +27,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-pki" % akkaVersion,
 
   "ch.qos.logback" % "logback-classic" % "1.4.12",
-  "com.ecwid.consul" % "consul-api" % "1.4.5",
+  "com.orbitz.consul" % "consul-client" % "1.5.3",
 
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion % Test,
